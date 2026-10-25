@@ -1,7 +1,7 @@
 # Fabrique l'installeur Windows et le publie dans les Releases de ce dépôt.
 # Se déclenche quand package.json change sur main (nouveau numéro de version),
-# ou à la main depuis l'onglet Actions. electron-builder crée lui-même
-# l'étiquette vX.Y.Z et ignore une version déjà publiée.
+# ou à la main depuis l'onglet Actions. Étapes : étiquette vX.Y.Z, envoi des
+# fichiers dans un brouillon, puis publication du brouillon (évite les doublons).
 name: Publier une version
 
 on:
@@ -35,6 +35,17 @@ jobs:
       - name: Tests
         run: npm test
 
+      - name: Créer l'étiquette de version
+        shell: bash
+        run: |
+          TAG="v$(node -p "require('./package.json').version")"
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null; then
+            echo "Étiquette $TAG déjà présente"
+          else
+            git tag "$TAG" && git push origin "refs/tags/$TAG"
+          fi
+
       - name: Fabriquer et publier l'installeur
         shell: bash
         run: |
@@ -46,4 +57,10 @@ jobs:
           }
         env:
           # Jeton fourni automatiquement par GitHub, limité à ce dépôt.
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publier la version
+        shell: bash
+        run: gh release edit "$TAG" --draft=false --latest --repo "$GITHUB_REPOSITORY"
+        env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

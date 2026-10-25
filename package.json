@@ -1,7 +1,7 @@
 {
   "name": "tft-stats",
   "productName": "HexaRise",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "HexaRise, compagnon TFT : méta par rang, guides étape par étape et mode partie, en français.",
   "author": "Mika",
   "license": "UNLICENSED",
@@ -61,7 +61,7 @@
         "provider": "github",
         "owner": "ZayKololo",
         "repo": "tft-stats",
-        "releaseType": "release"
+        "releaseType": "draft"
       }
     ]
   }
