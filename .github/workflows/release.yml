@@ -1,7 +1,7 @@
 # Fabrique l'installeur Windows et le publie dans les Releases de ce dépôt.
 # Se déclenche quand package.json change sur main (nouveau numéro de version),
-# ou à la main depuis l'onglet Actions. Étapes : étiquette vX.Y.Z, envoi des
-# fichiers dans un brouillon, puis publication du brouillon (évite les doublons).
+# ou à la main depuis l'onglet Actions. Étapes : étiquette vX.Y.Z, fabrication,
+# puis publication de tous les fichiers en une seule fois (évite les doublons).
 name: Publier une version
 
 on:
@@ -46,21 +46,25 @@ jobs:
             git tag "$TAG" && git push origin "refs/tags/$TAG"
           fi
 
-      - name: Fabriquer et publier l'installeur
+      - name: Fabriquer l'installeur
         shell: bash
         run: |
           set -o pipefail
-          npx electron-builder --win nsis --publish always 2>&1 | tee build.log || {
+          npx electron-builder --win nsis --publish never 2>&1 | tee build.log || {
             # Remonte la fin du journal en annotations (10 max par étape, lisibles sans ouvrir les logs).
             { grep -iE 'error|⨯|fail|cannot|denied|40[134]' build.log | tail -n 6; tail -n 4 build.log; } | sed -e 's/%/%25/g' | while IFS= read -r line; do echo "::error::$line"; done
             exit 1
           }
+
+      - name: Publier la version (tous les fichiers en une fois)
+        shell: bash
+        run: |
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "::error::La version $TAG existe déjà : augmente le numéro dans package.json."
+            exit 1
+          fi
+          gh release create "$TAG" dist/*.exe dist/*.blockmap dist/latest.yml \
+            --repo "$GITHUB_REPOSITORY" --title "HexaRise $TAG" --notes "Mise à jour automatique dans l'app." --latest
         env:
           # Jeton fourni automatiquement par GitHub, limité à ce dépôt.
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Publier la version
-        shell: bash
-        run: gh release edit "$TAG" --draft=false --latest --repo "$GITHUB_REPOSITORY"
-        env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
