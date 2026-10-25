@@ -36,7 +36,14 @@ jobs:
         run: npm test
 
       - name: Fabriquer et publier l'installeur
-        run: npx electron-builder --win nsis --publish always
+        shell: bash
+        run: |
+          set -o pipefail
+          npx electron-builder --win nsis --publish always 2>&1 | tee build.log || {
+            # Remonte la fin du journal en annotations (10 max par étape, lisibles sans ouvrir les logs).
+            { grep -iE 'error|⨯|fail|cannot|denied|40[134]' build.log | tail -n 6; tail -n 4 build.log; } | sed -e 's/%/%25/g' | while IFS= read -r line; do echo "::error::$line"; done
+            exit 1
+          }
         env:
           # Jeton fourni automatiquement par GitHub, limité à ce dépôt.
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
