@@ -1,5 +1,10 @@
+@font-face { font-family: "Space Grotesk"; src: url("fonts/space-grotesk-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Space Grotesk"; src: url("fonts/space-grotesk-latin-600-normal.woff2") format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Space Grotesk"; src: url("fonts/space-grotesk-latin-700-normal.woff2") format("woff2"); font-weight: 700; font-display: swap; }
+
+/* Palette HexaRise : nuit, or du cadre, turquoise d'action (charte du logo) */
 :root {
-  --bg: #0a0e18;
+  --bg: #0b0f1a;
   --panel: #111727;
   --panel-2: #161e33;
   --panel-3: #1c2640;
@@ -7,9 +12,12 @@
   --text: #e7eaf3;
   --muted: #8b94ae;
   --faint: #5c6582;
-  --gold: #e9b94f;
-  --gold-soft: rgba(233, 185, 79, .14);
-  --teal: #3ccfc4;
+  --gold: #e8b44c;
+  --gold-soft: rgba(232, 180, 76, .14);
+  --teal: #3dd6c6;
+  --display: "Space Grotesk", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  /* Dégradé des rangs, repris des alvéoles du logo */
+  --rank-bronze: #b9775b; --rank-silver: #a9b8cc; --rank-emerald: #2fa85e; --rank-diamond: #a64fd6; --rank-gold: #e9b955;
   --good: #4fd18b;
   --bad: #ff6b6b;
   --c1: #9aa1ad; --c2: #18b98a; --c3: #2f86d6; --c4: #c44be0; --c5: #ffb93b;
@@ -30,9 +38,9 @@ a { color: inherit; cursor: pointer; text-decoration: none; }
 /* ---------- Barre latérale ---------- */
 .sidebar { background: var(--panel); border-right: 1px solid var(--line); display: flex; flex-direction: column; padding: 18px 12px; }
 .brand { display: flex; gap: 10px; align-items: center; padding: 0 8px 18px; }
-.brand-mark { width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; background: linear-gradient(135deg, var(--gold), #b9792b); color: #1b1404; font-weight: 800; }
-.brand-name { font-weight: 700; letter-spacing: .2px; }
-.brand-sub { color: var(--muted); font-size: 12px; }
+.brand-logo { width: 38px; height: 38px; flex: none; }
+.brand-name { font-family: var(--display); font-weight: 700; font-size: 17px; letter-spacing: .3px; }
+.brand-sub { color: var(--muted); font-size: 11.5px; white-space: nowrap; }
 .nav { display: flex; flex-direction: column; gap: 2px; }
 .nav a { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 8px; color: var(--muted); font-weight: 500; }
 .nav a:hover { background: var(--panel-2); color: var(--text); }
@@ -206,3 +214,7 @@ td.n { font-variant-numeric: tabular-nums; }
 .recipe .rname { font-weight: 600; font-size: 13.5px; }
 .recipe .rparts { display: flex; align-items: center; gap: 4px; margin-top: 4px; color: var(--faint); }
 .card h3 { margin-bottom: 8px; }
+
+/* ---------- Typographie de marque ---------- */
+.view-head h1, .guide-head h1, .tier, .place, .kpi .v, .stat .v, .stage-name, .ov-title { font-family: var(--display); }
+.view-head h1, .guide-head h1 { letter-spacing: -.3px; }

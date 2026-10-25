@@ -1,8 +1,8 @@
 {
   "name": "tft-stats",
-  "productName": "TFT Stats",
-  "version": "1.3.0",
-  "description": "Statistiques Teamfight Tactics en direct : compos méta, champions, objets, augments et recherche joueur.",
+  "productName": "HexaRise",
+  "version": "1.4.0",
+  "description": "HexaRise, compagnon TFT : méta par rang, guides étape par étape et mode partie, en français.",
   "author": "Mika",
   "license": "UNLICENSED",
   "repository": {
@@ -29,8 +29,8 @@
   },
   "build": {
     "appId": "fr.tftstats.app",
-    "productName": "TFT Stats",
-    "copyright": "TFT Stats n'est pas approuvé par Riot Games.",
+    "productName": "HexaRise",
+    "copyright": "HexaRise n'est pas approuvé par Riot Games.",
     "directories": {
       "output": "dist",
       "buildResources": "build"
@@ -45,15 +45,15 @@
     "win": {
       "target": "nsis",
       "icon": "build/icon.ico",
-      "artifactName": "TFT-Stats-Setup-${version}.${ext}"
+      "artifactName": "HexaRise-Setup-${version}.${ext}"
     },
     "nsis": {
       "oneClick": true,
       "perMachine": false,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "TFT Stats",
-      "uninstallDisplayName": "TFT Stats",
+      "shortcutName": "HexaRise",
+      "uninstallDisplayName": "HexaRise",
       "language": "1036"
     },
     "publish": [

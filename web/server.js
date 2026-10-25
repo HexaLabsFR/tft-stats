@@ -106,6 +106,6 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, HOST, () => {
-  console.log(`TFT Stats ${DEMO ? '(démo) ' : ''}disponible sur http://${HOST === '0.0.0.0' ? 'localhost' : HOST}:${PORT}`);
+  console.log(`HexaRise ${DEMO ? '(démo) ' : ''}disponible sur http://${HOST === '0.0.0.0' ? 'localhost' : HOST}:${PORT}`);
   engine.start();
 });

@@ -1,6 +1,6 @@
 @echo off
 chcp 65001 >nul
-title TFT Stats - Installation
+title HexaRise - Installation
 cd /d "%~dp0"
 
 where node >nul 2>nul

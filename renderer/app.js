@@ -538,7 +538,7 @@ function render() {
   }
   const navRoute = S.route === 'guide' ? 'meta' : S.route;
   document.querySelectorAll('#nav a').forEach((a) => a.classList.toggle('active', a.dataset.route === navRoute));
-  $('#set-label').textContent = S.static ? `Set ${S.static.setNumber} · ${S.static.setName}` : 'Données en chargement';
+  $('#set-label').textContent = S.static ? `Compagnon TFT · Set ${S.static.setNumber}` : 'Compagnon TFT';
   $('#sample-label').textContent = sampleText();
 }
 

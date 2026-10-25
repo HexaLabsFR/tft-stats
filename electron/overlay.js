@@ -67,7 +67,7 @@ class Overlay {
       resizable: true,
       show: false,
       backgroundColor: '#0a0e18',
-      title: 'TFT Stats · Mode partie',
+      title: 'HexaRise · Mode partie',
       webPreferences: { preload: this.preload, contextIsolation: true, nodeIntegration: false, sandbox: true }
     });
     // Niveau « screen-saver » : reste visible au-dessus du jeu en plein écran fenêtré.

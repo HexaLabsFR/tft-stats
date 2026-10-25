@@ -14,6 +14,8 @@ const { Overlay } = require('./overlay');
 const OVERLAY_SHORTCUT = 'Alt+G';
 
 app.setAppUserModelId('fr.tftstats.app');
+// L'app s'appelait « TFT Stats » : on garde son dossier de données (clé, parties, réglages).
+app.setPath('userData', path.join(app.getPath('appData'), 'TFT Stats'));
 if (!app.requestSingleInstanceLock()) app.quit();
 
 let win = null;
@@ -54,7 +56,7 @@ function createWindow() {
     height: 860,
     minWidth: 980,
     minHeight: 640,
-    title: 'TFT Stats',
+    title: 'HexaRise',
     backgroundColor: '#0a0e18',
     autoHideMenuBar: true,
     icon: path.join(__dirname, '..', 'build', 'icon.png'),
@@ -88,10 +90,10 @@ function createWindow() {
 function createTray() {
   const icon = nativeImage.createFromPath(path.join(__dirname, '..', 'build', 'icon.png')).resize({ width: 16, height: 16 });
   tray = new Tray(icon);
-  tray.setToolTip('TFT Stats');
+  tray.setToolTip('HexaRise');
   tray.setContextMenu(
     Menu.buildFromTemplate([
-      { label: 'Ouvrir TFT Stats', click: () => win.show() },
+      { label: 'Ouvrir HexaRise', click: () => win.show() },
       { label: `Mode partie (${OVERLAY_SHORTCUT})`, click: () => overlay.toggle() },
       { label: 'Actualiser les statistiques', click: () => engine.refreshNow() },
       { type: 'separator' },
