@@ -5,6 +5,10 @@
   "description": "Statistiques Teamfight Tactics en direct : compos méta, champions, objets, augments et recherche joueur.",
   "author": "Mika",
   "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ZayKololo/tft-stats.git"
+  },
   "private": true,
   "main": "electron/main.js",
   "scripts": {

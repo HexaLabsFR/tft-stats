@@ -1,14 +1,21 @@
 # Fabrique l'installeur Windows et le publie dans les Releases de ce dépôt.
-# Se déclenche à chaque étiquette de version (ex. v1.3.0).
+# Se déclenche quand package.json change sur main (nouveau numéro de version),
+# ou à la main depuis l'onglet Actions. electron-builder crée lui-même
+# l'étiquette vX.Y.Z et ignore une version déjà publiée.
 name: Publier une version
 
 on:
   push:
-    tags: ['v*']
+    branches: [main]
+    paths: ['package.json']
   workflow_dispatch:
 
 permissions:
   contents: write # nécessaire pour créer la Release
+
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
   windows:
@@ -27,15 +34,6 @@ jobs:
 
       - name: Tests
         run: npm test
-
-      - name: Vérifier que la version correspond à l'étiquette
-        if: startsWith(github.ref, 'refs/tags/v')
-        shell: bash
-        run: |
-          PKG="v$(node -p "require('./package.json').version")"
-          if [ "$PKG" != "$GITHUB_REF_NAME" ]; then
-            echo "package.json ($PKG) ne correspond pas à l'étiquette ($GITHUB_REF_NAME)"; exit 1
-          fi
 
       - name: Fabriquer et publier l'installeur
         run: npx electron-builder --win nsis --publish always
