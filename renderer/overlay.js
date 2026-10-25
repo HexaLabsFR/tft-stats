@@ -1,0 +1,209 @@
+// Mode partie : guide de la compo choisie avant la partie, recettes et augments.
+// Aucune donnée de la partie en cours n'est lue ici (règles Riot pour TFT).
+import { api, isDesktop } from './api.js';
+import { buildGuide } from './guide.js';
+
+if (!isDesktop) document.body.classList.add('web');
+
+const S = { static: null, meta: null, app: null, ov: null, filter: '', comp: null };
+const $ = (s) => document.querySelector(s);
+
+// ---------- Utilitaires (mêmes conventions que l'app principale) ----------
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const nf = (v, d = 2) => (v === null || v === undefined ? '—' : Number(v).toLocaleString('fr-FR', { minimumFractionDigits: d, maximumFractionDigits: d }));
+const initials = (n = '?') => n.replace(/[^\p{L}\p{N} ]/gu, '').split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase();
+const label = (x) => (x?.en && x.en.toLowerCase() !== String(x.name).toLowerCase() ? `${x.name} (${x.en})` : x?.name || '');
+const champ = (id) => S.static?.champions?.[id] || { apiName: id, name: id.replace(/^TFT\d+_/, ''), cost: 0, traits: [], icon: '' };
+const trait = (id) => S.static?.traits?.[id] || { apiName: id, name: id.replace(/^TFT\d+_/, ''), icon: '' };
+const item = (id) => S.static?.items?.[id] || { apiName: id, name: id.replace(/^TFT\d*_Item_/, ''), icon: '', composition: [] };
+const aug = (id) => S.static?.augments?.[id] || { apiName: id, name: id.replace(/^TFT\d*_Augment_/, ''), icon: '' };
+const img = (src, alt) => (src ? `<img src="${esc(src)}" alt="" loading="lazy" data-fallback="${esc(initials(alt))}">` : esc(initials(alt)));
+const champIcon = (id) => `<span class="ic champ cost-${champ(id).cost || 1}" data-tip="champ" data-id="${esc(id)}">${img(champ(id).icon, champ(id).name)}</span>`;
+const itemIcon = (id, lg) => `<span class="ic item ${lg ? 'lg' : ''}" data-tip="item" data-id="${esc(id)}">${img(item(id).icon, item(id).name)}</span>`;
+const augIcon = (id) => `<span class="ic aug" data-tip="aug" data-id="${esc(id)}">${img(aug(id).icon, aug(id).name)}</span>`;
+const unitEl = (id, star = 0, items = []) => `<div class="unit"><span class="stars">${star > 1 ? '★'.repeat(star) : ''}</span>${champIcon(id)}<span class="items">${items.map((i) => itemIcon(i)).join('')}</span><span class="uname">${esc(champ(id).name)}</span></div>`;
+const compName = (c) => `${label(trait(c.main))} · ${label(champ(c.carry))}`;
+const bracketData = () => S.meta?.byBracket?.[S.ov?.bracket || 'all'] || S.meta?.byBracket?.all || null;
+
+document.addEventListener('error', (e) => {
+  const t = e.target;
+  if (t.tagName === 'IMG' && t.dataset.fallback !== undefined) t.replaceWith(document.createTextNode(t.dataset.fallback));
+}, true);
+
+// Infobulles
+const tip = $('#tooltip');
+document.addEventListener('mouseover', (e) => {
+  const el = e.target.closest('[data-tip]');
+  if (!el) return tip.classList.add('hidden');
+  const id = el.dataset.id;
+  const src = { champ, item, aug }[el.dataset.tip]?.(id);
+  if (!src) return;
+  const desc = el.dataset.tip === 'champ' ? src.traits.map((t) => label(trait(t))).join(' · ') : src.desc || '';
+  tip.innerHTML = `<div class="t">${esc(label(src))}</div>${desc ? `<div class="d">${esc(desc).slice(0, 400)}</div>` : ''}`;
+  tip.classList.remove('hidden');
+  const r = el.getBoundingClientRect();
+  const w = tip.offsetWidth;
+  const h = tip.offsetHeight;
+  tip.style.left = `${Math.max(6, Math.min(innerWidth - w - 6, r.left + r.width / 2 - w / 2))}px`;
+  tip.style.top = `${r.top - h - 6 < 6 ? r.bottom + 6 : r.top - h - 6}px`;
+});
+
+// ---------- Sélection de la compo ----------
+function renderPick() {
+  const data = bracketData();
+  const comps = [...(data?.comps || [])].sort((a, b) => a.score - b.score);
+  const brackets = [['all', 'Tous rangs'], ...(S.app?.brackets || []).map((b) => [b.id, b.label])].filter(([id]) => S.meta?.byBracket?.[id]);
+  $('#ov-pick').innerHTML = `
+    <select class="input" id="ov-comp">
+      <option value="">Choisir une compo…</option>
+      ${comps.map((c) => `<option value="${esc(c.id)}" ${c.id === S.ov?.compId ? 'selected' : ''}>${c.tier} · ${esc(compName(c))}</option>`).join('')}
+    </select>
+    <select class="input" id="ov-bracket">${brackets.map(([id, l]) => `<option value="${id}" ${id === (S.ov?.bracket || 'all') ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
+}
+
+// ---------- Onglets ----------
+function viewGuide() {
+  const c = S.comp;
+  if (!c) return '<div class="ov-empty">Choisis ta compo avant la partie.<br>Le guide reste affiché pendant toute la partie.</div>';
+  const g = buildGuide(c, S.static, label);
+  const checks = S.ov.checks || {};
+  let total = 0;
+  let done = 0;
+  const stars = Object.fromEntries(c.units.map((u) => [u.id, Math.round(u.star || 1)]));
+
+  const stages = g.stages.map((st, si) => `
+    <div class="ov-stage"><h4>${esc(st.stage)} <span>${esc(st.rounds)}</span></h4>
+      ${st.steps.map((step, i) => {
+        const key = `${si}-${i}`;
+        total++;
+        if (checks[key]) done++;
+        let ids = '';
+        if (step.kind === 'units' || step.kind === 'final') ids = `<div class="comp-units">${step.ids.map((id) => unitEl(id, step.kind === 'final' ? stars[id] : 0)).join('')}</div>`;
+        else if (step.kind === 'items') ids = `<div class="tags">${step.ids.map((id) => `<span class="tag">${itemIcon(id)}${esc(item(id).name)}</span>`).join('')}</div>`;
+        else if (step.kind === 'augs') ids = `<div class="tags">${step.ids.map((id) => `<span class="tag">${augIcon(id)}${esc(aug(id).name)}</span>`).join('')}</div>`;
+        return `<label class="ov-step ${checks[key] ? 'done' : ''}"><input type="checkbox" data-check="${key}" ${checks[key] ? 'checked' : ''}><div><p>${esc(step.text)}</p>${ids}</div></label>`;
+      }).join('')}
+    </div>`).join('');
+
+  return `<div class="ov-head"><span class="tier ${c.tier}">${c.tier}</span><div><div class="name">${esc(compName(c))}</div>
+    <div class="sub">${esc(g.type.label)} · moy. ${nf(c.avg)} · top 4 ${nf(c.top4, 1)} %</div></div></div>
+    <div class="comp-units">${g.final.map((u) => unitEl(u.id, stars[u.id], u.id === c.carry ? g.carryItems : u.id === g.tank ? g.tankItems : [])).join('')}</div>
+    <div class="ov-progress"><i style="width:${total ? (done / total) * 100 : 0}%"></i></div>
+    ${stages}`;
+}
+
+function viewItems() {
+  const c = S.comp;
+  const g = c ? buildGuide(c, S.static, label) : null;
+  const mine = new Set(g ? [...g.carryItems, ...g.tankItems] : []);
+  const recipes = Object.values(S.static?.items || {})
+    .filter((it) => it.kind === 'complet' && it.composition?.length === 2 && !it.outOfSet)
+    .sort((a, b) => (mine.has(b.apiName) - mine.has(a.apiName)) || a.composition[0].localeCompare(b.composition[0]) || a.name.localeCompare(b.name, 'fr'));
+  const row = (it) => `<div class="ov-recipe ${mine.has(it.apiName) ? 'hl' : ''}">${itemIcon(it.apiName)}<span>${esc(label(it))}</span><span class="parts">${itemIcon(it.composition[0])}+${itemIcon(it.composition[1])}</span></div>`;
+  return `${g ? `<h5>Composants prioritaires</h5><div class="tags">${g.components.map((id) => `<span class="tag">${itemIcon(id)}${esc(item(id).name)}</span>`).join('')}</div>` : ''}
+    <h5>Recettes${g ? ' (objets de ta compo en surbrillance)' : ''}</h5>
+    <div class="ov-recipes">${recipes.map(row).join('') || '<div class="ov-empty">Données des objets en chargement.</div>'}</div>`;
+}
+
+function viewAugs() {
+  const data = bracketData();
+  const q = S.filter.toLowerCase();
+  const keep = (id) => !q || label(aug(id)).toLowerCase().includes(q);
+  const search = `<input class="input" id="ov-search" placeholder="Rechercher un augment…" value="${esc(S.filter)}" style="width:100%;margin-bottom:8px">`;
+  if (data?.hasAugments) {
+    const rows = data.augments.filter((a) => keep(a.id));
+    return `${search}<table class="ov-augs"><tbody>${rows.map((a) => `<tr><td>${augIcon(a.id)}</td><td>${esc(label(aug(a.id)))}</td><td class="n ${a.avg <= 4.1 ? 'good' : a.avg >= 4.75 ? 'bad' : ''}">${nf(a.avg)}</td></tr>`).join('')}</tbody></table>
+      <p class="ov-foot" style="border:0;padding:6px 0">Place moyenne quand l'augment est pris (${esc(S.app?.brackets?.find((b) => b.id === S.ov.bracket)?.label || 'tous rangs')}).</p>`;
+  }
+  const list = Object.values(S.static?.augments || {}).filter((a) => keep(a.apiName)).sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+  return `${search}<p class="ov-foot" style="border:0;padding:0 0 8px">Riot ne fournit pas les stats d'augments pour ce set : description uniquement.</p>
+    ${list.map((a) => `<div class="ov-recipe" style="grid-template-columns:26px 1fr">${augIcon(a.apiName)}<span>${esc(label(a))}</span></div>`).join('')}`;
+}
+
+const VIEWS = { guide: viewGuide, items: viewItems, augs: viewAugs };
+
+function render() {
+  const data = bracketData();
+  S.comp = data?.comps.find((c) => c.id === S.ov?.compId) || S.meta?.byBracket?.all?.comps.find((c) => c.id === S.ov?.compId) || null;
+  const tab = VIEWS[S.ov?.tab] ? S.ov.tab : 'guide';
+  document.querySelectorAll('#ov-tabs a').forEach((a) => a.classList.toggle('on', a.dataset.tab === tab));
+  const body = $('#ov-body');
+  const scroll = body.scrollTop;
+  const focused = document.activeElement?.id;
+  body.innerHTML = VIEWS[tab]();
+  body.scrollTop = scroll;
+  if (focused === 'ov-search') {
+    const el = $('#ov-search');
+    el.focus();
+    el.setSelectionRange(el.value.length, el.value.length);
+  }
+  $('#ov-dot').classList.toggle('on', Boolean(S.ov?.inGame));
+  $('#ov-title').textContent = S.ov?.inGame ? 'En partie · Mode partie' : 'Mode partie';
+  $('#ov-foot').textContent = `${S.ov?.shortcut ? `${S.ov.shortcut} pour afficher / masquer · ` : ''}Données statiques uniquement (règles Riot)`;
+}
+
+async function save(patch) {
+  S.ov = { ...S.ov, ...(await api.overlaySet(patch)) };
+  render();
+}
+
+// ---------- Événements ----------
+$('#ov-pick').addEventListener('change', (e) => {
+  if (e.target.id === 'ov-comp') save({ compId: e.target.value || null, tab: 'guide' });
+  if (e.target.id === 'ov-bracket') {
+    S.ov.bracket = e.target.value;
+    renderPick();
+    save({ bracket: e.target.value });
+  }
+});
+$('#ov-tabs').addEventListener('click', (e) => {
+  const a = e.target.closest('[data-tab]');
+  if (a) save({ tab: a.dataset.tab });
+});
+$('#ov-body').addEventListener('change', (e) => {
+  const key = e.target.dataset.check;
+  if (key) save({ checks: { ...(S.ov.checks || {}), [key]: e.target.checked } });
+});
+$('#ov-body').addEventListener('input', (e) => {
+  if (e.target.id === 'ov-search') {
+    S.filter = e.target.value;
+    render();
+  }
+});
+document.querySelector('.ov-actions').addEventListener('click', (e) => {
+  const act = e.target.closest('[data-act]')?.dataset.act;
+  if (act === 'opacity-') save({ opacity: Math.max(0.4, (S.ov.opacity || 1) - 0.1) });
+  if (act === 'opacity+') save({ opacity: Math.min(1, (S.ov.opacity || 1) + 0.1) });
+  if (act === 'main') api.openMain('meta');
+  if (act === 'close') (isDesktop ? api.overlayToggle(false) : window.close());
+});
+
+api.on('overlay', (ov) => {
+  const changedPick = ov.compId !== S.ov?.compId || ov.bracket !== S.ov?.bracket;
+  S.ov = { ...S.ov, ...ov };
+  if (changedPick) renderPick();
+  render();
+});
+api.on('meta', (m) => {
+  S.meta = m;
+  renderPick();
+  render();
+});
+api.on('static', (d) => {
+  S.static = d;
+  render();
+});
+// Version web : synchronisation avec l'onglet principal.
+window.addEventListener('storage', async (e) => {
+  if (e.key !== 'overlay') return;
+  S.ov = { ...S.ov, ...(await api.overlayGet()) };
+  renderPick();
+  render();
+});
+
+(async function boot() {
+  [S.static, S.meta, S.app, S.ov] = await Promise.all([api.static(), api.meta(), api.state(), api.overlayGet()]);
+  renderPick();
+  render();
+})();
+

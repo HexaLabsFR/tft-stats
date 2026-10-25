@@ -1,0 +1,57 @@
+/* Fenêtre compacte « Mode partie » */
+body.ov { font-size: 13px; overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
+.ov-bar { -webkit-app-region: drag; display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--panel); border-bottom: 1px solid var(--line); user-select: none; }
+.ov-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--faint); flex: none; }
+.ov-dot.on { background: var(--good); box-shadow: 0 0 0 3px rgba(79, 209, 139, .2); }
+.ov-title { font-weight: 700; color: var(--gold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ov-actions { margin-left: auto; display: flex; gap: 4px; -webkit-app-region: no-drag; }
+.ov-btn { background: transparent; border: 1px solid var(--line); border-radius: 6px; width: 26px; height: 24px; cursor: pointer; color: var(--muted); padding: 0; }
+.ov-btn:hover { color: var(--text); border-color: #3a4770; }
+.web .desktop-only { display: none; }
+
+.ov-pick { display: grid; grid-template-columns: 1fr auto; gap: 6px; padding: 8px 10px 0; }
+.ov-pick .input { min-width: 0; padding: 6px 8px; font-size: 12.5px; }
+.ov-tabs { display: flex; gap: 4px; padding: 8px 10px; }
+.ov-tabs .chip { flex: 1; text-align: center; background: var(--panel-2); border: 1px solid var(--line); padding: 5px 0; }
+.ov-tabs .chip.on { background: var(--gold-soft); color: var(--gold); border-color: rgba(233, 185, 79, .35); }
+.ov-body { flex: 1; overflow: auto; padding: 0 10px 10px; }
+.ov-foot { padding: 6px 10px; border-top: 1px solid var(--line); color: var(--faint); font-size: 11px; }
+.ov-empty { color: var(--muted); text-align: center; padding: 30px 10px; line-height: 1.6; }
+
+.ov-head { display: flex; gap: 10px; align-items: center; margin: 2px 0 8px; }
+.ov-head .tier { width: 28px; height: 28px; font-size: 14px; }
+.ov-head .name { font-weight: 700; line-height: 1.25; }
+.ov-head .sub { color: var(--muted); font-size: 12px; margin-top: 2px; }
+.ov-progress { height: 4px; border-radius: 2px; background: var(--panel-3); overflow: hidden; margin: 10px 0 4px; }
+.ov-progress i { display: block; height: 100%; background: var(--gold); transition: width .3s; }
+
+.ov .comp-units { gap: 3px; }
+.ov .unit { width: 36px; }
+.ov .unit .ic.champ { width: 34px; height: 34px; }
+.ov .unit .uname { max-width: 36px; font-size: 9.5px; }
+
+.ov-stage { margin-top: 10px; }
+.ov-stage h4 { margin: 0 0 4px; font-size: 12px; color: var(--gold); display: flex; gap: 8px; align-items: baseline; }
+.ov-stage h4 span { color: var(--faint); font-weight: 500; }
+.ov-step { display: grid; align-items: start; grid-template-columns: 18px 1fr; gap: 6px; padding: 5px 6px; border-radius: 6px; cursor: pointer; }
+.ov-step:hover { background: var(--panel-2); }
+.ov-step input { margin: 2px 0 0; accent-color: var(--gold); cursor: pointer; }
+.ov-step p { margin: 0 0 4px; line-height: 1.4; }
+.ov-step.done p, .ov-step.done .tags, .ov-step.done .comp-units { opacity: .4; }
+.ov-step.done p { text-decoration: line-through; }
+.ov .tag { font-size: 12px; padding: 2px 6px 2px 2px; }
+.ov .tag .ic.item, .ov .tag .ic.aug { width: 18px; height: 18px; border-radius: 4px; }
+.ov h5 { margin: 10px 0 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); }
+
+.ov-recipes { display: grid; grid-template-columns: 1fr; gap: 3px; }
+.ov-recipe { display: grid; grid-template-columns: 24px 1fr auto; gap: 6px; align-items: center; background: var(--panel); border: 1px solid var(--line); border-radius: 7px; padding: 3px 6px 3px 3px; font-size: 12px; }
+.ov-recipe.hl { border-color: rgba(233, 185, 79, .55); background: var(--gold-soft); }
+.ov-recipe .parts { display: flex; align-items: center; gap: 2px; color: var(--faint); }
+.ov-recipe .ic.item { width: 22px; height: 22px; }
+.ov-recipe .parts .ic.item { width: 18px; height: 18px; border-radius: 4px; }
+.ov-recipe .ic.aug { width: 22px; height: 22px; border-radius: 5px; }
+
+.ov-augs { width: 100%; border-collapse: collapse; }
+.ov-augs td { padding: 4px; border-bottom: 1px solid rgba(34, 44, 71, .6); }
+.ov-augs td:first-child { width: 30px; }
+.ov-augs .ic.aug { width: 24px; height: 24px; border-radius: 6px; }

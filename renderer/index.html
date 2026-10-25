@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; img-src 'self' data: https://raw.communitydragon.org; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'">
+  <title>TFT Stats</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">◆</div>
+        <div>
+          <div class="brand-name">TFT Stats</div>
+          <div class="brand-sub" id="set-label">Chargement…</div>
+        </div>
+      </div>
+      <nav class="nav" id="nav">
+        <a data-route="meta" class="active"><span class="ico">▦</span>Compos méta</a>
+        <a data-route="champions"><span class="ico">♟</span>Champions</a>
+        <a data-route="traits"><span class="ico">✦</span>Synergies</a>
+        <a data-route="items"><span class="ico">⚔</span>Objets</a>
+        <a data-route="augments"><span class="ico">⬢</span>Augments</a>
+        <a data-route="player"><span class="ico">⌕</span>Joueur</a>
+        <a data-route="settings"><span class="ico">⚙</span>Paramètres</a>
+      </nav>
+      <div class="sidebar-foot">
+        <div class="sample" id="sample-label">—</div>
+        <div class="legal">TFT Stats n'est pas approuvé par Riot Games et ne reflète pas les opinions de Riot Games.</div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="live" id="live">
+          <span class="dot"></span>
+          <span id="live-text">Initialisation…</span>
+        </div>
+        <div class="progress" id="progress"><div class="bar" id="progress-bar"></div></div>
+        <div class="top-actions">
+          <span class="update-banner hidden" id="update-banner"></span>
+          <button class="btn ghost" id="btn-refresh" title="Lancer une mise à jour maintenant">↻ Actualiser</button>
+        </div>
+      </header>
+      <section class="view" id="view"></section>
+    </main>
+  </div>
+  <div class="tooltip hidden" id="tooltip"></div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

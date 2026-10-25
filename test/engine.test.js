@@ -1,0 +1,79 @@
+'use strict';
+const assert = require('assert');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const { Engine, memoryKeyStore } = require('../core/engine');
+const { createMockFetch } = require('./mock-fetch');
+const { formatDesc, iconUrl } = require('../core/static-data');
+const { parseLimitHeader } = require('../core/riot');
+
+(async () => {
+  // Utilitaires
+  assert.strictEqual(formatDesc('Confère @AD*100@% DA.<br>Passif', { AD: 0.15 }), 'Confère 15% DA.\nPassif');
+  assert.ok(iconUrl('ASSETS/A/B.tex').endsWith('/game/assets/a/b.png'));
+  assert.deepStrictEqual(parseLimitHeader('20:1,100:120'), [[20, 1000], [100, 120000]]);
+
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tft-'));
+  const fetchImpl = createMockFetch();
+  const engine = new Engine({ dataDir: dir, keyStore: memoryKeyStore('RGAPI-test'), fetchImpl });
+  let metaEvents = 0;
+  engine.on('meta', () => metaEvents++);
+  engine.settings.autoStart = false;
+  await engine.start();
+  await engine.refreshNow();
+
+  const state = await engine.getState();
+  assert.strictEqual(state.status.state, 'idle', state.status.message);
+  assert.ok(state.storedMatches > 30, `parties stockées : ${state.storedMatches}`);
+
+  const sd = engine.getStatic();
+  assert.strictEqual(sd.traits.TFT15_StarGuardian.en, 'Star Guardian');
+  assert.strictEqual(sd.items.TFT_Item_JeweledGauntlet.en, 'Jeweled Gauntlet');
+  assert.strictEqual(sd.champions.TFT15_Ahri.en, 'Ahri');
+  const all = engine.getMeta();
+  assert.ok(all.byBracket.apex && all.byBracket.all, 'méta par élo');
+  assert.ok(Object.keys(all.byBracket).length >= 3, `tranches : ${Object.keys(all.byBracket)}`);
+  const meta = all.byBracket.all;
+  assert.ok(meta.comps.length >= 4, `compos : ${meta.comps.length}`);
+  assert.strictEqual(meta.patch, '15.20');
+  assert.ok(meta.hasAugments);
+  const sg = meta.comps.find((c) => c.carry === 'TFT15_Ahri');
+  assert.ok(sg, 'compo Gardienne des étoiles détectée');
+  assert.strictEqual(sg.name, 'Gardienne des étoiles · Ahri');
+  assert.ok(['S', 'A'].includes(sg.tier), `tier SG = ${sg.tier}`);
+  assert.ok(meta.comps[0].avg <= meta.comps[meta.comps.length - 1].avg);
+  assert.ok(metaEvents >= 2, 'mises à jour live émises');
+  assert.ok(meta.items.some((i) => i.id === 'TFT_Item_JeweledGauntlet'));
+
+  // Deuxième passe : aucune requête de match en double
+  const before = fetchImpl.calls.filter((c) => /matches\/EUW1_/.test(c)).length;
+  await engine.refreshNow();
+  const after = fetchImpl.calls.filter((c) => /matches\/EUW1_/.test(c)).length;
+  assert.strictEqual(after, before, 'les parties en cache ne sont pas re-téléchargées');
+
+  // Joueur
+  const player = await engine.lookupPlayer({ riotId: 'Mika#EUW', platform: 'euw1' });
+  assert.strictEqual(player.account.gameName, 'Mika');
+  assert.ok(player.games.length > 0);
+  assert.strictEqual(player.ranked.tier, 'CHALLENGER');
+  await assert.rejects(engine.lookupPlayer({ riotId: 'Inconnu#EUW' }), /introuvable/);
+  await assert.rejects(engine.lookupPlayer({ riotId: 'SansTag' }), /Pseudo#TAG/);
+  const live = await engine.liveGame({ puuid: 'puuid-0' });
+  assert.ok(live.inGame && live.players.length === 8);
+
+  // Clé absente
+  const e2 = new Engine({ dataDir: fs.mkdtempSync(path.join(os.tmpdir(), 'tft-')), keyStore: memoryKeyStore(''), fetchImpl });
+  const t = await e2.testKey();
+  assert.ok(!t.ok && /clé API/i.test(t.message));
+
+  engine.stop();
+  const sgc = meta.comps.find((c) => c.carry === 'TFT15_Ahri');
+  assert.ok(typeof sgc.carry3 === 'number' && sgc.levelDist.length === 4 && sgc.augStages.length === 3);
+  assert.ok(meta.comps.some((c) => c.tank), 'tank détecté');
+  console.log(`Tranches : ${Object.entries(all.byBracket).map(([k, v]) => `${k}=${v.boards}`).join(', ')}`);
+  console.log(`OK — ${meta.boards} parties, ${meta.comps.length} compos, top : ${meta.comps[0].name} (${meta.comps[0].tier}, ${meta.comps[0].avg})`);
+})().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
