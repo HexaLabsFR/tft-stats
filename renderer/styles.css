@@ -33,6 +33,8 @@
   --cyan: var(--mint);
   --good: #2EE6A8;
   --bad: #FF8A8A;
+  /* Couleurs de tier (codes des tier lists TFT, comme MetaTFT) : données, comme les couleurs de coût */
+  --t-s: #FF7E83; --t-a: #FFBF7F; --t-b: #FFDF80; --t-c: #FEFF7F; --t-d: #BFFE7F;
   --c1: #8A94A3; --c2: #34d399; --c3: #60a5fa; --c4: #c084fc; --c5: #fbbf24;
   --sans: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
   --display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
@@ -153,11 +155,12 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
 .unit.core .ic.champ { outline: 2px solid var(--primary-soft); outline-offset: 2px; }
 .comp-units, .board { display: flex; flex-wrap: wrap; gap: 14px; }
 
-.tier { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; flex: none; font: 700 16px var(--display); background: var(--surface-4); color: var(--muted); }
-.tier.S { background: var(--mint); color: var(--ink); }
-.tier.A { background: var(--mint-soft); color: var(--mint); box-shadow: inset 0 0 0 1px var(--mint-line); }
-.tier.B { background: var(--surface-4); color: var(--text); }
-.tier.C, .tier.D { background: var(--surface-3); color: var(--faint); }
+.tier { display: inline-grid; place-items: center; width: 34px; height: 36px; border-radius: 6px; flex: none; font: 700 16px var(--display); background: var(--surface-4); color: var(--muted); }
+.tier.S { background: var(--t-s); color: #222; }
+.tier.A { background: var(--t-a); color: #222; }
+.tier.B { background: var(--t-b); color: #222; }
+.tier.C { background: var(--t-c); color: #222; }
+.tier.D { background: var(--t-d); color: #222; }
 
 /* ---------- Cartes ---------- */
 .card { background: var(--surface-2); border: 1px solid var(--outline-2); border-radius: 20px; padding: 24px; }
@@ -176,7 +179,7 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
 .md-list { flex: 0 0 340px; position: sticky; top: 0; max-height: calc(100vh - 210px); overflow: auto; padding: 8px; }
 .md-item { display: flex; align-items: center; gap: 14px; min-height: 72px; padding: 8px 14px; border-radius: 16px; cursor: pointer; transition: background .2s var(--ease); }
 .md-item:hover { background: var(--hover); }
-.md-item.on { background: var(--mint-soft); box-shadow: inset 3px 0 0 var(--mint); }
+.md-item.on { background: var(--surface-4); }
 .md-item .nm { flex: 1; min-width: 0; }
 .md-item .nm b { display: block; font-size: 15px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .md-item .nm small { display: block; font-size: 13px; color: var(--faint); }
@@ -537,3 +540,22 @@ body.no-motion *, body.no-motion *::before, body.no-motion *::after { animation-
 .about-txt > span { color: var(--muted); font-size: 14px; }
 .about-txt small { color: var(--faint); font-size: 12px; line-height: 1.5; max-width: 520px; }
 .tier.sm { border-radius: 6px; }
+
+/* ---------- Tiers et badges de compo (façon MetaTFT) ---------- */
+.md-item { border-left: 4px solid transparent; border-radius: 6px 14px 14px 6px; }
+.md-item.t-S { border-left-color: var(--t-s); } .md-item.t-A { border-left-color: var(--t-a); } .md-item.t-B { border-left-color: var(--t-b); }
+.md-item.t-C { border-left-color: var(--t-c); } .md-item.t-D { border-left-color: var(--t-d); }
+.md-item .nm .ctags { margin-top: 4px; }
+.tier.tag-size { width: 28px; height: 28px; font-size: 15px; border-radius: 6px; }
+.ctags { display: flex; flex-wrap: wrap; gap: 4px; }
+.ctag { display: inline-flex; align-items: center; gap: 3px; height: 22px; padding: 0 7px 0 5px; border-radius: 8px; border: 1px solid #A5A5A5; background: rgba(165, 165, 165, .12); color: #A5A5A5; font-size: 12px; font-weight: 500; white-space: nowrap; }
+.badges .ctag { height: 28px; padding: 0 10px 0 7px; font-size: 13px; }
+.ctag:not(:has(svg)) { padding-left: 7px; }
+.badges .ctag:not(:has(svg)) { padding-left: 10px; }
+.ctag svg { width: 14px; height: 14px; stroke-width: 2; }
+.badges .ctag svg { width: 16px; height: 16px; }
+.ctag.boost { border-color: #1999BC; background: rgba(25, 153, 188, .12); color: #3DB8DA; }
+.ctag.reroll { border-color: #978956; background: rgba(151, 137, 86, .12); color: #C2B27A; }
+.ctag.easy { border-color: #579E56; background: rgba(87, 158, 86, .12); color: #7CC47A; }
+.ctag.medium { border-color: #B9623C; background: rgba(153, 80, 49, .12); color: #DB8358; }
+.ctag.hard { border-color: #B5595C; background: rgba(181, 89, 92, .12); color: #E07C80; }

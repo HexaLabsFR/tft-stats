@@ -134,6 +134,20 @@ const frDate = (d) => (d ? new Date(`${d}T12:00:00Z`).toLocaleDateString('fr-FR'
 const compTitle = (c) => label(trait(c.main));
 const compName = (c) => `${label(trait(c.main))} · ${label(champ(c.carry))}`;
 const DIFF = { lvl8: 'Facile', reroll: 'Moyen', fast9: 'Difficile' };
+const DIFF_CLS = { Facile: 'easy', Moyen: 'medium', Difficile: 'hard' };
+// Badges de style de jeu (façon MetaTFT) : icône au trait + libellé court
+const STYLE_ICON = {
+  boost: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 16.5v-9M8 11.5l4-4 4 4"/></svg>',
+  reroll: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 12a7.5 7.5 0 0 1-12.8 5.3M4.5 12A7.5 7.5 0 0 1 17.3 6.7"/><path d="M17.5 3.5v3.4h-3.4M6.5 20.5v-3.4h3.4"/></svg>'
+};
+function styleTag(t) {
+  const kind = t.id === 'reroll' ? 'reroll' : 'boost';
+  const text = t.id === 'fast9' ? 'Fast 9' : t.id === 'lvl8' ? 'Niveau 8' : t.label;
+  const help = { fast9: 'Monte vite au niveau 9 pour jouer les unités 5 PO.', lvl8: 'Monte niveau 8 vers 4-1 / 4-2, puis roll pour le carry.', reroll: 'Reste à bas niveau et roll pour passer le carry 3★.' }[t.id];
+  return `<span class="ctag ${kind}" data-tip="help" data-title="${esc(t.label)}" data-desc="${esc(help)}">${STYLE_ICON[kind]}${esc(text)}</span>`;
+}
+const diffTag = (d) => `<span class="ctag ${DIFF_CLS[d] || ''}">${esc(d)}</span>`;
+const tierBadge = (t, size = '') => `<span class="tier ${size} ${t}">${t}</span>`;
 
 const img = (src, alt) => (src ? `<img src="${esc(src)}" alt="" loading="lazy" data-fallback="${esc(initials(alt))}">` : esc(initials(alt)));
 function champIcon(id, size = '') {
@@ -402,9 +416,9 @@ function viewMeta() {
   const list = `<aside class="card low md-list" aria-label="Compos">
     ${comps.map((x) => {
       const t = compType(x, champ(x.carry).cost || 4);
-      return `<a class="md-item ${x.id === c.id ? 'on' : ''}" data-sel="${esc(x.id)}">
-        <span class="tier ${x.tier}">${x.tier}</span>
-        <span class="nm"><b>${esc(compTitle(x))} · ${esc(champ(x.carry).name)}</b><small>${esc(t.label)} · ${DIFF[t.id]}</small></span>
+      return `<a class="md-item t-${x.tier} ${x.id === c.id ? 'on' : ''}" data-sel="${esc(x.id)}">
+        ${tierBadge(x.tier)}
+        <span class="nm"><b>${esc(compTitle(x))} · ${esc(champ(x.carry).name)}</b><span class="ctags">${styleTag(t)}${diffTag(DIFF[t.id])}</span></span>
         <span class="v" data-tip="help" data-title="Top 4" data-desc="${esc(HELP.top4)}">${pct(x.top4)}</span>
       </a>`;
     }).join('')}
@@ -417,11 +431,10 @@ function viewMeta() {
 function fiche(c) {
   const g = guideOf(c);
   const stars = Object.fromEntries(c.units.map((u) => [u.id, Math.round(u.star || 1)]));
-  const diffClass = { Facile: 'green', Moyen: 'cyan', Difficile: '' }[g.difficulty];
   let out = `
   <div class="fiche-head">
     <div>
-      <div class="badges"><span class="pill grad">Tier ${c.tier}</span><span class="pill">${esc(g.type.label)}</span><span class="pill ${diffClass}">${g.difficulty}</span>${keyRounds(g.plan) ? `<span class="pill" data-tip="help" data-title="Moment clé" data-desc="Manche où tu dépenses ton or pour trouver ton carry. Détails dans le plan de niveaux du guide complet.">Roll à ${keyRounds(g.plan)}</span>` : ''}</div>
+      <div class="badges">${tierBadge(c.tier, 'tag-size')}${styleTag(g.type)}${diffTag(g.difficulty)}${keyRounds(g.plan) ? `<span class="pill" data-tip="help" data-title="Moment clé" data-desc="Manche où tu dépenses ton or pour trouver ton carry. Détails dans le plan de niveaux du guide complet.">Roll à ${keyRounds(g.plan)}</span>` : ''}</div>
       <h1 class="h1">${esc(compTitle(c))}</h1>
       <p class="lede" style="margin-top:8px">${esc(g.pitch)}</p>
     </div>
@@ -535,7 +548,7 @@ function viewGuide() {
   <div class="card">
     <div class="fiche-head">
       <div>
-        <div class="badges"><span class="pill grad">Guide complet</span><span class="pill">${esc(g.type.label)}</span><span class="pill">${g.difficulty}</span></div>
+        <div class="badges">${tierBadge(c.tier, 'tag-size')}<span class="pill">Guide complet</span>${styleTag(g.type)}${diffTag(g.difficulty)}</div>
         <h1 class="h1">${esc(compName(c))}</h1>
         <p class="lede" style="margin-top:8px">${esc(g.pitch)}</p>
       </div>
@@ -1338,7 +1351,7 @@ function learnOpeners() {
     <h2 class="title" style="margin-top:24px">Débuts de partie des meilleures compos</h2>
     <div class="cond-list">${top.map((c) => {
       const gg = guideOf(c);
-      return `<div class="cond-row"><div class="name-cell"><span class="tier sm ${c.tier}">${c.tier}</span><div><b>${esc(compTitle(c))} · ${esc(champ(c.carry).name)}</b><div class="small">${esc(gg.type.label)}</div></div></div>
+      return `<div class="cond-row"><div class="name-cell"><span class="tier sm ${c.tier}">${c.tier}</span><div><b>${esc(compTitle(c))} · ${esc(champ(c.carry).name)}</b><div class="ctags">${styleTag(gg.type)}</div></div></div>
         <div class="opener"><div class="icons">${gg.early.map((id) => champIcon(id, 'sm')).join('')}</div><span class="small">Composants :</span><div class="icons">${gg.components.map((id) => itemIcon(id)).join('')}</div><button class="btn text sm" data-guide="${esc(c.id)}">Guide ${ICON.chevron}</button></div></div>`;
     }).join('')}</div>`;
 }
