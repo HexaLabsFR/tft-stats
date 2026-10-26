@@ -1,0 +1,87 @@
+Version : 16.21.8298620+branch.releases-16-21.content.release · set 18 «  »
+Coût 1 : 14 · Caillou, Rougelin, Xayah, Ornn, Rek'Sai, Veigar, Yorick, Rakan, Kobuko, Akali, Varus, Leona, Karma, Camille
+Coût 2 : 13 · Gromp, Lycan, Carapateur, Yunara, Elise, Caitlyn, Teemo, Kayle, Sejuani, Alistar, LeBlanc, Shen, Warwick
+Coût 3 : 14 · Krug, Hecarim, Azir, Cassiopeia, Rammus, Tristana, Vi, Diana, Kha'Zix, Rengar, Kog'Maw, Fiddlesticks, Maître Yi, Maman Raptor
+Coût 4 : 14 · Sentinelle, Roncier, Nidalee, Ezreal, Malphite, Sett, Ahri, Morgana, Lillia, Sivir, Amumu, Aphelios, Zyra, Soraka
+Coût 5 : 19 · Maokai, Ashe, Gnar, Kennen, Alune, Taric, Ivern, Lux, Draven, Dragon ancestral, Lux (Ronce-obscure), Lux (Fleur spirituelle), Lux (Assemblée), Lux (Sylvestre), Lux (Fæ), Lux (Infernal), Lux (Lunaire), Lux (Primitif), Lux (Solaire)
+Synergies : 36 · objets : 1747 · augments : 401
+Champions de boutique par coût : 14 / 13 / 14 / 14 / 10 · formes alternatives : Lux (Ronce-obscure), Lux (Fleur spirituelle), Lux (Assemblée), Lux (Sylvestre), Lux (Fæ), Lux (Infernal), Lux (Lunaire), Lux (Primitif), Lux (Solaire)
+Chances en boutique : à jour (set 18, 2026-10-26)
+Exemple de sort (Caillou) : Consomme X de mana max par seconde pour canaliser un rayon sur la cible. Chaque seconde pendant l'incantation, elle inflige X pts de dégâts magiques à la cible et réduit sa résistance magique de X.  Buff turquoise: elle gagne X de régénération de mana toutes les X sec de canalisation.
+Extrait écrit : 0.9 Mo
+
+--- DA_18_Sentry ---
+{
+ "stats": {
+  "armor": 25,
+  "attackSpeed": 0.800000011920929,
+  "critChance": 0.25,
+  "critMultiplier": 1.399999976158142,
+  "damage": 35,
+  "hp": 500,
+  "initialMana": 30,
+  "magicResist": 25,
+  "mana": 70,
+  "range": 4
+ },
+ "ability": {
+  "desc": "Consomme @PercentManaPerSecond@ de mana max par seconde pour canaliser un rayon sur la cible. Chaque seconde pendant l'incantation, elle inflige @MagicDamageCalc1@ %i:scaleAP% pts de dégâts magiques à la cible et réduit sa résistance magique de @MRReduction@.\r\\n\r\\nBuff turquoise : elle gagne @TraitManaRegenTooltip@ de régénération de mana toutes les @TraitChannelSecondsTooltip@ sec de canalisation.",
+  "icon": "None",
+  "name": "Laser azur",
+  "variables": []
+ },
+ "role": null
+}
+
+--- DA_Krug18 ---
+{
+ "stats": {
+  "armor": 40,
+  "attackSpeed": 0.6000000238418579,
+  "critChance": 0.25,
+  "critMultiplier": 1.399999976158142,
+  "damage": 55,
+  "hp": 1100,
+  "initialMana": 80,
+  "magicResist": 40,
+  "mana": 135,
+  "range": 1
+ },
+ "ability": {
+  "desc": "<Bright>Passive :</Bright> à sa mort, le Krug se divise en deux Krugos ayant @HealthCalc1@ %i:scaleHealth% PV qui provoquent immédiatement les ennemis pour les forcer à les attaquer.\r\\n\r\\n<Bright>Active :</Bright> le Krug gagne @HealthCalc2@ %i:scaleAP% PV max, puis roule vers la cible, infligeant @PhysicalDamageCalc1@ %i:scaleAD%%i:scaleHealth% pts de dégâts.\r\\n\r\\nBuff ardoise : à sa mort, le Krug et les Krugos confèrent un bouclier aux alliés de @TraitShieldHealth@ des PV max.",
+  "icon": "None",
+  "name": "Rock and Roll",
+  "variables": []
+ },
+ "role": null
+}
+
+--- DA_18_Maokai ---
+{
+ "stats": {
+  "armor": 60,
+  "attackSpeed": 0.6499999761581421,
+  "critChance": 0.25,
+  "critMultiplier": 1.399999976158142,
+  "damage": 80,
+  "hp": 1150,
+  "initialMana": 30,
+  "magicResist": 60,
+  "mana": 100,
+  "range": 1
+ },
+ "ability": {
+  "desc": "<Bright>Passive :</Bright> après avoir bloqué @DamageMitigatedPerSapling@ pts de dégâts, un arbrisseau jaillit vers un ennemi proche et lui inflige @MagicDamageCalc1@ %i:scaleHealth% pts de dégâts magiques. Lorsque Maokai meurt, @SaplingsOnDeath@ arbrisseaux jaillissent.\r\\n\r\\n<Bright>Active :</Bright> Maokai inflige @MagicDamageCalc2@ %i:scaleHealth% pts de dégâts magiques à sa cible et récupère @HealthCalc1@ %i:scaleAP% + @ActiveMissingHealthHeal@ de ses PV manquants.",
+  "icon": "None",
+  "name": "Arbrisseaux",
+  "variables": []
+ },
+ "role": null
+}
+
+Clés d'un champion : ability, apiName, characterName, cost, icon, name, role, squareIcon, stats, tileIcon, traits
+Icône champion : 200 · https://raw.communitydragon.org/latest/game/assets/characters/tft18_gromp/skins/base/images/t_18_gromp_teamplannersplash.png
+Icône synergie : 200 · https://raw.communitydragon.org/latest/game/assets/ux/traiticons/trait_icon_18_elderwood.png
+Icône objet : 200 · https://raw.communitydragon.org/latest/game/assets/maps/tft/icons/augments/hexcore/innovatorsoul1.png
+Icône augment : 200 · https://raw.communitydragon.org/latest/game/assets/maps/tft/icons/augments/hexcore/ultrarapidfire_ii.png
+Portraits manquants : aucun
