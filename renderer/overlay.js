@@ -156,7 +156,21 @@ function viewAugs() {
     ${list.map((a) => `<div class="ov-recipe" style="grid-template-columns:26px 1fr">${augIcon(a.apiName)}<span>${esc(label(a))}</span></div>`).join('')}`;
 }
 
-const VIEWS = { guide: viewGuide, levels: viewLevels, items: viewItems, augs: viewAugs };
+// Version Overwolf privée : compos recommandées d'après ton plateau (calculées par la fenêtre principale).
+function viewReco() {
+  const r = S.reco;
+  if (!r || !r.comps?.length) {
+    return `<div class="ov-empty">${S.live?.inGame ? 'En attente de ton plateau…<br>Les compos recommandées apparaissent dès que tu as quelques unités ou objets.' : 'Les recommandations apparaissent pendant la partie, d’après ton plateau et tes objets.'}</div>`;
+  }
+  return `${r.stage ? `<p class="ov-note">Manche ${esc(r.stage)} · d’après ton plateau, ton banc et tes objets</p>` : ''}
+    ${r.comps.map((c, i) => `<div class="ov-reco ${c.id === S.ov?.compId ? 'on' : ''}">
+      <div class="ov-reco-head"><span class="tier ${esc(c.tier)}">${esc(c.tier)}</span><div class="grow"><b>${i + 1}. ${esc(c.title)} · ${esc(c.carry)}</b><div class="sub">${String(c.top4).replace('.', ',')} % top 4 · ${String(c.pts).replace('.', ',')} pts</div></div></div>
+      ${c.why ? `<p class="ov-note">${esc(c.why)}</p>` : ''}
+      <button class="ov-follow" data-follow="${esc(c.id)}">${c.id === S.ov?.compId ? '✓ Compo suivie' : 'Suivre cette compo'}</button>
+    </div>`).join('')}`;
+}
+
+const VIEWS = { reco: viewReco, guide: viewGuide, levels: viewLevels, items: viewItems, augs: viewAugs };
 
 function render() {
   const data = bracketData();
@@ -175,7 +189,7 @@ function render() {
   }
   $('#ov-dot').classList.toggle('on', Boolean(S.ov?.inGame));
   $('#ov-title').textContent = S.ov?.inGame ? 'En partie · Mode partie' : 'Mode partie';
-  $('#ov-foot').textContent = `${S.ov?.shortcut ? `${S.ov.shortcut} pour afficher / masquer · ` : ''}Données statiques uniquement (règles Riot)`;
+  $('#ov-foot').textContent = `${S.ov?.shortcut ? `${S.ov.shortcut} pour afficher / masquer · ` : ''}${S.live?.available ? 'Version Overwolf privée · plateau lu en direct' : 'Données statiques uniquement (règles Riot)'}`;
 }
 
 async function save(patch) {
@@ -195,6 +209,10 @@ $('#ov-pick').addEventListener('change', (e) => {
 $('#ov-tabs').addEventListener('click', (e) => {
   const a = e.target.closest('[data-tab]');
   if (a) save({ tab: a.dataset.tab });
+});
+$('#ov-body').addEventListener('click', (e) => {
+  const f = e.target.closest('[data-follow]');
+  if (f) save({ compId: f.dataset.follow, tab: 'guide' });
 });
 $('#ov-body').addEventListener('change', (e) => {
   const key = e.target.dataset.check;
@@ -225,6 +243,16 @@ api.on('meta', (m) => {
   renderPick();
   render();
 });
+api.on('reco', (r) => {
+  S.reco = r;
+  if (S.ov?.tab === 'reco') render();
+});
+api.on('board', (b) => {
+  const was = Boolean(S.live?.available);
+  S.live = b;
+  if (!was && b?.available) document.getElementById('ov-reco-tab')?.classList.remove('hidden');
+  if (S.ov?.tab === 'reco') render();
+});
 api.on('static', (d) => {
   S.static = d;
   render();
@@ -235,6 +263,15 @@ api.on('content', (d) => {
 });
 // Version web : synchronisation avec l'onglet principal.
 window.addEventListener('storage', async (e) => {
+  if (e.key === 'reco') {
+    try {
+      S.reco = JSON.parse(e.newValue || 'null');
+    } catch {
+      S.reco = null;
+    }
+    if (S.ov?.tab === 'reco') render();
+    return;
+  }
   if (e.key !== 'overlay') return;
   S.ov = { ...S.ov, ...(await api.overlayGet()) };
   renderPick();
@@ -243,6 +280,11 @@ window.addEventListener('storage', async (e) => {
 
 (async function boot() {
   [S.static, S.meta, S.app, S.ov, S.content] = await Promise.all([api.static(), api.meta(), api.state(), api.overlayGet(), api.content().catch(() => null)]);
+  S.live = await api.liveBoard().catch(() => null);
+  if (S.live?.available) document.getElementById('ov-reco-tab')?.classList.remove('hidden');
+  try {
+    S.reco = isDesktop ? null : JSON.parse(localStorage.getItem('reco') || 'null');
+  } catch { /* stockage indisponible */ }
   renderPick();
   render();
 })();

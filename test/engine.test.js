@@ -122,6 +122,17 @@ const { parseLimitHeader } = require('../core/riot');
   const { gameMode } = require('../core/live-client');
   assert.strictEqual(await gameMode(), null);
 
+  // Version Overwolf privée : lecture du plateau (format Overwolf GEP)
+  const { applyUpdate } = require('../core/live-board');
+  const lb = { summoner: 'ZayKo', units: [], bench: [], benchItems: [] };
+  applyUpdate(lb, { feature: 'board', key: 'board_pieces', value: JSON.stringify({ cell_1: { name: 'DA_18_Varus', level: '2', item_1: 'TFT_Item_InfinityEdge', item_2: '', item_3: '' } }) });
+  applyUpdate(lb, { feature: 'bench', key: 'item_bench', value: JSON.stringify([{ summoner: 'Autre', bench_items: [{ name: 'TFT_Item_BFSword', count: 3 }] }, { summoner: 'ZayKo', bench_items: [{ name: 'TFT_Item_RecurveBow', count: 2 }] }]) });
+  applyUpdate(lb, { feature: 'me', key: 'xp', value: '{"level":6,"current_xp":2,"xp_max":20}' });
+  assert.deepStrictEqual(lb.units, [{ id: 'DA_18_Varus', star: 2, items: ['TFT_Item_InfinityEdge'] }]);
+  assert.deepStrictEqual(lb.benchItems, ['TFT_Item_RecurveBow', 'TFT_Item_RecurveBow'], 'seulement les objets du joueur');
+  assert.strictEqual(lb.level, 6);
+  assert.strictEqual(applyUpdate(lb, { feature: 'augments', key: 'me', value: '{}' }), false, 'augments ignorés');
+
   // Contenu éditorial et conditions
   const ct = engine.getContent();
   assert.ok(ct.guides.comps.length >= 30 && ct.guides.guides.length >= 8 && ct.glossary.terms.length >= 40, 'guides et glossaire');

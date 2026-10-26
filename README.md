@@ -25,6 +25,20 @@ La recommandation (Recos) se verrouille dès qu'une partie TFT est détectée, d
 
 Le mode partie n'affiche que des informations choisies avant la partie (guide, plan de niveaux, recettes, stats d'augments), ce que la politique développeur Riot pour TFT autorise. Il ne lit ni ta boutique, ni ton plateau, ni ton or, ni ta série, ni les adversaires : la seule information lue est « une partie TFT est en cours », via l'API officielle du client de jeu. Le plan de niveaux affiche donc les trois séries côte à côte. Pour que la fenêtre reste visible, règle TFT en **Plein écran fenêtré** (ou Fenêtré).
 
+## Version Overwolf privée (usage personnel)
+
+Lit ton plateau, ton banc, tes objets, ton or et ton niveau pendant la partie grâce à Overwolf (Game Events), et affiche les compos recommandées dans Recos et dans l'onglet **Reco** du mode partie (bouton « Suivre cette compo »). Jamais les augments (interdit par Overwolf), jamais les adversaires.
+
+| Étape | Détail |
+|---|---|
+| 1 | Compte développeur Overwolf approuvé (proposition d'app « Private » sur https://dev.overwolf.com/app-idea-form) |
+| 2 | Developer Key générée dans le profil dev.overwolf.com |
+| 3 | `git clone https://github.com/HexaLabsFR/tft-stats`, puis double-clic sur `lancer-overwolf.bat` (demande la clé la première fois, la garde dans `overwolf-key.txt`, jamais envoyé sur GitHub) |
+
+Le mode développeur Overwolf ne fonctionne qu'en lançant l'app depuis le code (pas depuis l'installeur) : le lanceur récupère la dernière version à chaque démarrage. Les deux versions partagent les mêmes données (clé Riot, parties, réglages). Pour tester l'interface sans Overwolf : `npm run start:demo-board` ou `npm run web:demo-board` (plateau simulé).
+
+La version normale d'HexaRise ne lit pas la partie et verrouille Recos pendant une partie (règles Riot).
+
 ## Ce qui se met à jour tout seul
 
 | Quoi | Source | Fréquence |
