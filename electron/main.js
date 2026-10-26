@@ -50,6 +50,19 @@ function send(event, data) {
   overlay?.send(event, data);
 }
 
+/** Première fermeture : on explique que HexaRise reste près de l'horloge (une seule fois). */
+function trayHintOnce() {
+  try {
+    const file = path.join(app.getPath('userData'), 'tray-hint.json');
+    if (fs.existsSync(file)) return;
+    fs.writeFileSync(file, JSON.stringify({ shown: Date.now() }));
+    tray?.displayBalloon?.({
+      title: 'HexaRise reste ouvert',
+      content: 'HexaRise continue près de l’horloge pour ouvrir le mode partie. Pour quitter : clic droit sur l’icône › Quitter, ou change le réglage « Fermer la fenêtre ».'
+    });
+  } catch { /* sans gravité */ }
+}
+
 // ---------- Fenêtre de démarrage (charte Hexa Labs : 800 × 500, signature « par Hexa Labs ») ----------
 let splash = null;
 const SPLASH_MIN_MS = 1600;
@@ -127,10 +140,16 @@ function createWindow() {
 
   // Fermer = réduire dans la zone de notification : la collecte live continue.
   win.on('close', (e) => {
-    if (!quitting) {
-      e.preventDefault();
-      win.hide();
+    if (quitting) return;
+    // Réglage « Fermer la fenêtre » : quitter vraiment l'app (les mises à jour s'installent à ce moment-là).
+    if (engine?.settings?.closeAction === 'quit') {
+      quitting = true;
+      app.quit();
+      return;
     }
+    e.preventDefault();
+    win.hide();
+    trayHintOnce();
   });
 }
 

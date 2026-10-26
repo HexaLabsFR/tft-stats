@@ -40,7 +40,9 @@ const DEFAULT_SETTINGS = {
   autoStart: true,
   // auto : données Hexa Labs si elles sont publiées et récentes, sinon collecte avec ta clé Riot
   // hexalabs : uniquement les données Hexa Labs · perso : uniquement ta clé Riot
-  dataSource: 'auto'
+  dataSource: 'auto',
+  // Bouton fermer de la fenêtre : tray = reste près de l'horloge (mode partie automatique), quit = quitte l'app
+  closeAction: 'tray'
 };
 const DATA_SOURCES = ['auto', 'hexalabs', 'perso'];
 
@@ -190,6 +192,7 @@ class Engine extends EventEmitter {
     next.refreshMinutes = clamp(Number(next.refreshMinutes) || 30, 5, 720);
     if (!PLATFORMS[next.platform]) next.platform = DEFAULT_SETTINGS.platform;
     if (!DATA_SOURCES.includes(next.dataSource)) next.dataSource = 'auto';
+    if (!['tray', 'quit'].includes(next.closeAction)) next.closeAction = 'tray';
     next.tiers = (next.tiers || []).filter((t) => ['challenger', 'grandmaster', 'master'].includes(t));
     if (!next.tiers.length) next.tiers = ['challenger'];
 

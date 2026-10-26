@@ -288,6 +288,64 @@ function promptKeyIfRefused(st) {
   if (msg) msg.innerHTML = `<span class="bad">${esc(st.message)}</span>`;
 }
 
+// ===================== Premier lancement =====================
+const ONB_STEPS = 4;
+let onbStep = 0;
+function openOnboarding(step = 0) {
+  onbStep = step;
+  remember('onboarded', '1');
+  renderOnboarding();
+}
+function renderOnboarding() {
+  const st = S.app?.settings || {};
+  const dots = Array.from({ length: ONB_STEPS }, (_, i) => `<i class="${i === onbStep ? 'on' : ''}"></i>`).join('');
+  const brackets = [['all', 'Tous les rangs'], ...(S.app?.brackets || []).map((b) => [b.id, b.label])];
+  const bodies = [
+    `<div class="onb-hero"><img src="logo.svg" alt=""><div><b>HexaRise</b><span>Ton compagnon TFT pour monter de Bronze à Diamant.</span></div></div>
+     <ul class="onb-list">
+       <li><b>Compos</b> : les meilleures compos de ton rang, calculées sur de vraies parties classées.</li>
+       <li><b>Guide complet</b> : quoi faire à chaque étape, objets, niveaux et placement.</li>
+       <li><b>Mode partie</b> : ton guide dans une petite fenêtre au-dessus du jeu.</li>
+     </ul>
+     <div class="hl-sign sm"><img src="brand/hexalabs-symbole-simple.svg" alt=""><span>par <b>Hexa Labs</b></span></div>`,
+    `<p class="onb-p">Les compos changent selon le niveau des joueurs : choisis ton rang actuel.</p>
+     <div class="chips">${brackets.map(([id, l]) => `<button class="chip ${S.f.bracket === id ? 'on' : ''}" data-onb-bracket="${esc(id)}">${S.f.bracket === id ? '✓ ' : ''}${esc(l)}</button>`).join('')}</div>
+     <p class="onb-p" style="margin-top:18px">Ton serveur :</p>
+     <div class="chips">${(S.app?.platforms || []).map((pl) => `<button class="chip ${st.platform === pl.id ? 'on' : ''}" data-onb-platform="${esc(pl.id)}">${st.platform === pl.id ? '✓ ' : ''}${esc(pl.label)}</button>`).join('')}</div>`,
+    hexaData()
+      ? `<p class="onb-p"><b>Rien à faire.</b> Les statistiques viennent des serveurs Hexa Labs et se mettent à jour toutes seules, sans clé Riot.</p>`
+      : S.app?.hasKey
+        ? `<p class="onb-p"><b>Ta clé Riot est enregistrée.</b> Une clé de développement expire après 24 h : si les stats ne se mettent plus à jour, régénère-la sur developer.riotgames.com et colle-la dans Réglages.</p>`
+        : `<p class="onb-p">Pour l’instant, HexaRise a besoin d’une <b>clé Riot</b> pour analyser les parties de ton rang :</p>
+           <ol class="onb-list onb-num"><li>Va sur <b>developer.riotgames.com</b> et connecte-toi avec ton compte Riot.</li><li>Copie la <b>Development API Key</b> avec l’icône de copie.</li><li>Colle-la à l’étape suivante.</li></ol>
+           <p class="onb-p small">Cette clé expire après 24 h. Hexa Labs prépare un serveur pour que plus personne n’ait besoin de clé.</p>`,
+    `<ol class="onb-list onb-num">
+       <li><b>Avant la partie</b> : choisis une compo dans <b>Compos</b> (ou dans <b>Ligne</b> selon tes objets), puis ouvre son <b>Guide complet</b>.</li>
+       <li><b>Pendant la partie</b> : ${isDesktop ? `le mode partie s’ouvre au-dessus du jeu (<b>${esc(S.overlay?.shortcut || 'Alt+G')}</b> pour l’afficher ou le masquer)` : 'garde le guide ouvert à côté du jeu'}, et coche les étapes.</li>
+       <li><b>Après la partie</b> : regarde ton historique dans <b>Profil</b>.</li>
+     </ol>
+     ${isDesktop ? `<p class="onb-p" style="margin-top:14px">Quand tu fermes la fenêtre :</p>
+     <div class="onb-radios">
+       <button class="radio-row" role="radio" aria-checked="${st.closeAction !== 'quit'}" data-onb-close="tray"><span class="radio ${st.closeAction !== 'quit' ? 'on' : ''}"><i></i></span>Garder HexaRise près de l’horloge (le mode partie s’ouvre tout seul)</button>
+       <button class="radio-row" role="radio" aria-checked="${st.closeAction === 'quit'}" data-onb-close="quit"><span class="radio ${st.closeAction === 'quit' ? 'on' : ''}"><i></i></span>Quitter HexaRise</button>
+     </div>` : ''}`
+  ];
+  const titles = ['Bienvenue', 'Ton rang', 'Les statistiques', 'Comment t’en servir'];
+  const last = onbStep === ONB_STEPS - 1;
+  openDialog({
+    title: titles[onbStep],
+    body: `<div class="onb">${bodies[onbStep]}</div><div class="onb-dots" aria-hidden="true">${dots}</div>`,
+    actions: `<button class="btn text" data-onb="skip" style="margin-right:auto">Passer</button>
+      ${onbStep ? '<button class="btn text" data-onb="back">Retour</button>' : ''}
+      <button class="btn filled" data-onb="${last ? 'done' : 'next'}">${last ? 'C’est parti' : 'Suivant'}</button>`
+  });
+  layer.querySelector('.dialog')?.classList.add('wide');
+}
+function finishOnboarding() {
+  closeLayer();
+  if (!S.app?.hasKey && !hexaData()) setTimeout(openKeyDialog, 300);
+}
+
 function openKeyDialog() {
   openDialog({
     title: 'Clé API Riot',
@@ -1641,6 +1699,7 @@ function viewSettings() {
     <h2 class="set-section">Mode partie et affichage</h2>
     ${isDesktop ? setRow({ tile: 'orange', icon: 'window', title: 'Ouverture automatique', sub: 'Afficher le mode partie au lancement d’une partie TFT', trail: sw(ov.autoOpen), attrs: 'data-toggle-set="autoOpen"', role: `role="switch" aria-checked="${ov.autoOpen ? 'true' : 'false'}"` }) : ''}
     ${setRow({ tile: 'pink', icon: 'keyboard', title: 'Raccourci du mode partie', sub: 'Afficher ou masquer la fenêtre, même en jeu', trail: `<span class="kbd">${esc(ov.shortcut || 'Alt+G')}</span>`, attrs: 'data-action="overlay-open"' })}
+    ${isDesktop ? setRow({ tile: 'gray', icon: 'window', title: 'Fermer la fenêtre', sub: (S.app?.settings?.closeAction === 'quit') ? 'Quitte HexaRise' : 'Garde HexaRise près de l’horloge (mode partie automatique)', trail: ICON.down, attrs: 'data-menu-open="close-action"' }) : ''}
     ${setRow({ tile: 'indigo', icon: 'expert', title: 'Mode Expert', sub: 'Plus de statistiques dans les fiches et les tableaux', trail: sw(expert()), attrs: 'data-toggle-set="expert"', role: `role="switch" aria-checked="${expert()}"` })}
     ${setRow({ tile: 'gray', icon: 'motion', title: 'Réduire les animations', sub: 'Transitions instantanées', trail: sw(S.reduceMotion), attrs: 'data-toggle-set="motion"', role: `role="switch" aria-checked="${S.reduceMotion}"` })}
 
@@ -1648,6 +1707,7 @@ function viewSettings() {
     ${setRow({ tile: 'gray', icon: 'info', title: 'Version', sub: `${info.version || '—'}${isDesktop ? '' : ' (version web)'} · données du set ${S.static?.setNumber ?? '—'}, patch ${S.static?.version ?? '—'}`, trail: '', attrs: 'tabindex="-1"', cls: 'static' })}
     ${isDesktop ? setRow({ tile: 'blue', icon: 'update', title: 'Mises à jour', sub: S.update?.message || 'Vérification au démarrage puis toutes les 4 h', trail: S.update?.state === 'downloaded' ? '<span class="pill grad">Redémarrer</span>' : '', attrs: `data-action="${S.update?.state === 'downloaded' ? 'install-update' : 'check-update'}"` }) : ''}
     ${setRow({ tile: 'gray', icon: 'data', title: 'Parties en base', sub: `${int(S.app?.storedMatches)} parties enregistrées sur ce PC`, trail: '', attrs: 'tabindex="-1"', cls: 'static' })}
+    ${setRow({ tile: 'gray', icon: 'play', title: 'Revoir la présentation', sub: 'Les 4 écrans du premier lancement', attrs: 'data-action="onboarding"' })}
     ${setRow({ tile: 'gray', icon: 'list', title: 'Journal', sub: 'Historique de la collecte et des erreurs', attrs: 'data-subpage="journal"' })}
 
     <h2 class="set-section">À propos</h2>
@@ -1801,6 +1861,30 @@ document.addEventListener('click', async (e) => {
     closeLayer();
     return pick(it.value);
   }
+  const onb = t.closest('[data-onb]');
+  if (onb) {
+    const a = onb.dataset.onb;
+    if (a === 'next') { onbStep = Math.min(ONB_STEPS - 1, onbStep + 1); return renderOnboarding(); }
+    if (a === 'back') { onbStep = Math.max(0, onbStep - 1); return renderOnboarding(); }
+    return finishOnboarding();
+  }
+  const onbB = t.closest('[data-onb-bracket]');
+  if (onbB) {
+    S.f.bracket = onbB.dataset.onbBracket;
+    remember('bracket', S.f.bracket);
+    render();
+    return renderOnboarding();
+  }
+  const onbP = t.closest('[data-onb-platform]');
+  if (onbP) {
+    if (S.app?.settings?.platform !== onbP.dataset.onbPlatform) await saveSettings({ platform: onbP.dataset.onbPlatform }, 'Serveur enregistré');
+    return renderOnboarding();
+  }
+  const onbC = t.closest('[data-onb-close]');
+  if (onbC) {
+    await saveSettings({ closeAction: onbC.dataset.onbClose }, 'Réglage enregistré');
+    return renderOnboarding();
+  }
   if (t.closest('[data-close]')) return closeLayer();
   if (layer.innerHTML && !t.closest('#layer') && !t.closest('[data-menu-open]')) closeLayer();
 
@@ -1848,6 +1932,10 @@ document.addEventListener('click', async (e) => {
         S.f.compSort = v;
         render();
       });
+    }
+    if (kind === 'close-action') {
+      const cur = S.app?.settings?.closeAction === 'quit' ? 'quit' : 'tray';
+      return openMenu(opener, [['tray', 'Garder près de l’horloge'], ['quit', 'Quitter HexaRise']].map(([v, l]) => ({ value: v, label: l, checked: v === cur })), (v) => saveSettings({ closeAction: v }, v === 'quit' ? 'La croix quittera HexaRise' : 'HexaRise restera près de l’horloge'));
     }
     if (kind === 'data-source') {
       const cur = S.app?.settings?.dataSource || 'auto';
@@ -2062,6 +2150,7 @@ document.addEventListener('click', async (e) => {
     render();
   }
   if (action === 'key-dialog') openKeyDialog();
+  if (action === 'onboarding') openOnboarding(0);
   if (action === 'live' && S.player.data) {
     try {
       S.player.live = await api.live(S.player.data.account.puuid, S.player.data.platform);
@@ -2205,6 +2294,7 @@ function hideBoot() {
   renderStatus();
   render('fade');
   hideBoot();
-  if (!S.app?.hasKey && !hexaData() && S.app?.settings?.dataSource === 'perso') setTimeout(openKeyDialog, 400);
+  if (stored('onboarded', '') !== '1') setTimeout(() => openOnboarding(0), 450);
+  else if (!S.app?.hasKey && !hexaData() && S.app?.settings?.dataSource === 'perso') setTimeout(openKeyDialog, 400);
   else setTimeout(() => promptKeyIfRefused(S.app?.status), 400);
 })();

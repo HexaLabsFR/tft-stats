@@ -569,3 +569,20 @@ body.no-motion *, body.no-motion *::before, body.no-motion *::after { animation-
 .empty.lock .lock-ico svg { width: 28px; height: 28px; }
 .ln-best-row .ln-icons { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
 .ln-best-row .ln-icons .ic.champ.sm { width: 26px; height: 26px; }
+
+/* ---------- Présentation de premier lancement ---------- */
+.dialog.wide { width: min(560px, calc(100vw - 32px)); }
+.onb { min-height: 230px; }
+.onb-hero { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; }
+.onb-hero img { width: 64px; height: 64px; flex: none; }
+.onb-hero b { display: block; font: 700 22px var(--display); }
+.onb-hero span { color: var(--muted); }
+.onb-list { margin: 0 0 16px; padding-left: 20px; color: var(--muted); line-height: 1.6; }
+.onb-list li + li { margin-top: 6px; }
+.onb-list b { color: var(--text); }
+.onb-p { margin: 0 0 10px; color: var(--muted); line-height: 1.6; }
+.dialog .onb-p.small { font-size: 13px; color: var(--faint); }
+.onb-radios .radio-row { height: auto; min-height: 48px; padding: 8px 12px; font-size: 14px; }
+.onb-dots { display: flex; justify-content: center; gap: 6px; margin-top: 18px; }
+.onb-dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--outline); }
+.onb-dots i.on { background: var(--mint); width: 18px; border-radius: 4px; }
