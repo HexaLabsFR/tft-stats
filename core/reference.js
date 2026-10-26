@@ -9,7 +9,7 @@ const fs = require('fs');
 const path = require('path');
 const BUILTIN = require('./reference-data.json');
 
-const REMOTE = 'https://raw.githubusercontent.com/ZayKololo/tft-stats/main/core/reference-data.json';
+const REMOTE = 'https://raw.githubusercontent.com/HexaLabsFR/tft-stats/main/core/reference-data.json';
 const REFRESH_MS = 6 * 60 * 60 * 1000;
 
 function valid(d) {

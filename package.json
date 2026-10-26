@@ -1,13 +1,13 @@
 {
   "name": "tft-stats",
   "productName": "HexaRise",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "description": "HexaRise, compagnon TFT : méta par rang, guides étape par étape et mode partie, en français.",
   "author": "Mika",
   "license": "UNLICENSED",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ZayKololo/tft-stats.git"
+    "url": "https://github.com/HexaLabsFR/tft-stats.git"
   },
   "private": true,
   "main": "electron/main.js",
@@ -60,7 +60,7 @@
     "publish": [
       {
         "provider": "github",
-        "owner": "ZayKololo",
+        "owner": "HexaLabsFR",
         "repo": "tft-stats",
         "releaseType": "release"
       }

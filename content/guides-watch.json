@@ -1,51 +1,6 @@
 {
  "checkedAt": "2026-10-26T09:37:30.643Z",
  "fichesUpdated": "2026-10-26",
- "changes": [
-  {
-   "kind": "updated",
-   "id": "bm-openers",
-   "source": "bunnymuffins",
-   "title": "Bien débuter une partie (set 18)",
-   "url": "https://bunnymuffins.lol/openers/",
-   "date": "2026-10-13",
-   "seen": "2026-10-26"
-  },
-  {
-   "kind": "new",
-   "source": "tftacademy",
-   "title": "Compo « embiggen xayah »",
-   "url": "https://tftacademy.com/tierlist/comps/set-18-embiggen-xayah",
-   "date": "2026-10-26",
-   "seen": "2026-10-26"
-  },
-  {
-   "kind": "removed",
-   "id": "ahri-morgana",
-   "source": "tftacademy",
-   "title": "Incantateur · Ahri et Morgana",
-   "url": "https://tftacademy.com/tierlist/comps/set-18-ahri-morgana",
-   "date": "2026-10-26",
-   "seen": "2026-10-26"
-  },
-  {
-   "kind": "removed",
-   "id": "incantateur-nidalee",
-   "source": "tftacademy",
-   "title": "Incantateur · Nidalee",
-   "url": "https://tftacademy.com/tierlist/comps/set-18-adaptor-nidalee",
-   "date": "2026-10-26",
-   "seen": "2026-10-26"
-  },
-  {
-   "kind": "removed",
-   "id": "rengar-initiateur",
-   "source": "tftacademy",
-   "title": "Initiateur · Rengar reroll",
-   "url": "https://tftacademy.com/tierlist/comps/set-18-rengar-rr",
-   "date": "2026-10-26",
-   "seen": "2026-10-26"
-  }
- ],
+ "changes": [],
  "errors": []
 }

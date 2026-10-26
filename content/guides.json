@@ -5,8 +5,20 @@
   "patch": "18.5b",
   "note": "Fiches rédigées par HexaRise : résumés en français avec nos propres mots, pas des traductions. Le guide original reste la référence.",
   "sources": {
-    "bunnymuffins": { "name": "BunnyMuffins", "site": "bunnymuffins.lol", "url": "https://bunnymuffins.lol/guides/", "tierlist": "https://bunnymuffins.lol/meta/", "tierlistModified": "2026-10-23" },
-    "tftacademy": { "name": "TFT Academy", "site": "tftacademy.com", "url": "https://tftacademy.com/tierlist/comps", "tierlist": "https://tftacademy.com/tierlist/comps", "tierlistModified": "2026-10-26" }
+    "bunnymuffins": {
+      "name": "BunnyMuffins",
+      "site": "bunnymuffins.lol",
+      "url": "https://bunnymuffins.lol/guides/",
+      "tierlist": "https://bunnymuffins.lol/meta/",
+      "tierlistModified": "2026-10-23"
+    },
+    "tftacademy": {
+      "name": "TFT Academy",
+      "site": "tftacademy.com",
+      "url": "https://tftacademy.com/tierlist/comps",
+      "tierlist": "https://tftacademy.com/tierlist/comps",
+      "tierlistModified": "2026-10-26"
+    }
   },
   "guides": [
     {
@@ -179,185 +191,1692 @@
     }
   ],
   "videos": [
-    { "id": "bmv-beginner", "source": "bunnymuffins", "title": "Guide vidéo pour débuter", "titleEn": "Beginner Video Guide", "level": "debutant", "url": "https://youtu.be/nXmNrPgCH1k" },
-    { "id": "bmv-start-set", "source": "bunnymuffins", "title": "9 conseils pour grimper en début de set", "titleEn": "9 Tips to Climb at Start of Set", "level": "debutant", "url": "https://youtu.be/mhM2FfrE2hw" },
-    { "id": "bmv-early", "source": "bunnymuffins", "title": "Conseils pour le début de partie", "titleEn": "Early Game Tips", "level": "intermediaire", "url": "https://youtu.be/pkSIMUz3dgA" },
-    { "id": "bmv-reroll", "source": "bunnymuffins", "title": "Conseils pour les compos reroll", "titleEn": "Reroll Tips", "level": "intermediaire", "url": "https://youtu.be/zVncOYZ0nxs" },
-    { "id": "bmv-climb", "source": "bunnymuffins", "title": "9 conseils pour grimper tout de suite", "titleEn": "9 Tips to Instantly Climb", "level": "intermediaire", "url": "https://www.youtube.com/watch?v=etqLKPiAXiE" },
-    { "id": "bmv-playstyles", "source": "bunnymuffins", "title": "5 styles de jeu pour atteindre Diamant", "titleEn": "5 Playstyles to Get to Diamond", "level": "intermediaire", "url": "https://youtu.be/WiDv5qcHnYI" },
-    { "id": "bmv-elo", "source": "bunnymuffins", "title": "Chaque rang expliqué", "titleEn": "Each Elo Explained", "level": "intermediaire", "url": "https://youtu.be/J9cj1GmhbRY" },
-    { "id": "bmv-advanced", "source": "bunnymuffins", "title": "9 conseils avancés pour grimper", "titleEn": "9 Advanced Tips to Climb in TFT", "level": "avance", "url": "https://youtu.be/gohaeokLq1s" },
-    { "id": "bmv-got-good", "source": "bunnymuffins", "title": "Comment je suis devenu bon (vidéo)", "titleEn": "How I Got Good", "level": "avance", "url": "https://youtu.be/YITbqdashQk" },
-    { "id": "bmv-not-improving", "source": "bunnymuffins", "title": "Pourquoi tu ne progresses pas", "titleEn": "Why You're Not Improving in TFT", "level": "avance", "url": "https://youtu.be/CAVW9s3jJKU" },
-    { "id": "bmv-challenger", "source": "bunnymuffins", "title": "Comment je suis arrivé Challenger", "titleEn": "How I Got to Challenger", "level": "avance", "url": "https://youtu.be/TvbmF2s5Gp0" },
-    { "id": "bmv-actually", "source": "bunnymuffins", "title": "Comment vraiment atteindre Challenger", "titleEn": "How to Actually get to Challenger", "level": "avance", "url": "https://www.youtube.com/watch?v=om9oW9AAbJQ" }
+    {
+      "id": "bmv-beginner",
+      "source": "bunnymuffins",
+      "title": "Guide vidéo pour débuter",
+      "titleEn": "Beginner Video Guide",
+      "level": "debutant",
+      "url": "https://youtu.be/nXmNrPgCH1k"
+    },
+    {
+      "id": "bmv-start-set",
+      "source": "bunnymuffins",
+      "title": "9 conseils pour grimper en début de set",
+      "titleEn": "9 Tips to Climb at Start of Set",
+      "level": "debutant",
+      "url": "https://youtu.be/mhM2FfrE2hw"
+    },
+    {
+      "id": "bmv-early",
+      "source": "bunnymuffins",
+      "title": "Conseils pour le début de partie",
+      "titleEn": "Early Game Tips",
+      "level": "intermediaire",
+      "url": "https://youtu.be/pkSIMUz3dgA"
+    },
+    {
+      "id": "bmv-reroll",
+      "source": "bunnymuffins",
+      "title": "Conseils pour les compos reroll",
+      "titleEn": "Reroll Tips",
+      "level": "intermediaire",
+      "url": "https://youtu.be/zVncOYZ0nxs"
+    },
+    {
+      "id": "bmv-climb",
+      "source": "bunnymuffins",
+      "title": "9 conseils pour grimper tout de suite",
+      "titleEn": "9 Tips to Instantly Climb",
+      "level": "intermediaire",
+      "url": "https://www.youtube.com/watch?v=etqLKPiAXiE"
+    },
+    {
+      "id": "bmv-playstyles",
+      "source": "bunnymuffins",
+      "title": "5 styles de jeu pour atteindre Diamant",
+      "titleEn": "5 Playstyles to Get to Diamond",
+      "level": "intermediaire",
+      "url": "https://youtu.be/WiDv5qcHnYI"
+    },
+    {
+      "id": "bmv-elo",
+      "source": "bunnymuffins",
+      "title": "Chaque rang expliqué",
+      "titleEn": "Each Elo Explained",
+      "level": "intermediaire",
+      "url": "https://youtu.be/J9cj1GmhbRY"
+    },
+    {
+      "id": "bmv-advanced",
+      "source": "bunnymuffins",
+      "title": "9 conseils avancés pour grimper",
+      "titleEn": "9 Advanced Tips to Climb in TFT",
+      "level": "avance",
+      "url": "https://youtu.be/gohaeokLq1s"
+    },
+    {
+      "id": "bmv-got-good",
+      "source": "bunnymuffins",
+      "title": "Comment je suis devenu bon (vidéo)",
+      "titleEn": "How I Got Good",
+      "level": "avance",
+      "url": "https://youtu.be/YITbqdashQk"
+    },
+    {
+      "id": "bmv-not-improving",
+      "source": "bunnymuffins",
+      "title": "Pourquoi tu ne progresses pas",
+      "titleEn": "Why You're Not Improving in TFT",
+      "level": "avance",
+      "url": "https://youtu.be/CAVW9s3jJKU"
+    },
+    {
+      "id": "bmv-challenger",
+      "source": "bunnymuffins",
+      "title": "Comment je suis arrivé Challenger",
+      "titleEn": "How I Got to Challenger",
+      "level": "avance",
+      "url": "https://youtu.be/TvbmF2s5Gp0"
+    },
+    {
+      "id": "bmv-actually",
+      "source": "bunnymuffins",
+      "title": "Comment vraiment atteindre Challenger",
+      "titleEn": "How to Actually get to Challenger",
+      "level": "avance",
+      "url": "https://www.youtube.com/watch?v=om9oW9AAbJQ"
+    }
   ],
   "comps": [
     {
-      "id": "draven-9", "name": "Draven niveau 9", "carries": ["Draven"], "units": ["Draven", "Maokai", "Taric", "Kennen", "Gnar", "Ezreal"],
-      "bm": { "tier": "S", "style": "Niveau 8/9 rapide", "url": "https://bunnymuffins.lol/meta/#draven", "tips": ["Draven a besoin de la Lame enragée de Guinsoo, et il faut atteindre le niveau 9 vers 5-2.", "Prends Maokai tôt : il devient plus fort à mesure que la partie avance."] },
-      "ta": { "title": "Draven Ezreal 9", "tier": "S", "trend": "hausse", "style": "Niveau 9 rapide", "difficulty": "Difficile", "url": "https://tftacademy.com/tierlist/comps/set-18-elderwood-executioners-copy", "early": ["Rek'Sai", "Alistar", "Warwick", "Rengar"], "items": ["Guinsoo's Rageblade", "Last Whisper", "Kraken's Fury", "Giant's Belt"], "tips": ["À tenter seulement après une série de victoires en début de partie, avec une bonne réserve d'or.", "Étape 2 : objets sur Draven et série de victoires. Étape 4 : tu peux perdre quelques manches pour économiser, puis niveau 9 en fin d'étape et cherche Draven, Maokai et Ivern."] }
+      "id": "draven-9",
+      "name": "Draven niveau 9",
+      "carries": [
+        "Draven"
+      ],
+      "units": [
+        "Draven",
+        "Maokai",
+        "Taric",
+        "Kennen",
+        "Gnar",
+        "Ezreal"
+      ],
+      "bm": {
+        "tier": "S",
+        "style": "Niveau 8/9 rapide",
+        "url": "https://bunnymuffins.lol/meta/#draven",
+        "tips": [
+          "Draven a besoin de la Lame enragée de Guinsoo, et il faut atteindre le niveau 9 vers 5-2.",
+          "Prends Maokai tôt : il devient plus fort à mesure que la partie avance."
+        ]
+      },
+      "ta": {
+        "title": "Draven Ezreal 9",
+        "tier": "S",
+        "trend": "hausse",
+        "style": "Niveau 9 rapide",
+        "difficulty": "Difficile",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-elderwood-executioners-copy",
+        "early": [
+          "Rek'Sai",
+          "Alistar",
+          "Warwick",
+          "Rengar"
+        ],
+        "items": [
+          "Guinsoo's Rageblade",
+          "Last Whisper",
+          "Kraken's Fury",
+          "Giant's Belt"
+        ],
+        "tips": [
+          "À tenter seulement après une série de victoires en début de partie, avec une bonne réserve d'or.",
+          "Étape 2 : objets sur Draven et série de victoires. Étape 4 : tu peux perdre quelques manches pour économiser, puis niveau 9 en fin d'étape et cherche Draven, Maokai et Ivern."
+        ]
+      }
     },
     {
-      "id": "jungle-roncier", "name": "Jungle · Roncier", "carries": ["Brambleback"], "units": ["Brambleback", "Krug", "Sentinel", "Camille", "Akali", "Elder Dragon"],
-      "bm": { "tier": "S", "style": "Niveau 8/9 rapide", "url": "https://bunnymuffins.lol/meta/#riftbeast-brambleback", "tips": ["Plateau simple : c'est la qualité des objets qui fait la différence.", "Roncier a besoin de la Lame enragée de Guinsoo et du Manteau de la nuit."] },
-      "ta": { "title": "Tempo Riftbeast", "tier": "S", "trend": "nouveau", "style": "Niveau 9 rapide", "difficulty": "Moyen", "url": "https://tftacademy.com/tierlist/comps/set-18-tempo-riftbeast", "early": ["Pebbles", "Yorick", "Scuttlecrab", "Murkwolf"], "items": ["Guinsoo's Rageblade", "Edge of Night", "Giant's Belt", "Sparring Gloves"], "tips": ["Place Roncier du côté le plus faible de l'adversaire pour qu'il enchaîne ses sauts.", "Active 7 Jungle vers 3-5 grâce aux boutiques Jungle gratuites, niveau 8 à l'étape 4, et joue le Dragon ancestral dès que tu le trouves."] }
+      "id": "jungle-roncier",
+      "name": "Jungle · Roncier",
+      "carries": [
+        "Brambleback"
+      ],
+      "units": [
+        "Brambleback",
+        "Krug",
+        "Sentinel",
+        "Camille",
+        "Akali",
+        "Elder Dragon"
+      ],
+      "bm": {
+        "tier": "S",
+        "style": "Niveau 8/9 rapide",
+        "url": "https://bunnymuffins.lol/meta/#riftbeast-brambleback",
+        "tips": [
+          "Plateau simple : c'est la qualité des objets qui fait la différence.",
+          "Roncier a besoin de la Lame enragée de Guinsoo et du Manteau de la nuit."
+        ]
+      },
+      "ta": {
+        "title": "Tempo Riftbeast",
+        "tier": "S",
+        "trend": "nouveau",
+        "style": "Niveau 9 rapide",
+        "difficulty": "Moyen",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-tempo-riftbeast",
+        "early": [
+          "Pebbles",
+          "Yorick",
+          "Scuttlecrab",
+          "Murkwolf"
+        ],
+        "items": [
+          "Guinsoo's Rageblade",
+          "Edge of Night",
+          "Giant's Belt",
+          "Sparring Gloves"
+        ],
+        "tips": [
+          "Place Roncier du côté le plus faible de l'adversaire pour qu'il enchaîne ses sauts.",
+          "Active 7 Jungle vers 3-5 grâce aux boutiques Jungle gratuites, niveau 8 à l'étape 4, et joue le Dragon ancestral dès que tu le trouves."
+        ]
+      }
     },
     {
-      "id": "adaptateur-reroll", "name": "Adaptateur reroll · Maître Yi", "carries": ["Master Yi", "Kog'Maw"], "units": ["Master Yi", "Rengar", "Kog'Maw", "Vi", "Krug"],
-      "bm": { "tier": "A", "style": "Reroll 3 PO", "url": "https://bunnymuffins.lol/meta/#adaptor-reroll", "tips": ["Maître Yi 3★ est indispensable.", "Les artefacts la font monter d'un cran ; le bonus Primitif de soin est en général le meilleur choix."] },
-      "ta": { "title": "Adaptor Reroll", "tier": "A", "trend": "hausse", "style": "Reroll 3 PO", "difficulty": "Moyen", "url": "https://tftacademy.com/tierlist/comps/set-18-adaptor-reroll", "early": ["Karma", "Yorick", "Gromp", "Master Yi"], "items": ["Guinsoo's Rageblade", "Edge of Night", "Chain Vest", "Recurve Bow"], "tips": ["Un emblème Bagarreur ou un augment d'artefact la renforce d'environ un tier.", "Étape 4 : niveau 7, roll pour Maître Yi 2★, Kog'Maw 2★ et un tank Colosse, puis roll lentement pour un 3★. Vi 3★ est meilleure que Krug 3★ mais plus disputée."] }
+      "id": "adaptateur-reroll",
+      "name": "Adaptateur reroll · Maître Yi",
+      "carries": [
+        "Master Yi",
+        "Kog'Maw"
+      ],
+      "units": [
+        "Master Yi",
+        "Rengar",
+        "Kog'Maw",
+        "Vi",
+        "Krug"
+      ],
+      "bm": {
+        "tier": "A",
+        "style": "Reroll 3 PO",
+        "url": "https://bunnymuffins.lol/meta/#adaptor-reroll",
+        "tips": [
+          "Maître Yi 3★ est indispensable.",
+          "Les artefacts la font monter d'un cran ; le bonus Primitif de soin est en général le meilleur choix."
+        ]
+      },
+      "ta": {
+        "title": "Adaptor Reroll",
+        "tier": "A",
+        "trend": "hausse",
+        "style": "Reroll 3 PO",
+        "difficulty": "Moyen",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-adaptor-reroll",
+        "early": [
+          "Karma",
+          "Yorick",
+          "Gromp",
+          "Master Yi"
+        ],
+        "items": [
+          "Guinsoo's Rageblade",
+          "Edge of Night",
+          "Chain Vest",
+          "Recurve Bow"
+        ],
+        "tips": [
+          "Un emblème Bagarreur ou un augment d'artefact la renforce d'environ un tier.",
+          "Étape 4 : niveau 7, roll pour Maître Yi 2★, Kog'Maw 2★ et un tank Colosse, puis roll lentement pour un 3★. Vi 3★ est meilleure que Krug 3★ mais plus disputée."
+        ]
+      }
     },
     {
-      "id": "aphelios-nidalee", "name": "Aphelios et Nidalee", "carries": ["Aphelios", "Nidalee"], "units": ["Aphelios", "Nidalee", "Brambleback", "Sentinel", "Amumu"],
-      "bm": { "tier": "A", "style": "Niveau 8/9 rapide", "url": "https://bunnymuffins.lol/meta/#aphelios", "tips": ["Bon plan de secours quand Draven n'est pas jouable.", "Nidalee a besoin de la Lance de Shojin ; Sentinelle est souvent disputée, adapte ta ligne avant."] },
-      "ta": { "title": "Aphelios Nidalee", "tier": "B", "trend": "baisse", "style": "Niveau 8 rapide", "difficulty": "Moyen", "url": "https://tftacademy.com/tierlist/comps/set-18-aphelios-nidalee", "early": ["Akali", "Camille", "Leona", "Shen"], "items": ["B.F. Sword", "Sparring Gloves", "Chain Vest", "Recurve Bow"], "tips": ["Place Nidalee du côté faible pour un premier kill rapide.", "Tank principal : Amumu ou Sentinelle, garde celui que tu améliores en premier. Ne monte 9 qu'une fois la plupart des 4 PO améliorés."] }
+      "id": "aphelios-nidalee",
+      "name": "Aphelios et Nidalee",
+      "carries": [
+        "Aphelios",
+        "Nidalee"
+      ],
+      "units": [
+        "Aphelios",
+        "Nidalee",
+        "Brambleback",
+        "Sentinel",
+        "Amumu"
+      ],
+      "bm": {
+        "tier": "A",
+        "style": "Niveau 8/9 rapide",
+        "url": "https://bunnymuffins.lol/meta/#aphelios",
+        "tips": [
+          "Bon plan de secours quand Draven n'est pas jouable.",
+          "Nidalee a besoin de la Lance de Shojin ; Sentinelle est souvent disputée, adapte ta ligne avant."
+        ]
+      },
+      "ta": {
+        "title": "Aphelios Nidalee",
+        "tier": "B",
+        "trend": "baisse",
+        "style": "Niveau 8 rapide",
+        "difficulty": "Moyen",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-aphelios-nidalee",
+        "early": [
+          "Akali",
+          "Camille",
+          "Leona",
+          "Shen"
+        ],
+        "items": [
+          "B.F. Sword",
+          "Sparring Gloves",
+          "Chain Vest",
+          "Recurve Bow"
+        ],
+        "tips": [
+          "Place Nidalee du côté faible pour un premier kill rapide.",
+          "Tank principal : Amumu ou Sentinelle, garde celui que tu améliores en premier. Ne monte 9 qu'une fois la plupart des 4 PO améliorés."
+        ]
+      }
     },
     {
-      "id": "khazix-reroll", "name": "Kha'Zix reroll", "carries": ["Kha'Zix", "Diana"], "units": ["Kha'Zix", "Hecarim", "Diana"],
-      "bm": { "tier": "A", "style": "Reroll 3 PO", "url": "https://bunnymuffins.lol/meta/#kha-zix", "tips": ["À jouer seulement si tu trouves Kha'Zix tôt.", "Place Hecarim à côté de lui pour le protéger."] },
-      "ta": { "title": "Lunarwood Kha'Zix", "tier": "S", "trend": "baisse", "style": "Reroll 3 PO", "difficulty": "Moyen", "url": "https://tftacademy.com/tierlist/comps/set-18-lunarwood-khazix", "early": ["Ornn", "Alistar", "LeBlanc", "Kha'Zix"], "items": ["Hand of Justice", "Needlessly Large Rod", "Tear of the Goddess", "Giant's Belt"], "tips": ["Équipe Kha'Zix tôt pour accélérer ses éliminations.", "Avec des paires au niveau 6, roll un peu ; sinon économise jusqu'au niveau 7, puis roll lentement pour les 3★. Les objets de PA en trop vont sur Diana."] }
+      "id": "khazix-reroll",
+      "name": "Kha'Zix reroll",
+      "carries": [
+        "Kha'Zix",
+        "Diana"
+      ],
+      "units": [
+        "Kha'Zix",
+        "Hecarim",
+        "Diana"
+      ],
+      "bm": {
+        "tier": "A",
+        "style": "Reroll 3 PO",
+        "url": "https://bunnymuffins.lol/meta/#kha-zix",
+        "tips": [
+          "À jouer seulement si tu trouves Kha'Zix tôt.",
+          "Place Hecarim à côté de lui pour le protéger."
+        ]
+      },
+      "ta": {
+        "title": "Lunarwood Kha'Zix",
+        "tier": "S",
+        "trend": "baisse",
+        "style": "Reroll 3 PO",
+        "difficulty": "Moyen",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-lunarwood-khazix",
+        "early": [
+          "Ornn",
+          "Alistar",
+          "LeBlanc",
+          "Kha'Zix"
+        ],
+        "items": [
+          "Hand of Justice",
+          "Needlessly Large Rod",
+          "Tear of the Goddess",
+          "Giant's Belt"
+        ],
+        "tips": [
+          "Équipe Kha'Zix tôt pour accélérer ses éliminations.",
+          "Avec des paires au niveau 6, roll un peu ; sinon économise jusqu'au niveau 7, puis roll lentement pour les 3★. Les objets de PA en trop vont sur Diana."
+        ]
+      }
     },
     {
-      "id": "ahri-morgana", "name": "Incantateur · Ahri et Morgana", "carries": ["Ahri", "Morgana"], "units": ["Ahri", "Morgana", "Sentinel", "Sett"],
-      "bm": { "tier": "A", "style": "Niveau 8/9 rapide", "url": "https://bunnymuffins.lol/meta/#morg-ahri", "tips": ["Avec l'emblème Incantateur, elle devient de niveau S.", "Morgana a besoin du Bâton du vide et du Morellonomicon."] },
-      "ta": { "title": "Invoker Ahri Morgana", "tier": "A", "trend": "baisse", "style": "Niveau 8 rapide", "difficulty": "Moyen", "url": "https://tftacademy.com/tierlist/comps/set-18-ahri-morgana", "early": ["Rakan", "Yorick", "Karma", "Yunara"], "items": ["Spear of Shojin", "Jeweled Gauntlet", "Giant's Belt", "Tear of the Goddess"], "tips": ["Étape 2 : vise 3 Fleur spirituelle et une série de victoires ; Karma peut porter les objets d'Ahri en attendant.", "Étape 4 : roll pour Ahri, Morgana et la ligne avant, puis niveau 9 pour Lux une fois stable."] }
+      "id": "ahri-morgana",
+      "name": "Incantateur · Ahri et Morgana",
+      "carries": [
+        "Ahri",
+        "Morgana"
+      ],
+      "units": [
+        "Ahri",
+        "Morgana",
+        "Sentinel",
+        "Sett"
+      ],
+      "bm": {
+        "tier": "A",
+        "style": "Niveau 8/9 rapide",
+        "url": "https://bunnymuffins.lol/meta/#morg-ahri",
+        "tips": [
+          "Avec l'emblème Incantateur, elle devient de niveau S.",
+          "Morgana a besoin du Bâton du vide et du Morellonomicon."
+        ]
+      },
+      "ta": {
+        "title": "Invoker Ahri Morgana",
+        "tier": "A",
+        "trend": "baisse",
+        "style": "Niveau 8 rapide",
+        "difficulty": "Moyen",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-ahri-morgana",
+        "early": [
+          "Rakan",
+          "Yorick",
+          "Karma",
+          "Yunara"
+        ],
+        "items": [
+          "Spear of Shojin",
+          "Jeweled Gauntlet",
+          "Giant's Belt",
+          "Tear of the Goddess"
+        ],
+        "tips": [
+          "Étape 2 : vise 3 Fleur spirituelle et une série de victoires ; Karma peut porter les objets d'Ahri en attendant.",
+          "Étape 4 : roll pour Ahri, Morgana et la ligne avant, puis niveau 9 pour Lux une fois stable."
+        ]
+      }
     },
     {
-      "id": "yunara-solaire", "name": "Solaire · Yunara reroll", "carries": ["Yunara", "Karma"], "units": ["Yunara", "LeBlanc", "Karma", "Sejuani"],
-      "bm": { "tier": "A", "style": "Reroll 2 PO", "url": "https://bunnymuffins.lol/meta/#yunara", "tips": ["Demande des augments d'économie et des 3★.", "Les Esprits de Fleur spirituelle aident à financer les rolls."] },
-      "ta": { "title": "Solar Blossom", "tier": "A", "trend": "", "style": "Reroll 2 PO", "difficulty": "Moyen", "url": "https://tftacademy.com/tierlist/comps/set-18-solara-yunara", "early": ["Karma", "Yorick", "LeBlanc", "Yunara"], "items": ["Jeweled Gauntlet", "Gargoyle Stoneplate", "Tear of the Goddess", "Recurve Bow"], "tips": ["Monte Karma 3★ tôt avec Fleur spirituelle et LeBlanc, puis ajoute 3 Solaire.", "Ordre des 3★ : Karma, Sejuani, Yorick, puis LeBlanc ou Yunara. À l'étape 3, cherche un Esprit d'or ou d'XP à chaque roll."] }
+      "id": "yunara-solaire",
+      "name": "Solaire · Yunara reroll",
+      "carries": [
+        "Yunara",
+        "Karma"
+      ],
+      "units": [
+        "Yunara",
+        "LeBlanc",
+        "Karma",
+        "Sejuani"
+      ],
+      "bm": {
+        "tier": "A",
+        "style": "Reroll 2 PO",
+        "url": "https://bunnymuffins.lol/meta/#yunara",
+        "tips": [
+          "Demande des augments d'économie et des 3★.",
+          "Les Esprits de Fleur spirituelle aident à financer les rolls."
+        ]
+      },
+      "ta": {
+        "title": "Solar Blossom",
+        "tier": "A",
+        "trend": "",
+        "style": "Reroll 2 PO",
+        "difficulty": "Moyen",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-solara-yunara",
+        "early": [
+          "Karma",
+          "Yorick",
+          "LeBlanc",
+          "Yunara"
+        ],
+        "items": [
+          "Jeweled Gauntlet",
+          "Gargoyle Stoneplate",
+          "Tear of the Goddess",
+          "Recurve Bow"
+        ],
+        "tips": [
+          "Monte Karma 3★ tôt avec Fleur spirituelle et LeBlanc, puis ajoute 3 Solaire.",
+          "Ordre des 3★ : Karma, Sejuani, Yorick, puis LeBlanc ou Yunara. À l'étape 3, cherche un Esprit d'or ou d'XP à chaque roll."
+        ]
+      }
     },
     {
-      "id": "sylvestre-executeurs", "name": "Sylvestre · Exécuteurs", "carries": ["Ezreal", "Soraka"], "units": ["Ezreal", "Soraka", "Kennen", "Gnar", "Lux"],
-      "bm": { "tier": "A", "style": "Niveau 8/9 rapide", "url": "https://bunnymuffins.lol/meta/#elder-exec", "tips": ["Surtout jouée avec des emblèmes ; Lux Sylvestre la rend très forte.", "Vise le niveau 9 et termine ton plateau avec Kennen ou Gnar."] },
-      "ta": { "title": "Elderwood Executioners", "tier": "A", "trend": "", "style": "Niveau 8 rapide", "difficulty": "Moyen", "url": "https://tftacademy.com/tierlist/comps/set-18-elderwood-executioners", "early": ["Ornn", "Xayah", "Shen", "LeBlanc"], "items": ["Spear of Shojin", "B.F. Sword", "Sparring Gloves", "Recurve Bow"], "tips": ["L'emblème Sylvestre est le cœur de la compo, et 3 Exécuteurs donnent un gros palier.", "Étape 4 : niveau 8, cherche Ezreal et Soraka avec 7 Sylvestre, sans descendre à 0 PO pour pouvoir monter 9. Attention, LeBlanc copie des unités de ton plateau."] }
+      "id": "sylvestre-executeurs",
+      "name": "Sylvestre · Exécuteurs",
+      "carries": [
+        "Ezreal",
+        "Soraka"
+      ],
+      "units": [
+        "Ezreal",
+        "Soraka",
+        "Kennen",
+        "Gnar",
+        "Lux"
+      ],
+      "bm": {
+        "tier": "A",
+        "style": "Niveau 8/9 rapide",
+        "url": "https://bunnymuffins.lol/meta/#elder-exec",
+        "tips": [
+          "Surtout jouée avec des emblèmes ; Lux Sylvestre la rend très forte.",
+          "Vise le niveau 9 et termine ton plateau avec Kennen ou Gnar."
+        ]
+      },
+      "ta": {
+        "title": "Elderwood Executioners",
+        "tier": "A",
+        "trend": "",
+        "style": "Niveau 8 rapide",
+        "difficulty": "Moyen",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-elderwood-executioners",
+        "early": [
+          "Ornn",
+          "Xayah",
+          "Shen",
+          "LeBlanc"
+        ],
+        "items": [
+          "Spear of Shojin",
+          "B.F. Sword",
+          "Sparring Gloves",
+          "Recurve Bow"
+        ],
+        "tips": [
+          "L'emblème Sylvestre est le cœur de la compo, et 3 Exécuteurs donnent un gros palier.",
+          "Étape 4 : niveau 8, cherche Ezreal et Soraka avec 7 Sylvestre, sans descendre à 0 PO pour pouvoir monter 9. Attention, LeBlanc copie des unités de ton plateau."
+        ]
+      }
     },
     {
-      "id": "cassiopeia-reroll", "name": "Défenseur · Cassiopeia reroll", "carries": ["Cassiopeia", "Fiddlesticks"], "units": ["Cassiopeia", "Rammus", "Fiddlesticks", "Elise"],
-      "bm": { "tier": "A", "style": "Reroll 3 PO", "url": "https://bunnymuffins.lol/meta/#cassiopeia-reroll", "tips": ["Cassiopeia veut la Pistolame Hextech et la Coiffe de Rabadon ou le Bâton de l'archange.", "Place Fiddlesticks sur l'extérieur, Rammus à côté de lui."] },
-      "ta": { "title": "Defender Cassio", "tier": "A", "trend": "", "style": "Reroll 3 PO", "difficulty": "Facile", "url": "https://tftacademy.com/tierlist/comps/set-18-defender-cassio", "early": ["Karma", "Leona", "Ornn", "LeBlanc"], "items": ["Spear of Shojin", "Hextech Gunblade", "Chain Vest", "Needlessly Large Rod"], "tips": ["Joue toujours 6 Défenseurs ; au niveau 8, ajoute n'importe quel carry PA à 4 ou 5 PO.", "Étape 4 : roll au niveau 7 pour Cassiopeia et Fiddlesticks 2★, puis roll lentement au-dessus de 50 PO pour les 3★."] }
+      "id": "cassiopeia-reroll",
+      "name": "Défenseur · Cassiopeia reroll",
+      "carries": [
+        "Cassiopeia",
+        "Fiddlesticks"
+      ],
+      "units": [
+        "Cassiopeia",
+        "Rammus",
+        "Fiddlesticks",
+        "Elise"
+      ],
+      "bm": {
+        "tier": "A",
+        "style": "Reroll 3 PO",
+        "url": "https://bunnymuffins.lol/meta/#cassiopeia-reroll",
+        "tips": [
+          "Cassiopeia veut la Pistolame Hextech et la Coiffe de Rabadon ou le Bâton de l'archange.",
+          "Place Fiddlesticks sur l'extérieur, Rammus à côté de lui."
+        ]
+      },
+      "ta": {
+        "title": "Defender Cassio",
+        "tier": "A",
+        "trend": "",
+        "style": "Reroll 3 PO",
+        "difficulty": "Facile",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-defender-cassio",
+        "early": [
+          "Karma",
+          "Leona",
+          "Ornn",
+          "LeBlanc"
+        ],
+        "items": [
+          "Spear of Shojin",
+          "Hextech Gunblade",
+          "Chain Vest",
+          "Needlessly Large Rod"
+        ],
+        "tips": [
+          "Joue toujours 6 Défenseurs ; au niveau 8, ajoute n'importe quel carry PA à 4 ou 5 PO.",
+          "Étape 4 : roll au niveau 7 pour Cassiopeia et Fiddlesticks 2★, puis roll lentement au-dessus de 50 PO pour les 3★."
+        ]
+      }
     },
     {
-      "id": "azir-rammus", "name": "Azir et Rammus reroll", "carries": ["Azir"], "units": ["Azir", "Rammus", "Teemo", "Zyra", "Veigar"],
-      "bm": { "tier": "A", "style": "Reroll 3 PO", "url": "https://bunnymuffins.lol/meta/#azir", "tips": ["Il faut au moins 3 Baguettes trop grosses.", "Couronne de la reine sur Rammus, et sacrifie d'abord Teemo 3★ à Ronce-obscure."] },
-      "ta": { "title": "Azir Rammus", "tier": "B", "trend": "baisse", "style": "Reroll 3 PO", "difficulty": "Facile", "url": "https://tftacademy.com/tierlist/comps/set-18-azir-rammus", "early": ["Karma", "Yorick", "Yunara", "Azir"], "items": ["Gargoyle Stoneplate", "Needlessly Large Rod", "Recurve Bow", "B.F. Sword"], "tips": ["Prends des augments d'objets tôt et des baguettes au carrousel.", "Étape 4 : Azir et Rammus 2★ à 4-1, puis roll lentement au-dessus de 50 PO pour les 3★."] }
+      "id": "azir-rammus",
+      "name": "Azir et Rammus reroll",
+      "carries": [
+        "Azir"
+      ],
+      "units": [
+        "Azir",
+        "Rammus",
+        "Teemo",
+        "Zyra",
+        "Veigar"
+      ],
+      "bm": {
+        "tier": "A",
+        "style": "Reroll 3 PO",
+        "url": "https://bunnymuffins.lol/meta/#azir",
+        "tips": [
+          "Il faut au moins 3 Baguettes trop grosses.",
+          "Couronne de la reine sur Rammus, et sacrifie d'abord Teemo 3★ à Ronce-obscure."
+        ]
+      },
+      "ta": {
+        "title": "Azir Rammus",
+        "tier": "B",
+        "trend": "baisse",
+        "style": "Reroll 3 PO",
+        "difficulty": "Facile",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-azir-rammus",
+        "early": [
+          "Karma",
+          "Yorick",
+          "Yunara",
+          "Azir"
+        ],
+        "items": [
+          "Gargoyle Stoneplate",
+          "Needlessly Large Rod",
+          "Recurve Bow",
+          "B.F. Sword"
+        ],
+        "tips": [
+          "Prends des augments d'objets tôt et des baguettes au carrousel.",
+          "Étape 4 : Azir et Rammus 2★ à 4-1, puis roll lentement au-dessus de 50 PO pour les 3★."
+        ]
+      }
     },
     {
-      "id": "jungle-reroll", "name": "Jungle reroll · Krug", "carries": ["Krug", "Cinderling", "Pebbles"], "units": ["Pebbles", "Cinderling", "Krug"],
-      "bm": { "tier": "A", "style": "Reroll 3 PO", "url": "https://bunnymuffins.lol/meta/#riftbeast-reroll", "tips": ["Il faut des copies de Caillou ou de Rougelin et 5 Jungle tôt.", "Krug 3★ est la clé."] },
-      "ta": { "title": "Riftbeast Reroll", "tier": "B", "trend": "baisse", "style": "Reroll 1 PO", "difficulty": "Facile", "url": "https://tftacademy.com/tierlist/comps/set-18-riftbeast-reroll", "early": ["Cinderling", "Pebbles", "Yorick", "Scuttlecrab"], "items": ["Last Whisper", "B.F. Sword", "Tear of the Goddess", "Giant's Belt"], "tips": ["Utilise les boutiques Jungle pour tes 3★ et vise vite le niveau 7 pour 7 Jungle.", "Étape 3 : économise et monte 7 vers 3-5, ou à 4-1 si tu manques d'or ; niveau 8 une fois les 3★ trouvés."] }
+      "id": "jungle-reroll",
+      "name": "Jungle reroll · Krug",
+      "carries": [
+        "Krug",
+        "Cinderling",
+        "Pebbles"
+      ],
+      "units": [
+        "Pebbles",
+        "Cinderling",
+        "Krug"
+      ],
+      "bm": {
+        "tier": "A",
+        "style": "Reroll 3 PO",
+        "url": "https://bunnymuffins.lol/meta/#riftbeast-reroll",
+        "tips": [
+          "Il faut des copies de Caillou ou de Rougelin et 5 Jungle tôt.",
+          "Krug 3★ est la clé."
+        ]
+      },
+      "ta": {
+        "title": "Riftbeast Reroll",
+        "tier": "B",
+        "trend": "baisse",
+        "style": "Reroll 1 PO",
+        "difficulty": "Facile",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-riftbeast-reroll",
+        "early": [
+          "Cinderling",
+          "Pebbles",
+          "Yorick",
+          "Scuttlecrab"
+        ],
+        "items": [
+          "Last Whisper",
+          "B.F. Sword",
+          "Tear of the Goddess",
+          "Giant's Belt"
+        ],
+        "tips": [
+          "Utilise les boutiques Jungle pour tes 3★ et vise vite le niveau 7 pour 7 Jungle.",
+          "Étape 3 : économise et monte 7 vers 3-5, ou à 4-1 si tu manques d'or ; niveau 8 une fois les 3★ trouvés."
+        ]
+      }
     },
     {
-      "id": "veigar-reroll", "name": "Veigar reroll", "carries": ["Veigar", "Ornn"], "units": ["Veigar", "LeBlanc", "Ornn", "Alistar"],
-      "bm": { "tier": "A", "style": "Reroll 1 PO", "url": "https://bunnymuffins.lol/meta/#veigar-reroll", "tips": ["Ne monte pas de niveau avant d'avoir tes 3★ à 1 PO.", "Elle devient vraiment forte avec l'augment Flore vorace."] },
-      "ta": { "title": "Elderwood Veigar", "tier": "B", "trend": "baisse", "style": "Reroll 1 PO", "difficulty": "Facile", "url": "https://tftacademy.com/tierlist/comps/set-18-veigar-consuming-flora-copy", "early": ["Kobuko", "Rek'Sai", "Veigar", "Teemo"], "items": ["Blue Buff", "Jeweled Gauntlet", "Gargoyle Stoneplate", "Giant's Belt"], "tips": ["Commence avec beaucoup de copies d'Ornn et de Veigar.", "Étape 3 : avec 7 copies ou plus, continue de roll ; avec 3-4 copies, roll lentement au-dessus de 50 PO. Ensuite, roll au niveau 6 pour LeBlanc et Alistar 3★."] }
+      "id": "veigar-reroll",
+      "name": "Veigar reroll",
+      "carries": [
+        "Veigar",
+        "Ornn"
+      ],
+      "units": [
+        "Veigar",
+        "LeBlanc",
+        "Ornn",
+        "Alistar"
+      ],
+      "bm": {
+        "tier": "A",
+        "style": "Reroll 1 PO",
+        "url": "https://bunnymuffins.lol/meta/#veigar-reroll",
+        "tips": [
+          "Ne monte pas de niveau avant d'avoir tes 3★ à 1 PO.",
+          "Elle devient vraiment forte avec l'augment Flore vorace."
+        ]
+      },
+      "ta": {
+        "title": "Elderwood Veigar",
+        "tier": "B",
+        "trend": "baisse",
+        "style": "Reroll 1 PO",
+        "difficulty": "Facile",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-veigar-consuming-flora-copy",
+        "early": [
+          "Kobuko",
+          "Rek'Sai",
+          "Veigar",
+          "Teemo"
+        ],
+        "items": [
+          "Blue Buff",
+          "Jeweled Gauntlet",
+          "Gargoyle Stoneplate",
+          "Giant's Belt"
+        ],
+        "tips": [
+          "Commence avec beaucoup de copies d'Ornn et de Veigar.",
+          "Étape 3 : avec 7 copies ou plus, continue de roll ; avec 3-4 copies, roll lentement au-dessus de 50 PO. Ensuite, roll au niveau 6 pour LeBlanc et Alistar 3★."
+        ]
+      }
     },
     {
-      "id": "caitlyn-reroll", "name": "Caitlyn reroll", "carries": ["Caitlyn"], "units": ["Caitlyn", "Scuttlecrab", "Sejuani", "Rakan", "Sivir"],
-      "bm": { "tier": "B", "style": "Reroll 2 PO", "url": "https://bunnymuffins.lol/meta/#caitlyn-reroll", "tips": ["Il faut plusieurs Arcs courbes.", "Monte niveau 9 pour Ashe si tu peux."] },
-      "ta": { "title": "Juggernaut Caitlyn Reroll", "tier": "C", "trend": "hausse", "style": "Reroll 2 PO", "difficulty": "Facile", "url": "https://tftacademy.com/tierlist/comps/set-18-caitlyn-hunters", "early": ["Rakan", "Yorick", "Caitlyn", "Tristana"], "items": ["Guinsoo's Rageblade", "Kraken's Fury", "Recurve Bow", "Giant's Belt"], "tips": ["Étape 3 : niveau 6, roll pour 4 Colosses et 2 Chasseurs, puis roll lentement au-dessus de 50 PO pour les 3★.", "Finis tes 3★ vers le milieu de l'étape 4, puis monte pour plus de Chasseurs."] }
+      "id": "caitlyn-reroll",
+      "name": "Caitlyn reroll",
+      "carries": [
+        "Caitlyn"
+      ],
+      "units": [
+        "Caitlyn",
+        "Scuttlecrab",
+        "Sejuani",
+        "Rakan",
+        "Sivir"
+      ],
+      "bm": {
+        "tier": "B",
+        "style": "Reroll 2 PO",
+        "url": "https://bunnymuffins.lol/meta/#caitlyn-reroll",
+        "tips": [
+          "Il faut plusieurs Arcs courbes.",
+          "Monte niveau 9 pour Ashe si tu peux."
+        ]
+      },
+      "ta": {
+        "title": "Juggernaut Caitlyn Reroll",
+        "tier": "C",
+        "trend": "hausse",
+        "style": "Reroll 2 PO",
+        "difficulty": "Facile",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-caitlyn-hunters",
+        "early": [
+          "Rakan",
+          "Yorick",
+          "Caitlyn",
+          "Tristana"
+        ],
+        "items": [
+          "Guinsoo's Rageblade",
+          "Kraken's Fury",
+          "Recurve Bow",
+          "Giant's Belt"
+        ],
+        "tips": [
+          "Étape 3 : niveau 6, roll pour 4 Colosses et 2 Chasseurs, puis roll lentement au-dessus de 50 PO pour les 3★.",
+          "Finis tes 3★ vers le milieu de l'étape 4, puis monte pour plus de Chasseurs."
+        ]
+      }
     },
     {
-      "id": "akali-solaire", "name": "Solaire · Akali reroll", "carries": ["Akali", "Camille"], "units": ["Akali", "Camille", "Ornn", "Varus"],
-      "bm": { "tier": "B", "style": "Reroll 1 PO", "url": "https://bunnymuffins.lol/meta/#solar-akali", "tips": ["À jouer avec un bon augment de reroll ou d'artefact.", "L'artefact Fléau de liche est un très bon choix sur Akali."] },
-      "ta": { "title": "Solar Melee", "tier": "B", "trend": "", "style": "Reroll 1 PO", "difficulty": "Facile", "url": "https://tftacademy.com/tierlist/comps/set-18-solar-melee", "early": ["Akali", "Camille", "Leona", "Ornn"], "items": ["Infinity Edge", "Gargoyle Stoneplate", "Sparring Gloves", "B.F. Sword"], "tips": ["À 3-1, roll jusqu'à 30 PO au niveau 4 pour les copies à 1 PO, puis roll lentement au niveau 5 jusqu'à cinq 3★.", "Garde une bonne économie à l'étape 4 : il faut le niveau 7 pour activer Solaire."] }
+      "id": "akali-solaire",
+      "name": "Solaire · Akali reroll",
+      "carries": [
+        "Akali",
+        "Camille"
+      ],
+      "units": [
+        "Akali",
+        "Camille",
+        "Ornn",
+        "Varus"
+      ],
+      "bm": {
+        "tier": "B",
+        "style": "Reroll 1 PO",
+        "url": "https://bunnymuffins.lol/meta/#solar-akali",
+        "tips": [
+          "À jouer avec un bon augment de reroll ou d'artefact.",
+          "L'artefact Fléau de liche est un très bon choix sur Akali."
+        ]
+      },
+      "ta": {
+        "title": "Solar Melee",
+        "tier": "B",
+        "trend": "",
+        "style": "Reroll 1 PO",
+        "difficulty": "Facile",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-solar-melee",
+        "early": [
+          "Akali",
+          "Camille",
+          "Leona",
+          "Ornn"
+        ],
+        "items": [
+          "Infinity Edge",
+          "Gargoyle Stoneplate",
+          "Sparring Gloves",
+          "B.F. Sword"
+        ],
+        "tips": [
+          "À 3-1, roll jusqu'à 30 PO au niveau 4 pour les copies à 1 PO, puis roll lentement au niveau 5 jusqu'à cinq 3★.",
+          "Garde une bonne économie à l'étape 4 : il faut le niveau 7 pour activer Solaire."
+        ]
+      }
     },
     {
-      "id": "dragon-9", "name": "Dragon ancestral niveau 9", "carries": ["Elder Dragon"], "units": ["Elder Dragon", "Draven", "Maokai", "Sentinel"],
-      "bm": { "tier": "B", "style": "Niveau 8/9 rapide", "url": "https://bunnymuffins.lol/meta/#dragon", "tips": ["Très aléatoire : le Dragon ancestral 2★ gagne des parties, mais il faut atteindre le niveau 9."] }
+      "id": "dragon-9",
+      "name": "Dragon ancestral niveau 9",
+      "carries": [
+        "Elder Dragon"
+      ],
+      "units": [
+        "Elder Dragon",
+        "Draven",
+        "Maokai",
+        "Sentinel"
+      ],
+      "bm": {
+        "tier": "B",
+        "style": "Niveau 8/9 rapide",
+        "url": "https://bunnymuffins.lol/meta/#dragon",
+        "tips": [
+          "Très aléatoire : le Dragon ancestral 2★ gagne des parties, mais il faut atteindre le niveau 9."
+        ]
+      }
     },
     {
-      "id": "kayle-reroll", "name": "Kayle reroll", "carries": ["Kayle"], "units": ["Kayle", "Xayah", "Ornn", "Rakan", "Sejuani", "Leona"],
-      "bm": { "tier": "B", "style": "Reroll 1 PO", "url": "https://bunnymuffins.lol/meta/#kayle-reroll", "tips": ["Vise cinq 3★ ; l'augment Couronne maudite la rend bien plus forte.", "Si ton banc est plein, vends Sejuani en premier."] },
-      "ta": { "title": "Eclipse Kayle", "tier": "B", "trend": "", "style": "Reroll 2 PO", "difficulty": "Facile", "url": "https://tftacademy.com/tierlist/comps/set-18-eclipse-kayle", "early": ["Leona", "Varus", "Shen", "Kayle"], "items": ["Guinsoo's Rageblade", "Gargoyle Stoneplate", "Needlessly Large Rod", "Sparring Gloves"], "tips": ["Roll au niveau 5 pour les 3★ à 1 PO, puis monte et roll au niveau 6.", "Ordre des 3★ : Kayle, Sejuani, Leona, puis Shen ou Varus ; ensuite monte pour les Lunaires et Éclipse."] }
+      "id": "kayle-reroll",
+      "name": "Kayle reroll",
+      "carries": [
+        "Kayle"
+      ],
+      "units": [
+        "Kayle",
+        "Xayah",
+        "Ornn",
+        "Rakan",
+        "Sejuani",
+        "Leona"
+      ],
+      "bm": {
+        "tier": "B",
+        "style": "Reroll 1 PO",
+        "url": "https://bunnymuffins.lol/meta/#kayle-reroll",
+        "tips": [
+          "Vise cinq 3★ ; l'augment Couronne maudite la rend bien plus forte.",
+          "Si ton banc est plein, vends Sejuani en premier."
+        ]
+      },
+      "ta": {
+        "title": "Eclipse Kayle",
+        "tier": "B",
+        "trend": "",
+        "style": "Reroll 2 PO",
+        "difficulty": "Facile",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-eclipse-kayle",
+        "early": [
+          "Leona",
+          "Varus",
+          "Shen",
+          "Kayle"
+        ],
+        "items": [
+          "Guinsoo's Rageblade",
+          "Gargoyle Stoneplate",
+          "Needlessly Large Rod",
+          "Sparring Gloves"
+        ],
+        "tips": [
+          "Roll au niveau 5 pour les 3★ à 1 PO, puis monte et roll au niveau 6.",
+          "Ordre des 3★ : Kayle, Sejuani, Leona, puis Shen ou Varus ; ensuite monte pour les Lunaires et Éclipse."
+        ]
+      }
     },
     {
-      "id": "colosses", "name": "Colosses · Zyra", "carries": ["Zyra", "Sivir", "Ashe"], "units": ["Zyra", "Sivir", "Ashe", "Alune", "Kennen"],
-      "bm": { "tier": "B", "style": "Niveau 8/9 rapide", "url": "https://bunnymuffins.lol/meta/#juggernaut", "tips": ["Repose sur un bon début de partie Colosse ; monte vite au niveau 9.", "Choisis ta ligne arrière selon les objets que tu as fabriqués."] },
-      "ta": { "title": "Juggernaut Zyra", "tier": "B", "trend": "", "style": "Niveau 8 rapide", "difficulty": "Difficile", "url": "https://tftacademy.com/tierlist/comps/set-18-6-juggernaut-ap", "early": ["Rakan", "Yorick", "Karma", "Yunara"], "items": ["Archangel's Staff", "Warmog's Armor", "Tear of the Goddess", "Needlessly Large Rod"], "tips": ["L'emblème Colosse va le mieux sur Kennen ; les objets de Zyra passent avant ceux du second carry.", "Étape 4 : vise 6 Colosses, Zyra et un second carry, puis niveau 9 une fois Zyra 2★."] }
+      "id": "colosses",
+      "name": "Colosses · Zyra",
+      "carries": [
+        "Zyra",
+        "Sivir",
+        "Ashe"
+      ],
+      "units": [
+        "Zyra",
+        "Sivir",
+        "Ashe",
+        "Alune",
+        "Kennen"
+      ],
+      "bm": {
+        "tier": "B",
+        "style": "Niveau 8/9 rapide",
+        "url": "https://bunnymuffins.lol/meta/#juggernaut",
+        "tips": [
+          "Repose sur un bon début de partie Colosse ; monte vite au niveau 9.",
+          "Choisis ta ligne arrière selon les objets que tu as fabriqués."
+        ]
+      },
+      "ta": {
+        "title": "Juggernaut Zyra",
+        "tier": "B",
+        "trend": "",
+        "style": "Niveau 8 rapide",
+        "difficulty": "Difficile",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-6-juggernaut-ap",
+        "early": [
+          "Rakan",
+          "Yorick",
+          "Karma",
+          "Yunara"
+        ],
+        "items": [
+          "Archangel's Staff",
+          "Warmog's Armor",
+          "Tear of the Goddess",
+          "Needlessly Large Rod"
+        ],
+        "tips": [
+          "L'emblème Colosse va le mieux sur Kennen ; les objets de Zyra passent avant ceux du second carry.",
+          "Étape 4 : vise 6 Colosses, Zyra et un second carry, puis niveau 9 une fois Zyra 2★."
+        ]
+      }
     },
     {
-      "id": "flora-malphite", "name": "Flora fatalis · Malphite", "carries": ["Malphite", "Azir"], "units": ["Malphite", "Soraka", "Zyra", "Azir", "Fiddlesticks"],
-      "bm": { "tier": "B", "style": "Niveau 8/9 rapide", "url": "https://bunnymuffins.lol/meta/#flora-fatalis", "tips": ["La synergie Flora fatalis est obligatoire.", "Les augments d'emblème et de synergie vont très bien avec."] },
-      "ta": { "title": "Malphite AP Flex", "tier": "B", "trend": "hausse", "style": "Niveau 8 rapide", "difficulty": "Moyen", "url": "https://tftacademy.com/tierlist/comps/set-18-soraka-flex", "early": ["Rakan", "Yorick", "Karma", "Yunara"], "items": ["Gargoyle Stoneplate", "Tear of the Goddess", "Needlessly Large Rod", "Recurve Bow"], "tips": ["Construis autour de Malphite et Azir avec 2 Flora fatalis ; prends Ezreal ou Zyra selon tes objets.", "Étape 4 : roll pour Malphite, mais reste flexible selon ce que tu trouves."] }
+      "id": "flora-malphite",
+      "name": "Flora fatalis · Malphite",
+      "carries": [
+        "Malphite",
+        "Azir"
+      ],
+      "units": [
+        "Malphite",
+        "Soraka",
+        "Zyra",
+        "Azir",
+        "Fiddlesticks"
+      ],
+      "bm": {
+        "tier": "B",
+        "style": "Niveau 8/9 rapide",
+        "url": "https://bunnymuffins.lol/meta/#flora-fatalis",
+        "tips": [
+          "La synergie Flora fatalis est obligatoire.",
+          "Les augments d'emblème et de synergie vont très bien avec."
+        ]
+      },
+      "ta": {
+        "title": "Malphite AP Flex",
+        "tier": "B",
+        "trend": "hausse",
+        "style": "Niveau 8 rapide",
+        "difficulty": "Moyen",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-soraka-flex",
+        "early": [
+          "Rakan",
+          "Yorick",
+          "Karma",
+          "Yunara"
+        ],
+        "items": [
+          "Gargoyle Stoneplate",
+          "Tear of the Goddess",
+          "Needlessly Large Rod",
+          "Recurve Bow"
+        ],
+        "tips": [
+          "Construis autour de Malphite et Azir avec 2 Flora fatalis ; prends Ezreal ou Zyra selon tes objets.",
+          "Étape 4 : roll pour Malphite, mais reste flexible selon ce que tu trouves."
+        ]
+      }
     },
     {
-      "id": "primitif-sivir", "name": "Primitif · Sivir et Nidalee", "carries": ["Sivir", "Nidalee"], "units": ["Nidalee", "Sivir", "Malphite", "Sentinel", "Ashe"],
-      "bm": { "tier": "B", "style": "Niveau 8 rapide", "url": "https://bunnymuffins.lol/meta/#nidalee", "tips": ["Compo chère au niveau 8, qui prend des unités populaires.", "Il faut beaucoup de BF Glaives ; l'étape 4 est ton moment fort. L'augment Lotus précieux aide."] },
-      "ta": { "title": "Sivir Flex", "tier": "A", "trend": "hausse", "style": "Niveau 8 rapide", "difficulty": "Moyen", "url": "https://tftacademy.com/tierlist/comps/set-18-primal-jungle-copy", "early": ["Akali", "Camille", "Shen", "Leona"], "items": ["Infinity Edge", "Spear of Shojin", "Recurve Bow", "Giant's Belt"], "tips": ["Tristana, Ashe et Ivern sont interchangeables ; joue toujours Ashe si tu la trouves tôt.", "Les BF Glaives sont très demandées : prends-les aux augments et au carrousel. Niveau 8 à l'étape 4, puis 9 une fois stable."] }
+      "id": "primitif-sivir",
+      "name": "Primitif · Sivir et Nidalee",
+      "carries": [
+        "Sivir",
+        "Nidalee"
+      ],
+      "units": [
+        "Nidalee",
+        "Sivir",
+        "Malphite",
+        "Sentinel",
+        "Ashe"
+      ],
+      "bm": {
+        "tier": "B",
+        "style": "Niveau 8 rapide",
+        "url": "https://bunnymuffins.lol/meta/#nidalee",
+        "tips": [
+          "Compo chère au niveau 8, qui prend des unités populaires.",
+          "Il faut beaucoup de BF Glaives ; l'étape 4 est ton moment fort. L'augment Lotus précieux aide."
+        ]
+      },
+      "ta": {
+        "title": "Sivir Flex",
+        "tier": "A",
+        "trend": "hausse",
+        "style": "Niveau 8 rapide",
+        "difficulty": "Moyen",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-primal-jungle-copy",
+        "early": [
+          "Akali",
+          "Camille",
+          "Shen",
+          "Leona"
+        ],
+        "items": [
+          "Infinity Edge",
+          "Spear of Shojin",
+          "Recurve Bow",
+          "Giant's Belt"
+        ],
+        "tips": [
+          "Tristana, Ashe et Ivern sont interchangeables ; joue toujours Ashe si tu la trouves tôt.",
+          "Les BF Glaives sont très demandées : prends-les aux augments et au carrousel. Niveau 8 à l'étape 4, puis 9 une fois stable."
+        ]
+      }
     },
     {
-      "id": "ashe-9", "name": "Ashe niveau 9", "carries": ["Ashe"], "units": ["Ashe", "Maokai", "Sett", "Alune", "Sivir"],
-      "bm": { "tier": "C", "style": "Niveau 9 rapide", "url": "https://bunnymuffins.lol/meta/#ashe-9", "tips": ["Variante niveau 9 à partir d'un plateau Ahri ou Sivir.", "Ashe a besoin de la Lance de Shojin ; prends le bonus Primitif de soin."] },
-      "ta": { "title": "Ashe Juggernauts", "tier": "C", "trend": "hausse", "style": "Niveau 8 rapide", "difficulty": "Difficile", "url": "https://tftacademy.com/tierlist/comps/set-18-ashe-juggernauts", "early": ["Karma", "Rakan", "Yorick", "Yunara"], "items": ["Infinity Edge", "Warmog's Armor", "Recurve Bow", "B.F. Sword"], "tips": ["Option de repli si tu joues déjà des Colosses ; l'emblème Colosse permet d'en avoir 6.", "Une fois stable, monte 9, cherche Ashe et passe aux unités 5 PO."] }
+      "id": "ashe-9",
+      "name": "Ashe niveau 9",
+      "carries": [
+        "Ashe"
+      ],
+      "units": [
+        "Ashe",
+        "Maokai",
+        "Sett",
+        "Alune",
+        "Sivir"
+      ],
+      "bm": {
+        "tier": "C",
+        "style": "Niveau 9 rapide",
+        "url": "https://bunnymuffins.lol/meta/#ashe-9",
+        "tips": [
+          "Variante niveau 9 à partir d'un plateau Ahri ou Sivir.",
+          "Ashe a besoin de la Lance de Shojin ; prends le bonus Primitif de soin."
+        ]
+      },
+      "ta": {
+        "title": "Ashe Juggernauts",
+        "tier": "C",
+        "trend": "hausse",
+        "style": "Niveau 8 rapide",
+        "difficulty": "Difficile",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-ashe-juggernauts",
+        "early": [
+          "Karma",
+          "Rakan",
+          "Yorick",
+          "Yunara"
+        ],
+        "items": [
+          "Infinity Edge",
+          "Warmog's Armor",
+          "Recurve Bow",
+          "B.F. Sword"
+        ],
+        "tips": [
+          "Option de repli si tu joues déjà des Colosses ; l'emblème Colosse permet d'en avoir 6.",
+          "Une fois stable, monte 9, cherche Ashe et passe aux unités 5 PO."
+        ]
+      }
     },
     {
-      "id": "ahri-zyra", "name": "Fleur spirituelle · Ahri et Zyra", "carries": ["Ahri", "Zyra"], "units": ["Ahri", "Zyra", "Alune", "Karma"],
-      "bm": { "tier": "C", "style": "", "url": "https://bunnymuffins.lol/meta/#ahri", "tips": [] },
-      "ta": { "title": "Ahri Zyra", "tier": "A", "situational": true, "trend": "", "style": "Niveau 8 rapide", "difficulty": "Moyen", "url": "https://tftacademy.com/tierlist/comps/set-18-spellweavers", "early": ["Rakan", "Yorick", "Karma", "Yunara"], "items": ["Spear of Shojin", "Jeweled Gauntlet", "Giant's Belt", "Tear of the Goddess"], "tips": ["L'augment Bronze pour la vie la renforce nettement.", "En série de victoires, vise 5 Fleur spirituelle au niveau 8 avec Karma, puis niveau 9 pour Alune."] }
+      "id": "ahri-zyra",
+      "name": "Fleur spirituelle · Ahri et Zyra",
+      "carries": [
+        "Ahri",
+        "Zyra"
+      ],
+      "units": [
+        "Ahri",
+        "Zyra",
+        "Alune",
+        "Karma"
+      ],
+      "bm": {
+        "tier": "C",
+        "style": "",
+        "url": "https://bunnymuffins.lol/meta/#ahri",
+        "tips": []
+      },
+      "ta": {
+        "title": "Ahri Zyra",
+        "tier": "A",
+        "situational": true,
+        "trend": "",
+        "style": "Niveau 8 rapide",
+        "difficulty": "Moyen",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-spellweavers",
+        "early": [
+          "Rakan",
+          "Yorick",
+          "Karma",
+          "Yunara"
+        ],
+        "items": [
+          "Spear of Shojin",
+          "Jeweled Gauntlet",
+          "Giant's Belt",
+          "Tear of the Goddess"
+        ],
+        "tips": [
+          "L'augment Bronze pour la vie la renforce nettement.",
+          "En série de victoires, vise 5 Fleur spirituelle au niveau 8 avec Karma, puis niveau 9 pour Alune."
+        ]
+      }
     },
     {
-      "id": "rengar-tristana", "name": "Fæ · Rengar et Tristana", "carries": ["Rengar", "Tristana"], "units": ["Rengar", "Tristana", "Rammus"],
-      "bm": { "tier": "C", "style": "Reroll", "url": "https://bunnymuffins.lol/meta/#trist-rengar", "tips": [] },
-      "ta": { "title": "Sprykin Fae Rengar", "tier": "B", "situational": true, "trend": "", "style": "Reroll 3 PO", "difficulty": "Moyen", "url": "https://tftacademy.com/tierlist/comps/set-18-fae-tristana-copy", "early": ["Rakan", "Xayah", "Yorick", "Rengar"], "items": ["Guinsoo's Rageblade", "Edge of Night", "Negatron Cloak", "Recurve Bow"], "tips": ["Seulement avec l'emblème sur Rengar ; active vite 4 Fæ pour générer de l'or. Place Rengar du même côté que les carrys adverses.", "Étape 4 : niveau 7 et roll au-dessus de 50 PO pour Rengar et Rammus 3★."] }
+      "id": "rengar-tristana",
+      "name": "Fæ · Rengar et Tristana",
+      "carries": [
+        "Rengar",
+        "Tristana"
+      ],
+      "units": [
+        "Rengar",
+        "Tristana",
+        "Rammus"
+      ],
+      "bm": {
+        "tier": "C",
+        "style": "Reroll",
+        "url": "https://bunnymuffins.lol/meta/#trist-rengar",
+        "tips": []
+      },
+      "ta": {
+        "title": "Sprykin Fae Rengar",
+        "tier": "B",
+        "situational": true,
+        "trend": "",
+        "style": "Reroll 3 PO",
+        "difficulty": "Moyen",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-fae-tristana-copy",
+        "early": [
+          "Rakan",
+          "Xayah",
+          "Yorick",
+          "Rengar"
+        ],
+        "items": [
+          "Guinsoo's Rageblade",
+          "Edge of Night",
+          "Negatron Cloak",
+          "Recurve Bow"
+        ],
+        "tips": [
+          "Seulement avec l'emblème sur Rengar ; active vite 4 Fæ pour générer de l'or. Place Rengar du même côté que les carrys adverses.",
+          "Étape 4 : niveau 7 et roll au-dessus de 50 PO pour Rengar et Rammus 3★."
+        ]
+      }
     },
     {
-      "id": "incantateur-nidalee", "name": "Incantateur · Nidalee", "carries": ["Nidalee", "Morgana"], "units": ["Nidalee", "Morgana", "Kog'Maw", "Vi", "Scuttlecrab"],
-      "bm": { "tier": "C", "style": "", "url": "https://bunnymuffins.lol/meta/#invoker", "tips": [] },
-      "ta": { "title": "Invoker Nidalee", "tier": "C", "trend": "", "style": "Niveau 8 rapide", "difficulty": "Moyen", "url": "https://tftacademy.com/tierlist/comps/set-18-adaptor-nidalee", "early": ["Rakan", "Xayah", "Scuttlecrab", "Kayle"], "items": ["Guinsoo's Rageblade", "Jeweled Gauntlet", "Morellonomicon", "Giant's Belt"], "tips": ["Morellonomicon d'abord sur Nidalee, puis sur Morgana avec des objets de tank.", "Il faut beaucoup de Baguettes trop grosses ; étape 4 : niveau 8 et roll pour un Incantateur à 4 PO."] }
+      "id": "incantateur-nidalee",
+      "name": "Incantateur · Nidalee",
+      "carries": [
+        "Nidalee",
+        "Morgana"
+      ],
+      "units": [
+        "Nidalee",
+        "Morgana",
+        "Kog'Maw",
+        "Vi",
+        "Scuttlecrab"
+      ],
+      "bm": {
+        "tier": "C",
+        "style": "",
+        "url": "https://bunnymuffins.lol/meta/#invoker",
+        "tips": []
+      },
+      "ta": {
+        "title": "Invoker Nidalee",
+        "tier": "C",
+        "trend": "",
+        "style": "Niveau 8 rapide",
+        "difficulty": "Moyen",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-adaptor-nidalee",
+        "early": [
+          "Rakan",
+          "Xayah",
+          "Scuttlecrab",
+          "Kayle"
+        ],
+        "items": [
+          "Guinsoo's Rageblade",
+          "Jeweled Gauntlet",
+          "Morellonomicon",
+          "Giant's Belt"
+        ],
+        "tips": [
+          "Morellonomicon d'abord sur Nidalee, puis sur Morgana avec des objets de tank.",
+          "Il faut beaucoup de Baguettes trop grosses ; étape 4 : niveau 8 et roll pour un Incantateur à 4 PO."
+        ]
+      }
     },
     {
-      "id": "alune-9", "name": "Alune PA niveau 9", "carries": ["Alune"], "units": ["Alune", "Morgana", "Lux"],
-      "ta": { "title": "Alune AP Fast 9", "tier": "A", "trend": "hausse", "style": "Niveau 9 rapide", "difficulty": "Difficile", "url": "https://tftacademy.com/tierlist/comps/set-18-ap-95", "early": ["Karma", "Rakan", "Yorick", "Yunara"], "items": ["Spear of Shojin", "Needlessly Large Rod", "Tear of the Goddess", "Giant's Belt"], "tips": ["Étape 2 : objets PA et série de victoires avec Fleur spirituelle, Karma et les Tisseurs de sorts.", "Atteins le niveau 9 au début de l'étape 5 avec environ 70 PO pour chercher les 5 PO ; termine avec Lux plutôt que Morgana."] }
+      "id": "alune-9",
+      "name": "Alune PA niveau 9",
+      "carries": [
+        "Alune"
+      ],
+      "units": [
+        "Alune",
+        "Morgana",
+        "Lux"
+      ],
+      "ta": {
+        "title": "Alune AP Fast 9",
+        "tier": "A",
+        "trend": "hausse",
+        "style": "Niveau 9 rapide",
+        "difficulty": "Difficile",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-ap-95",
+        "early": [
+          "Karma",
+          "Rakan",
+          "Yorick",
+          "Yunara"
+        ],
+        "items": [
+          "Spear of Shojin",
+          "Needlessly Large Rod",
+          "Tear of the Goddess",
+          "Giant's Belt"
+        ],
+        "tips": [
+          "Étape 2 : objets PA et série de victoires avec Fleur spirituelle, Karma et les Tisseurs de sorts.",
+          "Atteins le niveau 9 au début de l'étape 5 avec environ 70 PO pour chercher les 5 PO ; termine avec Lux plutôt que Morgana."
+        ]
+      }
     },
     {
-      "id": "maman-raptor", "name": "Sylvestre · Maman Raptor reroll", "carries": ["Mama Beak"], "units": ["Mama Beak", "Hecarim", "Krug", "Alistar", "Xayah"],
-      "ta": { "title": "Mamawood", "tier": "B", "trend": "nouveau", "style": "Reroll 3 PO", "difficulty": "Moyen", "url": "https://tftacademy.com/tierlist/comps/set-18-mamawood", "early": ["Ornn", "Varus", "Xayah", "Shen"], "items": ["Guinsoo's Rageblade", "Hextech Gunblade", "Gargoyle Stoneplate", "Chain Vest"], "tips": ["Maman Raptor porte l'équipe ; son meilleur objet est la Lame enragée de Guinsoo de la lumière. Tank idéal : Hecarim 3★, sinon Krug ou Alistar.", "Étape 4 : roll jusqu'à Maman Raptor et ton tank 2★, puis économise et roll lentement pour les 3★."] }
+      "id": "maman-raptor",
+      "name": "Sylvestre · Maman Raptor reroll",
+      "carries": [
+        "Mama Beak"
+      ],
+      "units": [
+        "Mama Beak",
+        "Hecarim",
+        "Krug",
+        "Alistar",
+        "Xayah"
+      ],
+      "ta": {
+        "title": "Mamawood",
+        "tier": "B",
+        "trend": "nouveau",
+        "style": "Reroll 3 PO",
+        "difficulty": "Moyen",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-mamawood",
+        "early": [
+          "Ornn",
+          "Varus",
+          "Xayah",
+          "Shen"
+        ],
+        "items": [
+          "Guinsoo's Rageblade",
+          "Hextech Gunblade",
+          "Gargoyle Stoneplate",
+          "Chain Vest"
+        ],
+        "tips": [
+          "Maman Raptor porte l'équipe ; son meilleur objet est la Lame enragée de Guinsoo de la lumière. Tank idéal : Hecarim 3★, sinon Krug ou Alistar.",
+          "Étape 4 : roll jusqu'à Maman Raptor et ton tank 2★, puis économise et roll lentement pour les 3★."
+        ]
+      }
     },
     {
-      "id": "fae-tristana", "name": "Fæ · Tristana reroll", "carries": ["Tristana", "Vi"], "units": ["Tristana", "Vi", "Rammus", "Sivir"],
-      "ta": { "title": "Fae Tristana", "tier": "B", "trend": "hausse", "style": "Reroll 3 PO", "difficulty": "Moyen", "url": "https://tftacademy.com/tierlist/comps/set-18-sprykin-trist", "early": ["Rakan", "Varus", "Xayah", "Hecarim"], "items": ["Guinsoo's Rageblade", "Hextech Gunblade", "B.F. Sword", "Recurve Bow"], "tips": ["Seulement avec l'emblème Fæ ; active 4 Fæ le plus tôt possible.", "Étape 4 : niveau 7 et roll au-dessus de 50 PO pour Tristana et Rammus 3★ ; les objets AD en trop vont sur Sivir."] }
+      "id": "fae-tristana",
+      "name": "Fæ · Tristana reroll",
+      "carries": [
+        "Tristana",
+        "Vi"
+      ],
+      "units": [
+        "Tristana",
+        "Vi",
+        "Rammus",
+        "Sivir"
+      ],
+      "ta": {
+        "title": "Fae Tristana",
+        "tier": "B",
+        "trend": "hausse",
+        "style": "Reroll 3 PO",
+        "difficulty": "Moyen",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-sprykin-trist",
+        "early": [
+          "Rakan",
+          "Varus",
+          "Xayah",
+          "Hecarim"
+        ],
+        "items": [
+          "Guinsoo's Rageblade",
+          "Hextech Gunblade",
+          "B.F. Sword",
+          "Recurve Bow"
+        ],
+        "tips": [
+          "Seulement avec l'emblème Fæ ; active 4 Fæ le plus tôt possible.",
+          "Étape 4 : niveau 7 et roll au-dessus de 50 PO pour Tristana et Rammus 3★ ; les objets AD en trop vont sur Sivir."
+        ]
+      }
     },
     {
-      "id": "teemo-reroll", "name": "Sylvestre · Teemo reroll", "carries": ["Teemo", "LeBlanc"], "units": ["Teemo", "LeBlanc", "Morgana"],
-      "ta": { "title": "Teemowood", "tier": "C", "trend": "hausse", "style": "Reroll 2 PO", "difficulty": "Facile", "url": "https://tftacademy.com/tierlist/comps/set-18-sprykin-teemo-copy", "early": ["Kobuko", "Rek'Sai", "Veigar", "Teemo"], "items": ["Gargoyle Stoneplate", "Spear of Shojin", "Void Staff", "Needlessly Large Rod"], "tips": ["Équipe Teemo dès l'étape 2 : plus il lance son sort, plus ses champignons rapportent.", "Étape 3 : niveau 6 et roll pour les 2★, puis économise et roll lentement au-dessus de 50 PO pour le 3★."] }
+      "id": "teemo-reroll",
+      "name": "Sylvestre · Teemo reroll",
+      "carries": [
+        "Teemo",
+        "LeBlanc"
+      ],
+      "units": [
+        "Teemo",
+        "LeBlanc",
+        "Morgana"
+      ],
+      "ta": {
+        "title": "Teemowood",
+        "tier": "C",
+        "trend": "hausse",
+        "style": "Reroll 2 PO",
+        "difficulty": "Facile",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-sprykin-teemo-copy",
+        "early": [
+          "Kobuko",
+          "Rek'Sai",
+          "Veigar",
+          "Teemo"
+        ],
+        "items": [
+          "Gargoyle Stoneplate",
+          "Spear of Shojin",
+          "Void Staff",
+          "Needlessly Large Rod"
+        ],
+        "tips": [
+          "Équipe Teemo dès l'étape 2 : plus il lance son sort, plus ses champignons rapportent.",
+          "Étape 3 : niveau 6 et roll pour les 2★, puis économise et roll lentement au-dessus de 50 PO pour le 3★."
+        ]
+      }
     },
     {
-      "id": "warwick-reroll", "name": "Ronce-obscure · Warwick reroll", "carries": ["Warwick"], "units": ["Warwick", "Murkwolf", "Krug", "Brambleback"],
-      "ta": { "title": "Warwick Reroll", "tier": "C", "trend": "baisse", "style": "Reroll 2 PO", "difficulty": "Moyen", "url": "https://tftacademy.com/tierlist/comps/set-18-warwick-rr", "early": ["Kobuko", "Rek'Sai", "Murkwolf", "Warwick"], "items": ["Spear of Shojin", "Titan's Resolve", "B.F. Sword", "Giant's Belt"], "tips": ["Mets une unité 3★, idéalement Krug, sur la case centrale de Ronce-obscure.", "Sans Lance de Shojin à l'étape 2, une série de défaites assure un bon choix au carrousel. Ensuite, niveau 6 et roll pour Warwick 2★ avec 4 Ronce-obscure et 2 Saccageurs."] }
+      "id": "warwick-reroll",
+      "name": "Ronce-obscure · Warwick reroll",
+      "carries": [
+        "Warwick"
+      ],
+      "units": [
+        "Warwick",
+        "Murkwolf",
+        "Krug",
+        "Brambleback"
+      ],
+      "ta": {
+        "title": "Warwick Reroll",
+        "tier": "C",
+        "trend": "baisse",
+        "style": "Reroll 2 PO",
+        "difficulty": "Moyen",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-warwick-rr",
+        "early": [
+          "Kobuko",
+          "Rek'Sai",
+          "Murkwolf",
+          "Warwick"
+        ],
+        "items": [
+          "Spear of Shojin",
+          "Titan's Resolve",
+          "B.F. Sword",
+          "Giant's Belt"
+        ],
+        "tips": [
+          "Mets une unité 3★, idéalement Krug, sur la case centrale de Ronce-obscure.",
+          "Sans Lance de Shojin à l'étape 2, une série de défaites assure un bon choix au carrousel. Ensuite, niveau 6 et roll pour Warwick 2★ avec 4 Ronce-obscure et 2 Saccageurs."
+        ]
+      }
     },
     {
-      "id": "morgana-assemblee", "name": "Assemblée · Morgana (série de défaites)", "carries": ["Morgana", "Kog'Maw"], "units": ["Morgana", "Kog'Maw", "Brambleback", "Sentinel"],
-      "ta": { "title": "Cashout Morgana", "tier": "C", "trend": "", "style": "Série de défaites", "difficulty": "Difficile", "url": "https://tftacademy.com/tierlist/comps/set-18-cashout-morgana", "early": ["Kobuko", "Pebbles", "Teemo", "Rammus"], "items": ["Morellonomicon", "Void Staff", "Needlessly Large Rod", "Tear of the Goddess"], "tips": ["Se joue en encaissant l'Assemblée : vise 250 essences ou plus.", "Étape 4 : encaisse ou roll au niveau 8 pour Morgana 2★, Sentinelle et un Incantateur à 4 PO."] }
+      "id": "morgana-assemblee",
+      "name": "Assemblée · Morgana (série de défaites)",
+      "carries": [
+        "Morgana",
+        "Kog'Maw"
+      ],
+      "units": [
+        "Morgana",
+        "Kog'Maw",
+        "Brambleback",
+        "Sentinel"
+      ],
+      "ta": {
+        "title": "Cashout Morgana",
+        "tier": "C",
+        "trend": "",
+        "style": "Série de défaites",
+        "difficulty": "Difficile",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-cashout-morgana",
+        "early": [
+          "Kobuko",
+          "Pebbles",
+          "Teemo",
+          "Rammus"
+        ],
+        "items": [
+          "Morellonomicon",
+          "Void Staff",
+          "Needlessly Large Rod",
+          "Tear of the Goddess"
+        ],
+        "tips": [
+          "Se joue en encaissant l'Assemblée : vise 250 essences ou plus.",
+          "Étape 4 : encaisse ou roll au niveau 8 pour Morgana 2★, Sentinelle et un Incantateur à 4 PO."
+        ]
+      }
     },
     {
-      "id": "rengar-initiateur", "name": "Initiateur · Rengar reroll", "carries": ["Rengar", "Diana"], "units": ["Rengar", "Diana", "Hecarim", "Mama Beak"],
-      "ta": { "title": "Vanguard Rengar Reroll", "tier": "C", "trend": "", "style": "Reroll 3 PO", "difficulty": "Moyen", "url": "https://tftacademy.com/tierlist/comps/set-18-rengar-rr", "early": ["Rakan", "Yorick", "Elise", "Rengar"], "items": ["Guinsoo's Rageblade", "Edge of Night", "Titan's Resolve", "Recurve Bow"], "tips": ["Seulement si Rengar arrive tôt avec ses objets.", "Au niveau 7, roll lentement pour les 3★ ; si Maman Raptor 3★ ne vient pas, passe sur le duo Aphelios."] }
+      "id": "rengar-initiateur",
+      "name": "Initiateur · Rengar reroll",
+      "carries": [
+        "Rengar",
+        "Diana"
+      ],
+      "units": [
+        "Rengar",
+        "Diana",
+        "Hecarim",
+        "Mama Beak"
+      ],
+      "ta": {
+        "title": "Vanguard Rengar Reroll",
+        "tier": "C",
+        "trend": "",
+        "style": "Reroll 3 PO",
+        "difficulty": "Moyen",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-rengar-rr",
+        "early": [
+          "Rakan",
+          "Yorick",
+          "Elise",
+          "Rengar"
+        ],
+        "items": [
+          "Guinsoo's Rageblade",
+          "Edge of Night",
+          "Titan's Resolve",
+          "Recurve Bow"
+        ],
+        "tips": [
+          "Seulement si Rengar arrive tôt avec ses objets.",
+          "Au niveau 7, roll lentement pour les 3★ ; si Maman Raptor 3★ ne vient pas, passe sur le duo Aphelios."
+        ]
+      }
     },
     {
-      "id": "aphelios-sylvestre", "name": "Sylvestre · Aphelios", "carries": ["Aphelios", "Ezreal"], "units": ["Aphelios", "Ezreal", "Gnar", "Lux"],
-      "ta": { "title": "Aphelios Elderwood", "tier": "A", "situational": true, "trend": "", "style": "Niveau 8 rapide", "difficulty": "Moyen", "url": "https://tftacademy.com/tierlist/comps/set-18-aphelios-vanguards-copy", "early": ["Varus", "Ornn", "Xayah", "Shen"], "items": ["Recurve Bow", "B.F. Sword", "Sparring Gloves", "Chain Vest"], "tips": ["Étape 2 : début de partie AD agressif avec Ultrarapide ; fabrique sans attendre les objets parfaits.", "Étape 4 : niveau 8, roll pour Aphelios et Ezreal, vise 7 Sylvestre, puis niveau 9 pour Gnar et Lux."] }
+      "id": "aphelios-sylvestre",
+      "name": "Sylvestre · Aphelios",
+      "carries": [
+        "Aphelios",
+        "Ezreal"
+      ],
+      "units": [
+        "Aphelios",
+        "Ezreal",
+        "Gnar",
+        "Lux"
+      ],
+      "ta": {
+        "title": "Aphelios Elderwood",
+        "tier": "A",
+        "situational": true,
+        "trend": "",
+        "style": "Niveau 8 rapide",
+        "difficulty": "Moyen",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-aphelios-vanguards-copy",
+        "early": [
+          "Varus",
+          "Ornn",
+          "Xayah",
+          "Shen"
+        ],
+        "items": [
+          "Recurve Bow",
+          "B.F. Sword",
+          "Sparring Gloves",
+          "Chain Vest"
+        ],
+        "tips": [
+          "Étape 2 : début de partie AD agressif avec Ultrarapide ; fabrique sans attendre les objets parfaits.",
+          "Étape 4 : niveau 8, roll pour Aphelios et Ezreal, vise 7 Sylvestre, puis niveau 9 pour Gnar et Lux."
+        ]
+      }
     },
     {
-      "id": "solaire-eclipse", "name": "Solaire · Aphelios (Éclipse)", "carries": ["Aphelios"], "units": ["Aphelios", "Lux", "Lillia", "Amumu", "Sentinel"],
-      "ta": { "title": "Solar Eclipse", "tier": "B", "situational": true, "trend": "", "style": "Niveau 8 rapide", "difficulty": "Difficile", "url": "https://tftacademy.com/tierlist/comps/set-18-solar-eclipse", "early": ["Camille", "Leona", "Akali", "Shen"], "items": ["Guinsoo's Rageblade", "Warmog's Armor", "Chain Vest", "Sparring Gloves"], "tips": ["L'emblème Lunaire évite de dépendre d'Alune : prends la Spatule au carrousel si tu peux.", "Étape 4 : niveau 8 et cherche une ligne avant qui tient le temps qu'Éclipse se déclenche (Lillia 2★ est la plus simple)."] }
+      "id": "solaire-eclipse",
+      "name": "Solaire · Aphelios (Éclipse)",
+      "carries": [
+        "Aphelios"
+      ],
+      "units": [
+        "Aphelios",
+        "Lux",
+        "Lillia",
+        "Amumu",
+        "Sentinel"
+      ],
+      "ta": {
+        "title": "Solar Eclipse",
+        "tier": "B",
+        "situational": true,
+        "trend": "",
+        "style": "Niveau 8 rapide",
+        "difficulty": "Difficile",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-solar-eclipse",
+        "early": [
+          "Camille",
+          "Leona",
+          "Akali",
+          "Shen"
+        ],
+        "items": [
+          "Guinsoo's Rageblade",
+          "Warmog's Armor",
+          "Chain Vest",
+          "Sparring Gloves"
+        ],
+        "tips": [
+          "L'emblème Lunaire évite de dépendre d'Alune : prends la Spatule au carrousel si tu peux.",
+          "Étape 4 : niveau 8 et cherche une ligne avant qui tient le temps qu'Éclipse se déclenche (Lillia 2★ est la plus simple)."
+        ]
+      }
     },
     {
-      "id": "infernal-ashe", "name": "Infernal · Lux et Ashe", "carries": ["Ashe", "Lux"], "units": ["Ashe", "Lux", "Sivir", "Vi", "Lillia"],
-      "ta": { "title": "Inferno Fast 9", "tier": "C", "situational": true, "trend": "", "style": "Niveau 8 rapide", "difficulty": "Difficile", "url": "https://tftacademy.com/tierlist/comps/set-18-inferno-fast-9", "early": ["Karma", "Rakan", "Yorick", "Yunara"], "items": ["Infinity Edge", "Warmog's Armor", "Recurve Bow", "B.F. Sword"], "tips": ["Seulement avec l'emblème Infernal ; Lux la rend bien plus forte.", "Quand tu trouves Ashe, donne-lui l'emblème Infernal et la Lance de Shojin."] }
+      "id": "infernal-ashe",
+      "name": "Infernal · Lux et Ashe",
+      "carries": [
+        "Ashe",
+        "Lux"
+      ],
+      "units": [
+        "Ashe",
+        "Lux",
+        "Sivir",
+        "Vi",
+        "Lillia"
+      ],
+      "ta": {
+        "title": "Inferno Fast 9",
+        "tier": "C",
+        "situational": true,
+        "trend": "",
+        "style": "Niveau 8 rapide",
+        "difficulty": "Difficile",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-inferno-fast-9",
+        "early": [
+          "Karma",
+          "Rakan",
+          "Yorick",
+          "Yunara"
+        ],
+        "items": [
+          "Infinity Edge",
+          "Warmog's Armor",
+          "Recurve Bow",
+          "B.F. Sword"
+        ],
+        "tips": [
+          "Seulement avec l'emblème Infernal ; Lux la rend bien plus forte.",
+          "Quand tu trouves Ashe, donne-lui l'emblème Infernal et la Lance de Shojin."
+        ]
+      }
     },
     {
-      "id": "alistar-yunara", "name": "Alistar et Yunara reroll", "carries": ["Yunara"], "units": ["Yunara", "Alistar", "Kennen"],
-      "ta": { "title": "Moo-nara", "tier": "C", "situational": true, "trend": "", "style": "Reroll 2 PO", "difficulty": "Moyen", "url": "https://tftacademy.com/tierlist/comps/set-18-moo-nara", "early": ["Karma", "Yorick", "Yunara", "Azir"], "items": ["Spear of Shojin", "Gargoyle Stoneplate", "Recurve Bow", "Sparring Gloves"], "tips": ["Objets sur Yunara d'abord, et série de victoires avec Fleur spirituelle.", "Finis les 3★, puis monte de niveau : 3 Exécuteurs renforcent Yunara."] }
+      "id": "alistar-yunara",
+      "name": "Alistar et Yunara reroll",
+      "carries": [
+        "Yunara"
+      ],
+      "units": [
+        "Yunara",
+        "Alistar",
+        "Kennen"
+      ],
+      "ta": {
+        "title": "Moo-nara",
+        "tier": "C",
+        "situational": true,
+        "trend": "",
+        "style": "Reroll 2 PO",
+        "difficulty": "Moyen",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-moo-nara",
+        "early": [
+          "Karma",
+          "Yorick",
+          "Yunara",
+          "Azir"
+        ],
+        "items": [
+          "Spear of Shojin",
+          "Gargoyle Stoneplate",
+          "Recurve Bow",
+          "Sparring Gloves"
+        ],
+        "tips": [
+          "Objets sur Yunara d'abord, et série de victoires avec Fleur spirituelle.",
+          "Finis les 3★, puis monte de niveau : 3 Exécuteurs renforcent Yunara."
+        ]
+      }
     },
     {
-      "id": "elise-assemblee", "name": "Assemblée · Elise reroll", "carries": ["Elise", "Cassiopeia"], "units": ["Elise", "Cassiopeia", "Morgana", "Diana"],
-      "ta": { "title": "Coven Elise", "tier": "C", "situational": true, "trend": "", "style": "Reroll 2 PO", "difficulty": "Moyen", "url": "https://tftacademy.com/tierlist/comps/set-18-coven-elise", "early": ["Camille", "Caitlyn", "Elise", "Diana"], "items": ["Guinsoo's Rageblade", "Titan's Resolve", "Negatron Cloak", "Chain Vest"], "tips": ["Prends l'augment Sombre rituel pour transformer l'or encaissé en puissance.", "Étape 3 : niveau 6 et roll pour Elise 2★ ; encaisse l'Assemblée quand il te reste 25 à 30 PV."] }
+      "id": "elise-assemblee",
+      "name": "Assemblée · Elise reroll",
+      "carries": [
+        "Elise",
+        "Cassiopeia"
+      ],
+      "units": [
+        "Elise",
+        "Cassiopeia",
+        "Morgana",
+        "Diana"
+      ],
+      "ta": {
+        "title": "Coven Elise",
+        "tier": "C",
+        "situational": true,
+        "trend": "",
+        "style": "Reroll 2 PO",
+        "difficulty": "Moyen",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-coven-elise",
+        "early": [
+          "Camille",
+          "Caitlyn",
+          "Elise",
+          "Diana"
+        ],
+        "items": [
+          "Guinsoo's Rageblade",
+          "Titan's Resolve",
+          "Negatron Cloak",
+          "Chain Vest"
+        ],
+        "tips": [
+          "Prends l'augment Sombre rituel pour transformer l'or encaissé en puissance.",
+          "Étape 3 : niveau 6 et roll pour Elise 2★ ; encaisse l'Assemblée quand il te reste 25 à 30 PV."
+        ]
+      }
     },
     {
-      "id": "khazix-rival", "name": "Rival · Kha'Zix reroll", "carries": ["Kha'Zix", "Rengar"], "units": ["Kha'Zix", "Rengar"],
-      "ta": { "title": "Unrivaled Reroll", "tier": "C", "situational": true, "trend": "", "style": "Reroll 3 PO", "difficulty": "", "url": "https://tftacademy.com/tierlist/comps/set-18-unrivaled-reroll", "early": ["Kobuko", "Rek'Sai", "Kha'Zix", "Rengar"], "items": ["Edge of Night", "B.F. Sword", "Chain Vest", "Needlessly Large Rod"], "tips": ["Kha'Zix améliore ses objets en enchaînant les éliminations.", "Renforce la ligne avant ; au niveau 7, roll pour les 2★, puis roll lentement au-dessus de 50 PO pour les 3★."] }
+      "id": "khazix-rival",
+      "name": "Rival · Kha'Zix reroll",
+      "carries": [
+        "Kha'Zix",
+        "Rengar"
+      ],
+      "units": [
+        "Kha'Zix",
+        "Rengar"
+      ],
+      "ta": {
+        "title": "Unrivaled Reroll",
+        "tier": "C",
+        "situational": true,
+        "trend": "",
+        "style": "Reroll 3 PO",
+        "difficulty": "",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-unrivaled-reroll",
+        "early": [
+          "Kobuko",
+          "Rek'Sai",
+          "Kha'Zix",
+          "Rengar"
+        ],
+        "items": [
+          "Edge of Night",
+          "B.F. Sword",
+          "Chain Vest",
+          "Needlessly Large Rod"
+        ],
+        "tips": [
+          "Kha'Zix améliore ses objets en enchaînant les éliminations.",
+          "Renforce la ligne avant ; au niveau 7, roll pour les 2★, puis roll lentement au-dessus de 50 PO pour les 3★."
+        ]
+      }
+    },
+    {
+      "id": "xayah-rakan-reroll",
+      "name": "Fæ · Xayah et Rakan reroll",
+      "carries": [
+        "Xayah",
+        "Rakan"
+      ],
+      "units": [
+        "Xayah",
+        "Rakan",
+        "Lillia",
+        "Sejuani",
+        "Lux"
+      ],
+      "ta": {
+        "title": "Embiggen Xayah",
+        "tier": "C",
+        "trend": "nouveau",
+        "style": "Reroll 1 PO",
+        "difficulty": "Facile",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-embiggen-xayah",
+        "early": [
+          "Ornn",
+          "Rakan",
+          "Varus",
+          "Xayah"
+        ],
+        "items": [
+          "Guinsoo's Rageblade",
+          "Adaptive Helm",
+          "B.F. Sword",
+          "Recurve Bow"
+        ],
+        "tips": [
+          "Monte d'abord Xayah et Rakan 3★, puis les Solaires 3★ ; donne des objets de mana à Rakan pour accélérer Xayah.",
+          "Étape 2 : seulement avec des améliorations tôt ou un bon augment de combat. Étapes 3-4 : roll lentement au-dessus de 50 PO pour les 3★, puis roll au niveau 6 pour les Solaires ; vise 4 Fæ et 3 Solaire."
+        ]
+      }
     }
   ]
 }

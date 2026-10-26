@@ -8,7 +8,7 @@ const fs = require('fs');
 const path = require('path');
 
 const FILES = ['guides', 'glossary', 'guides-watch'];
-const REMOTE = 'https://raw.githubusercontent.com/ZayKololo/tft-stats/main/content';
+const REMOTE = 'https://raw.githubusercontent.com/HexaLabsFR/tft-stats/main/content';
 const REFRESH_MS = 6 * 60 * 60 * 1000;
 const BUILTIN_DIR = path.join(__dirname, '..', 'content');
 

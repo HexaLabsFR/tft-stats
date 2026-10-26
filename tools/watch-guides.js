@@ -11,8 +11,10 @@ const path = require('path');
 const ROOT = path.join(__dirname, '..');
 const GUIDES = require(path.join(ROOT, 'content', 'guides.json'));
 const OUT = path.join(ROOT, 'content', 'guides-watch.json');
-const UA = { 'User-Agent': 'HexaRise-veille/1.0 (+https://github.com/ZayKololo/tft-stats)' };
+const UA = { 'User-Agent': 'HexaRise-veille/1.0 (+https://github.com/HexaLabsFR/tft-stats)' };
 const day = (s) => (s ? String(s).slice(0, 10) : '');
+// Les dates des fiches sont en heure locale de l'auteur, celles de l'API en UTC : un jour de marge.
+const after = (a, b) => Boolean(a) && (!b || new Date(`${a}T00:00:00Z`) - new Date(`${b}T00:00:00Z`) > 86400000);
 const norm = (u) => String(u || '').replace(/[#?].*$/, '').replace(/\/+$/, '').toLowerCase();
 
 async function get(url, type = 'json') {
@@ -36,11 +38,11 @@ async function bunnymuffins(changes, errors) {
   // Guides suivis modifiés depuis la fiche
   for (const g of GUIDES.guides.filter((x) => x.source === 'bunnymuffins')) {
     const p = byUrl.get(norm(g.url));
-    if (p && day(p.modified_gmt) > (g.modified || '')) changes.push({ kind: 'updated', id: g.id, source: 'bunnymuffins', title: g.title, url: g.url, date: day(p.modified_gmt) });
+    if (p && after(day(p.modified_gmt), g.modified)) changes.push({ kind: 'updated', id: g.id, source: 'bunnymuffins', title: g.title, url: g.url, date: day(p.modified_gmt) });
   }
   // Tier list
   const meta = byUrl.get(norm(GUIDES.sources.bunnymuffins.tierlist));
-  if (meta && day(meta.modified_gmt) > GUIDES.sources.bunnymuffins.tierlistModified) {
+  if (meta && after(day(meta.modified_gmt), GUIDES.sources.bunnymuffins.tierlistModified)) {
     changes.push({ kind: 'tierlist', source: 'bunnymuffins', title: 'Tier list BunnyMuffins', url: GUIDES.sources.bunnymuffins.tierlist, date: day(meta.modified_gmt) });
   }
   // Nouveaux guides : catégorie « Guide », publiés après la dernière révision des fiches
@@ -79,11 +81,7 @@ async function tftacademy(changes, errors) {
       changes.push({ kind: 'new', source: 'tftacademy', title: `Compo « ${slug} »`, url, date: day(new Date().toISOString()) });
     }
   }
-  if (links.size) {
-    for (const c of GUIDES.comps.filter((x) => x.ta && !links.has(norm(x.ta.url)))) {
-      changes.push({ kind: 'removed', id: c.id, source: 'tftacademy', title: c.name, url: c.ta.url, date: day(new Date().toISOString()) });
-    }
-  }
+  // Les compos absentes de la page ne sont pas signalées : la page charge une partie de ses liens après coup.
 }
 
 (async () => {

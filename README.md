@@ -4,7 +4,7 @@ Application Teamfight Tactics en français pour monter de Bronze à Diamant : co
 
 ## Installer
 
-Télécharger `HexaRise-Setup-x.y.z.exe` dans les [Releases](https://github.com/ZayKololo/tft-stats/releases/latest), le lancer, puis coller ta clé Riot (https://developer.riotgames.com) dans la fenêtre qui s'ouvre. Les versions suivantes s'installent toutes seules.
+Télécharger `HexaRise-Setup-x.y.z.exe` dans les [Releases](https://github.com/HexaLabsFR/tft-stats/releases/latest), le lancer, puis coller ta clé Riot (https://developer.riotgames.com) dans la fenêtre qui s'ouvre. Les versions suivantes s'installent toutes seules.
 
 ## Ce que fait l'app
 

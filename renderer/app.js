@@ -918,6 +918,7 @@ function learnExperts() {
       return r(a) - r(b);
     });
   const tl = watchChanges().filter((c) => c.kind === 'tierlist');
+  const fresh = watchChanges().filter((c) => c.kind === 'new' && c.source === 'tftacademy');
   const unitIcons = (names) => names.map((n) => (champByName(n) ? champIcon(champByName(n), 'sm') : `<span class="tag">${esc(n)}</span>`)).join('');
   const itemIcons = (names) => names.map((n) => (itemByName(n) ? itemIcon(itemByName(n)) : `<span class="tag">${esc(n)}</span>`)).join('');
   const block = (e, k) => {
@@ -938,6 +939,7 @@ function learnExperts() {
     return (M()?.comps || []).find((c) => ids.includes(c.carry)) || null;
   };
   return `${tl.length ? `<div class="notice" style="margin-bottom:14px">${tl.map((c) => `<div><strong>${esc(c.title)}</strong> mise à jour le ${frDate(c.date)} : les avis seront révisés sous peu.</div>`).join('')}</div>` : ''}
+    ${fresh.length ? `<div class="notice" style="margin-bottom:14px"><strong>Nouvelles compos chez TFT Academy</strong><div class="rows" style="margin-top:8px">${fresh.map((n) => `<div><span class="grow">${esc(n.title)}</span>${ext(n.url, 'Voir')}</div>`).join('')}</div><p class="small" style="margin-top:6px">Leur fiche en français arrive à la prochaine révision.</p></div>` : ''}
     <p class="small" style="margin:0 0 14px">Tier lists de BunnyMuffins (mise à jour le ${frDate(g.sources.bunnymuffins.tierlistModified)}) et TFT Academy, patch ${esc(g.patch)}. Quand les deux traitent la même compo, BunnyMuffins passe en premier. Résumés HexaRise.</p>
     <div class="stack">${list.map((e) => {
       const mine = ours(e);
