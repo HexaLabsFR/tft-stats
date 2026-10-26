@@ -50,6 +50,45 @@ function send(event, data) {
   overlay?.send(event, data);
 }
 
+// ---------- Fenêtre de démarrage (charte Hexa Labs : 800 × 500, signature « par Hexa Labs ») ----------
+let splash = null;
+const SPLASH_MIN_MS = 1600;
+let splashShownAt = 0;
+function createSplash() {
+  splash = new BrowserWindow({
+    width: 800,
+    height: 500,
+    frame: false,
+    resizable: false,
+    movable: true,
+    center: true,
+    show: false,
+    title: 'HexaRise',
+    backgroundColor: '#0B0F14',
+    icon: path.join(__dirname, '..', 'build', 'icon.png'),
+    webPreferences: { contextIsolation: true, nodeIntegration: false, sandbox: true }
+  });
+  splash.loadFile(path.join(__dirname, '..', 'renderer', 'splash.html'));
+  splash.once('ready-to-show', () => {
+    splashShownAt = Date.now();
+    splash?.show();
+  });
+}
+
+/** Affiche la fenêtre principale une fois prête, après au moins SPLASH_MIN_MS d'écran de démarrage. */
+let mainReady = { window: false, app: false, shown: false };
+function maybeShowMain() {
+  if (mainReady.shown || !mainReady.window || !mainReady.app) return;
+  mainReady.shown = true;
+  const wait = splash ? Math.max(0, SPLASH_MIN_MS - (Date.now() - (splashShownAt || Date.now()))) : 0;
+  setTimeout(() => {
+    win.show();
+    win.focus();
+    if (splash && !splash.isDestroyed()) splash.destroy();
+    splash = null;
+  }, wait);
+}
+
 function createWindow() {
   win = new BrowserWindow({
     width: 1360,
@@ -69,7 +108,15 @@ function createWindow() {
     }
   });
   win.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'));
-  win.once('ready-to-show', () => win.show());
+  win.once('ready-to-show', () => {
+    mainReady.window = true;
+    maybeShowMain();
+  });
+  // Sécurité : si l'interface ne signale pas qu'elle est prête, on l'affiche quand même.
+  setTimeout(() => {
+    mainReady.app = true;
+    maybeShowMain();
+  }, 8000);
 
   // Liens externes dans le navigateur, jamais dans l'app.
   win.webContents.setWindowOpenHandler(({ url }) => {
@@ -150,6 +197,11 @@ function registerIpc(checkUpdate) {
     player: (a) => engine.lookupPlayer(a),
     live: (a) => engine.liveGame(a),
     appInfo: () => ({ version: app.getVersion(), desktop: true, update: updateState }),
+    appReady: () => {
+      mainReady.app = true;
+      maybeShowMain();
+      return true;
+    },
     checkUpdate: () => checkUpdate(),
     overlayGet: () => ({ ...overlay.get(), shortcut: OVERLAY_SHORTCUT }),
     overlaySet: (patch) => overlay.set(patch),
@@ -184,6 +236,7 @@ app.whenReady().then(() => {
     : new Engine({ dataDir, keyStore: keyStore(dataDir) });
   for (const ev of ['status', 'meta', 'static', 'log', 'content']) engine.on(ev, (d) => send(ev, d));
 
+  createSplash();
   createWindow();
   overlay = new Overlay({
     dataDir,

@@ -1983,11 +1983,18 @@ setInterval(renderStatus, 30000);
 
 // ===================== Démarrage =====================
 /** Écran de démarrage : logo HexaRise, barre menthe et signature « par Hexa Labs » (charte Hexa Labs). */
+const BOOT_START = performance.now();
 function hideBoot() {
+  api.appReady?.().catch(() => {});
   const b = document.getElementById('boot');
   if (!b) return;
-  b.classList.add('done');
-  setTimeout(() => b.remove(), 450);
+  // Application Windows : la fenêtre de démarrage a déjà été affichée, on retire tout de suite.
+  // Version web : l'écran reste au moins 1,2 s pour être lisible.
+  const wait = isDesktop ? 0 : Math.max(0, 1200 - (performance.now() - BOOT_START));
+  setTimeout(() => {
+    b.classList.add('done');
+    setTimeout(() => b.remove(), 450);
+  }, wait);
 }
 (async function boot() {
   try {

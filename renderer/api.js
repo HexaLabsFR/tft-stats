@@ -35,6 +35,7 @@ export const api = desktop
       player: (riotId, platform) => desktop.invoke('player', { riotId, platform }),
       live: (puuid, platform) => desktop.invoke('live', { puuid, platform }),
       appInfo: () => desktop.invoke('appInfo'),
+      appReady: () => desktop.invoke('appReady'),
       installUpdate: () => desktop.invoke('installUpdate'),
       checkUpdate: () => desktop.invoke('checkUpdate'),
       overlayGet: () => desktop.invoke('overlayGet'),
@@ -55,6 +56,7 @@ export const api = desktop
       player: (riotId, platform) => http('GET', `/api/player?riotId=${encodeURIComponent(riotId)}&platform=${platform}`),
       live: (puuid, platform) => http('GET', `/api/live?puuid=${encodeURIComponent(puuid)}&platform=${platform}`),
       appInfo: async () => ({ version: 'web', desktop: false }),
+      appReady: async () => true,
       installUpdate: async () => {},
       checkUpdate: async () => {},
       // Version web : réglages du mode partie dans le navigateur, fenêtre pop-up.

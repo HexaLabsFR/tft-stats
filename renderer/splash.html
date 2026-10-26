@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'">
+  <title>HexaRise</title>
+  <style>
+    @font-face { font-family: "Space Grotesk"; src: url("fonts/space-grotesk-latin-wght-normal.woff2") format("woff2"); font-weight: 300 700; }
+    html, body { margin: 0; height: 100%; background: #0B0F14; color: #FFFFFF; font-family: "Space Grotesk", "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; overflow: hidden; user-select: none; -webkit-app-region: drag; }
+    body { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .c { display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: -24px; }
+    .logo { width: 96px; height: 96px; }
+    .name { font-size: 32px; font-weight: 700; letter-spacing: .05em; }
+    .bar { width: 260px; height: 4px; border-radius: 2px; background: #1F2833; overflow: hidden; margin-top: 8px; }
+    .bar i { display: block; height: 100%; width: 0; border-radius: 2px; background: #2EE6A8; animation: fill 1.6s cubic-bezier(.2, 0, 0, 1) forwards; }
+    @keyframes fill { to { width: 92%; } }
+    .msg { font-size: 13px; color: #8A94A3; }
+    .sign { position: absolute; bottom: 30px; display: flex; align-items: center; gap: 8px; font-size: 14px; color: #8A94A3; }
+    .sign img { width: 18px; height: 21px; }
+    .sign b { font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="c">
+    <img class="logo" src="logo.svg" alt="">
+    <div class="name">HexaRise</div>
+    <div class="bar"><i></i></div>
+    <div class="msg">Chargement…</div>
+  </div>
+  <div class="sign"><img src="brand/hexalabs-symbole-simple.svg" alt=""><span>par <b>Hexa Labs</b></span></div>
+</body>
+</html>
