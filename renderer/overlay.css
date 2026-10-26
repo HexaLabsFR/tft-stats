@@ -2,18 +2,18 @@
 body.ov { font-size: 13px; overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
 .ov-bar { -webkit-app-region: drag; display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--panel); border-bottom: 1px solid var(--line); user-select: none; }
 .ov-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--faint); flex: none; }
-.ov-dot.on { background: var(--good); box-shadow: 0 0 0 3px rgba(79, 209, 139, .2); }
-.ov-title { font-weight: 700; color: var(--gold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ov-dot.on { background: var(--mint); box-shadow: 0 0 0 3px var(--mint-soft); }
+.ov-title { font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ov-actions { margin-left: auto; display: flex; gap: 4px; -webkit-app-region: no-drag; }
 .ov-btn { background: transparent; border: 1px solid var(--line); border-radius: 6px; width: 26px; height: 24px; cursor: pointer; color: var(--muted); padding: 0; }
-.ov-btn:hover { color: var(--text); border-color: #3a4770; }
+.ov-btn:hover { color: var(--text); border-color: var(--outline); }
 .web .desktop-only { display: none; }
 
 .ov-pick { display: grid; grid-template-columns: 1fr auto; gap: 6px; padding: 8px 10px 0; }
 .ov-pick .input { min-width: 0; padding: 6px 8px; font-size: 12.5px; }
 .ov-tabs { display: flex; gap: 4px; padding: 8px 10px; }
 .ov-tabs .chip { flex: 1; text-align: center; background: var(--panel-2); border: 1px solid var(--line); padding: 5px 0; }
-.ov-tabs .chip.on { background: var(--gold-soft); color: var(--gold); border-color: rgba(233, 185, 79, .35); }
+.ov-tabs .chip.on { background: var(--mint-soft); color: var(--text); border-color: var(--mint-line); }
 .ov-body { flex: 1; overflow: auto; padding: 0 10px 10px; }
 .ov-foot { padding: 6px 10px; border-top: 1px solid var(--line); color: var(--faint); font-size: 11px; }
 .ov-empty { color: var(--muted); text-align: center; padding: 30px 10px; line-height: 1.6; }
@@ -31,7 +31,7 @@ body.ov { font-size: 13px; overflow: hidden; display: flex; flex-direction: colu
 .ov .unit .uname { max-width: 36px; font-size: 9.5px; }
 
 .ov-stage { margin-top: 10px; }
-.ov-stage h4 { margin: 0 0 4px; font-size: 12px; color: var(--gold); display: flex; gap: 8px; align-items: baseline; }
+.ov-stage h4 { margin: 0 0 4px; font-size: 12px; color: var(--text); display: flex; gap: 8px; align-items: baseline; }
 .ov-stage h4 span { color: var(--faint); font-weight: 500; }
 .ov-step { display: grid; align-items: start; grid-template-columns: 18px 1fr; gap: 6px; padding: 5px 6px; border-radius: 6px; cursor: pointer; }
 .ov-step:hover { background: var(--panel-2); }
@@ -45,14 +45,14 @@ body.ov { font-size: 13px; overflow: hidden; display: flex; flex-direction: colu
 
 .ov-recipes { display: grid; grid-template-columns: 1fr; gap: 3px; }
 .ov-recipe { display: grid; grid-template-columns: 24px 1fr auto; gap: 6px; align-items: center; background: var(--panel); border: 1px solid var(--line); border-radius: 7px; padding: 3px 6px 3px 3px; font-size: 12px; }
-.ov-recipe.hl { border-color: rgba(233, 185, 79, .55); background: var(--gold-soft); }
+.ov-recipe.hl { border-color: var(--mint-line); background: var(--mint-soft); }
 .ov-recipe .parts { display: flex; align-items: center; gap: 2px; color: var(--faint); }
 .ov-recipe .ic.item { width: 22px; height: 22px; }
 .ov-recipe .parts .ic.item { width: 18px; height: 18px; border-radius: 4px; }
 .ov-recipe .ic.aug { width: 22px; height: 22px; border-radius: 5px; }
 
 .ov-augs { width: 100%; border-collapse: collapse; }
-.ov-augs td { padding: 4px; border-bottom: 1px solid rgba(34, 44, 71, .6); }
+.ov-augs td { padding: 4px; border-bottom: 1px solid var(--outline-2); }
 .ov-augs td:first-child { width: 30px; }
 .ov-augs .ic.aug { width: 24px; height: 24px; border-radius: 6px; }
 
@@ -64,4 +64,4 @@ table.ov-plan td.rd { font-size: 12px; }
 .ov-odds { width: 100%; border-collapse: collapse; font-size: 11.5px; font-variant-numeric: tabular-nums; }
 .ov-odds th, .ov-odds td { padding: 3px 4px; text-align: right; border-top: 1px solid var(--line); cursor: default; position: static; background: transparent; }
 .ov-odds th:first-child, .ov-odds td:first-child { text-align: left; color: var(--faint); }
-.ov-odds tr.hl td { background: rgba(124, 58, 237, .18); color: var(--text); }
+.ov-odds tr.hl td { background: var(--mint-soft); color: var(--text); }

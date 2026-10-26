@@ -66,7 +66,7 @@ class Overlay {
       skipTaskbar: true,
       resizable: true,
       show: false,
-      backgroundColor: '#0a0e18',
+      backgroundColor: '#0B0F14',
       title: 'HexaRise · Mode partie',
       webPreferences: { preload: this.preload, contextIsolation: true, nodeIntegration: false, sandbox: true }
     });

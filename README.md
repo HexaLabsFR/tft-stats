@@ -1,4 +1,4 @@
-# HexaRise · Compagnon TFT
+# HexaRise · Compagnon TFT, par Hexa Labs
 
 Application Teamfight Tactics en français pour monter de Bronze à Diamant : compos méta de ton rang, guide étape par étape, plan de niveaux et mode partie. Version desktop (Windows) et version web, données Riot en direct, mises à jour automatiques.
 

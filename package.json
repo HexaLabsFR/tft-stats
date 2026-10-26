@@ -1,9 +1,9 @@
 {
   "name": "tft-stats",
   "productName": "HexaRise",
-  "version": "1.10.0",
+  "version": "1.11.0",
   "description": "HexaRise, compagnon TFT : méta par rang, guides étape par étape et mode partie, en français.",
-  "author": "Mika",
+  "author": "Hexa Labs",
   "license": "UNLICENSED",
   "repository": {
     "type": "git",
@@ -30,7 +30,7 @@
   "build": {
     "appId": "fr.tftstats.app",
     "productName": "HexaRise",
-    "copyright": "HexaRise n'est pas approuvé par Riot Games.",
+    "copyright": "© 2026 Hexa Labs · HexaRise n'est pas approuvé par Riot Games.",
     "directories": {
       "output": "dist",
       "buildResources": "build"

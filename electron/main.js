@@ -57,7 +57,7 @@ function createWindow() {
     minWidth: 980,
     minHeight: 640,
     title: 'HexaRise',
-    backgroundColor: '#0a0e18',
+    backgroundColor: '#0B0F14',
     autoHideMenuBar: true,
     icon: path.join(__dirname, '..', 'build', 'icon.png'),
     show: false,

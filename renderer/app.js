@@ -1497,6 +1497,14 @@ function viewSettings() {
     ${isDesktop ? setRow({ tile: 'blue', icon: 'update', title: 'Mises à jour', sub: S.update?.message || 'Vérification au démarrage puis toutes les 4 h', trail: S.update?.state === 'downloaded' ? '<span class="pill grad">Redémarrer</span>' : '', attrs: `data-action="${S.update?.state === 'downloaded' ? 'install-update' : 'check-update'}"` }) : ''}
     ${setRow({ tile: 'gray', icon: 'data', title: 'Parties en base', sub: `${int(S.app?.storedMatches)} parties enregistrées sur ce PC`, trail: '', attrs: 'tabindex="-1"', cls: 'static' })}
     ${setRow({ tile: 'gray', icon: 'list', title: 'Journal', sub: 'Historique de la collecte et des erreurs', attrs: 'data-subpage="journal"' })}
+
+    <h2 class="set-section">À propos</h2>
+    <div class="about">
+      <img class="about-logo" src="logo.svg" alt="">
+      <div class="about-txt"><b>HexaRise</b><span>Compagnon TFT pour progresser de Bronze à Diamant · version ${esc(info.version || '—')}</span>
+        <div class="hl-sign sm"><img src="brand/hexalabs-symbole-simple.svg" alt=""><span>par <b>Hexa Labs</b></span></div>
+        <small>Hexa Labs · outils de performance gaming. HexaRise n’est pas approuvé par Riot Games et ne reflète pas les opinions de Riot Games.</small></div>
+    </div>
   </div>`;
 }
 
@@ -1974,11 +1982,19 @@ api.on('content', (c) => {
 setInterval(renderStatus, 30000);
 
 // ===================== Démarrage =====================
+/** Écran de démarrage : logo HexaRise, barre menthe et signature « par Hexa Labs » (charte Hexa Labs). */
+function hideBoot() {
+  const b = document.getElementById('boot');
+  if (!b) return;
+  b.classList.add('done');
+  setTimeout(() => b.remove(), 450);
+}
 (async function boot() {
   try {
     [S.app, S.static, S.meta, S.appInfo, S.overlay, S.content] = await Promise.all([api.state(), api.static(), api.meta(), api.appInfo(), api.overlayGet(), api.content().catch(() => null)]);
   } catch (err) {
     view.innerHTML = `<div class="card empty"><p class="h2">Erreur</p><p class="lede">${esc(err.message)}</p></div>`;
+    hideBoot();
     return;
   }
   const r = location.hash.slice(1);
@@ -1986,6 +2002,7 @@ setInterval(renderStatus, 30000);
   S.route = ALIASES[r] ? 'explore' : VIEWS[r] && !CHILD[r] ? r : 'meta';
   renderStatus();
   render('fade');
+  hideBoot();
   if (!S.app?.hasKey) setTimeout(openKeyDialog, 400);
   else setTimeout(() => promptKeyIfRefused(S.app?.status), 400);
 })();
