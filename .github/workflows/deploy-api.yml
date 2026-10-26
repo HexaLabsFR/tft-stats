@@ -33,28 +33,43 @@ jobs:
       - uses: actions/checkout@v4
         if: env.HAS_CF == 'true'
 
+      - uses: actions/setup-node@v4
+        if: env.HAS_CF == 'true'
+        with:
+          node-version: 22
+
       - name: Déployer sur Cloudflare Workers
         id: deploy
         if: env.HAS_CF == 'true'
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: worker
-          command: deploy
+        working-directory: worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          NO_COLOR: '1'
+          FORCE_COLOR: '0'
+          WRANGLER_SEND_METRICS: 'false'
+        shell: bash
+        run: |
+          set -o pipefail
+          if ! npx --yes wrangler@4 deploy 2>&1 | tee ../deploy.txt; then
+            # Les messages d'erreur remontent en annotations (lisibles sans ouvrir les journaux).
+            grep -E "ERROR|✘|rror|subdomain|register|Authentication|permission|code: " ../deploy.txt | head -15 | while IFS= read -r l; do echo "::error::${l}"; done
+            exit 1
+          fi
+          URL=$(grep -oE 'https://[A-Za-z0-9.-]+\.workers\.dev' ../deploy.txt | head -1)
+          echo "deployment-url=$URL" >> "$GITHUB_OUTPUT"
+          echo "::notice::HexaRise API déployé : $URL"
 
       - name: Envoyer la clé Riot de production au serveur
         if: env.HAS_CF == 'true' && env.HAS_RIOT == 'true'
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: worker
-          # wrangler-action envoie les secrets listés puis relance le déploiement
-          command: deploy
-          secrets: RIOT_API_KEY
+        working-directory: worker
         env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           RIOT_API_KEY: ${{ secrets.RIOT_API_KEY }}
+          NO_COLOR: '1'
+        shell: bash
+        run: printf '%s' "$RIOT_API_KEY" | npx --yes wrangler@4 secret put RIOT_API_KEY
 
       - name: Publier l'adresse du serveur pour l'app (api.json sur le site)
         if: env.HAS_CF == 'true' && steps.deploy.outputs.deployment-url != ''
