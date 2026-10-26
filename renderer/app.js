@@ -1,5 +1,5 @@
 import { api, isDesktop } from './api.js';
-import { buildGuide, compType } from './guide.js';
+import { buildGuide, compType, STREAKS } from './guide.js';
 
 // ===================== État =====================
 const stored = (k, d) => {
@@ -25,6 +25,7 @@ const S = {
   overlay: null,
   sort: {},
   guideId: null,
+  champId: null,
   selComp: null,
   setPage: 'root', // root | collecte | journal
   mode: stored('mode', 'simple'), // simple | expert
@@ -36,6 +37,8 @@ const S = {
     style: 'all',
     exploreTab: stored('exploreTab', 'champions'),
     cost: 0,
+    champTrait: '',
+    champView: stored('champView', 'list'),
     itemKind: 'complet',
     augTier: 'tous'
   },
@@ -64,10 +67,12 @@ function ago(ts) {
 const avgClass = (v) => (v <= 4.1 ? 'good' : v >= 4.75 ? 'bad' : '');
 const initials = (name = '?') => name.replace(/[^\p{L}\p{N} ]/gu, '').split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase();
 
-const champ = (id) => S.static?.champions?.[id] || { apiName: id, name: id.replace(/^TFT\d+_/, ''), cost: 0, traits: [], icon: '' };
-const trait = (id) => S.static?.traits?.[id] || { apiName: id, name: id.replace(/^TFT\d+_/, ''), icon: '' };
-const item = (id) => S.static?.items?.[id] || { apiName: id, name: id.replace(/^TFT\d*_Item_/, '').replace(/([a-z])([A-Z])/g, '$1 $2'), icon: '', composition: [] };
-const aug = (id) => S.static?.augments?.[id] || { apiName: id, name: id.replace(/^TFT\d*_Augment_/, '').replace(/([a-z])([A-Z])/g, '$1 $2'), icon: '' };
+// Nom lisible d'un identifiant inconnu (« TFT18_Maokai », « DA_18_Maokai »…).
+const pretty = (id = '') => String(id).replace(/^(TFT\d*|DA)_(\d+_)?(Item_|Augment_)?/i, '').replace(/\d+(?=_|$)/g, '').replace(/_/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').trim();
+const champ = (id) => S.static?.champions?.[id] || { apiName: id, name: pretty(id), cost: 0, traits: [], icon: '' };
+const trait = (id) => S.static?.traits?.[id] || { apiName: id, name: pretty(id), icon: '' };
+const item = (id) => S.static?.items?.[id] || { apiName: id, name: pretty(id), icon: '', composition: [] };
+const aug = (id) => S.static?.augments?.[id] || { apiName: id, name: pretty(id), icon: '' };
 
 // « Nom français (English name) » quand les deux diffèrent.
 const label = (x) => (x?.en && x.en.toLowerCase() !== String(x.name).toLowerCase() ? `${x.name} (${x.en})` : x?.name || '');
@@ -135,7 +140,7 @@ document.addEventListener('mouseover', (e) => {
   } else if (el.dataset.tip === 'item') {
     const it = item(id);
     title = label(it);
-    desc = [recipeText(id) && `Recette : ${recipeText(id)}`, it.desc].filter(Boolean).join('\n\n');
+    desc = [recipeText(id) && `Recette : ${recipeText(id)}`, it.stats, it.desc].filter(Boolean).join('\n\n');
   } else if (el.dataset.tip === 'trait') {
     const t = trait(id);
     title = label(t);
@@ -229,7 +234,7 @@ function toast(message) {
 $('#snack-ok').addEventListener('click', () => $('#snackbar').classList.remove('open'));
 
 // ===================== Tableaux triables =====================
-function table(id, cols, rows, defaultSort) {
+function table(id, cols, rows, defaultSort, rowAttr = () => '') {
   cols = cols.filter((c) => !c.expert || expert());
   const st = (S.sort[id] ||= defaultSort);
   const col = cols.find((c) => c.key === st.key) || cols[0];
@@ -240,7 +245,7 @@ function table(id, cols, rows, defaultSort) {
   });
   return `<div class="table-wrap"><table>
     <thead><tr>${cols.map((c) => `<th class="${c.num ? 'num-h' : ''} ${c.key === st.key ? 'sorted' : ''}" data-sort="${id}:${c.key}" ${c.help ? `data-tip="help" data-title="${esc(c.label)}" data-desc="${esc(c.help)}"` : ''}>${esc(c.label)}${c.key === st.key ? (st.dir > 0 ? ' ↑' : ' ↓') : ''}</th>`).join('')}</tr></thead>
-    <tbody>${sorted.map((r) => `<tr>${cols.map((c) => `<td class="${c.num ? 'n' : ''}">${c.render ? c.render(r) : esc(r[c.key])}</td>`).join('')}</tr>`).join('') || `<tr><td colspan="${cols.length}" class="small">Aucun résultat.</td></tr>`}</tbody>
+    <tbody>${sorted.map((r) => `<tr ${rowAttr(r)}>${cols.map((c) => `<td class="${c.num ? 'n' : ''}">${c.render ? c.render(r) : esc(r[c.key])}</td>`).join('')}</tr>`).join('') || `<tr><td colspan="${cols.length}" class="small">Aucun résultat.</td></tr>`}</tbody>
   </table></div>`;
 }
 const HELP = {
@@ -357,7 +362,7 @@ function fiche(c) {
   let out = `
   <div class="fiche-head">
     <div>
-      <div class="badges"><span class="pill grad">Tier ${c.tier}</span><span class="pill">${esc(g.type.label)}</span><span class="pill ${diffClass}">${g.difficulty}</span></div>
+      <div class="badges"><span class="pill grad">Tier ${c.tier}</span><span class="pill">${esc(g.type.label)}</span><span class="pill ${diffClass}">${g.difficulty}</span>${keyRounds(g.plan) ? `<span class="pill" data-tip="help" data-title="Moment clé" data-desc="Manche où tu dépenses ton or pour trouver ton carry. Détails dans le plan de niveaux du guide complet.">Roll à ${keyRounds(g.plan)}</span>` : ''}</div>
       <h1 class="h1">${esc(compTitle(c))}</h1>
       <p class="lede" style="margin-top:8px">${esc(g.pitch)}</p>
     </div>
@@ -413,6 +418,35 @@ function fiche(c) {
   return out;
 }
 
+// ===================== Plan de niveaux =====================
+const keyRounds = (plan) => plan?.rows.filter((r) => r.key).map((r) => r.round).slice(0, 2).join(' / ') || '';
+
+/** Tableau manche × série. Une ligne identique pour les trois séries tient sur une seule cellule. */
+function planTable(plan, short = false) {
+  const head = short ? ['Victoires', 'Mixte', 'Défaites'] : STREAKS.map(([, l]) => l);
+  return `<div class="table-wrap"><table class="plan">
+    <thead><tr><th>Manche</th>${head.map((l) => `<th>${esc(l)}</th>`).join('')}</tr></thead>
+    <tbody>${plan.rows.map((r) => {
+      const same = r.win === r.mixed && r.mixed === r.lose;
+      const cells = same ? `<td colspan="3">${esc(r.win)}</td>` : `<td>${esc(r.win)}</td><td>${esc(r.mixed)}</td><td>${esc(r.lose)}</td>`;
+      return `<tr class="${r.key ? 'key' : ''}"><td class="rd">${esc(r.round)}${r.key ? '<span class="kb">roll</span>' : ''}</td>${cells}</tr>`;
+    }).join('')}</tbody>
+  </table></div>`;
+}
+
+function planCard(g) {
+  return `<div class="card">
+    <div class="fiche-head">
+      <div><h2 class="title" style="margin:0">Plan de niveaux</h2>
+        <p class="small" style="margin:6px 0 0">Suis la colonne de ta série en cours. HexaRise ne lit pas ta partie : c’est toi qui regardes la bonne colonne.</p></div>
+      <button class="btn text" data-route="shop">Chances en boutique ${ICON.chevron}</button>
+    </div>
+    ${planTable(g.plan)}
+    ${g.plan.hint ? `<div class="notice" style="margin-top:12px">${esc(g.plan.hint)}</div>` : ''}
+    <ul class="tips">${g.plan.tips.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>
+  </div>`;
+}
+
 // ===================== Guide complet =====================
 function recipe(id) {
   const comp = item(id).composition || [];
@@ -450,10 +484,12 @@ function viewGuide() {
     </div>
   </div>
 
+  ${planCard(g)}
+
   <div class="card">${g.stages.map((st) => `
     <div class="gstage">
       <div><div class="gstage-name">${esc(st.stage)}</div><div class="small">${esc(st.rounds)}</div></div>
-      <div>${st.steps.map((step) => `<div class="gstep"><p>${esc(step.text)}</p>${stepIds(step)}</div>`).join('')}</div>
+      <div>${st.steps.map((step) => `<div class="gstep">${step.kind === 'note' ? `<p class="small">${esc(step.text)}</p>` : `<p>${esc(step.text)}</p>`}${stepIds(step)}</div>`).join('')}</div>
     </div>`).join('')}
   </div>
 
@@ -499,39 +535,178 @@ function viewGame() {
 }
 
 // ===================== Explorer =====================
-const TABS = [['champions', 'Champions'], ['traits', 'Synergies'], ['items', 'Objets'], ['augments', 'Augments']];
+const TABS = [['champions', 'Champions'], ['traits', 'Synergies'], ['items', 'Objets'], ['augments', 'Augments'], ['shop', 'Boutique']];
+const VIEW_ICON = {
+  list: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>',
+  grid: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>'
+};
 function viewExplore() {
   const tab = TABS.some(([k]) => k === S.f.exploreTab) ? S.f.exploreTab : 'champions';
   const extra = {
-    champions: chips('cost', [[0, 'Tous'], [1, '1 PO'], [2, '2 PO'], [3, '3 PO'], [4, '4 PO'], [5, '5 PO']], S.f.cost),
+    champions: chips('cost', [[0, 'Tous'], [1, '1 PO'], [2, '2 PO'], [3, '3 PO'], [4, '4 PO'], [5, '5 PO']], S.f.cost) +
+      `<button class="chip menu-chip ${S.f.champTrait ? 'on' : ''}" data-menu-open="champ-trait">${S.f.champTrait ? `✓ ${esc(trait(S.f.champTrait).name)}` : 'Synergie : toutes'} ${ICON.down}</button>
+      <div class="seg" role="group" aria-label="Affichage">${['list', 'grid'].map((v) => `<button data-champ-view="${v}" class="${S.f.champView === v ? 'on' : ''}" aria-label="${v === 'list' ? 'Liste' : 'Grille'}" title="${v === 'list' ? 'Liste' : 'Grille'}">${VIEW_ICON[v]}</button>`).join('')}</div>`,
+    shop: '',
     items: chips('itemKind', [['complet', 'Complets'], ['artefact', 'Artefacts'], ['radieux', 'Radieux'], ['embleme', 'Emblèmes'], ['composant', 'Composants'], ['tous', 'Tous']], S.f.itemKind),
     augments: chips('augTier', [['tous', 'Tous'], ['argent', 'Argent'], ['or', 'Or'], ['prismatique', 'Prismatique']], S.f.augTier),
     traits: ''
   }[tab];
-  const body = { champions: exploreChampions, traits: exploreTraits, items: exploreItems, augments: exploreAugments }[tab]();
+  const body = { champions: exploreChampions, traits: exploreTraits, items: exploreItems, augments: exploreAugments, shop: exploreShop }[tab]();
   return `${toolbar(extra)}<div class="card" style="padding:8px 8px 16px">
     <nav class="tabs">${TABS.map(([k, l]) => `<a data-tab="${k}" class="${k === tab ? 'on' : ''}">${l}</a>`).join('')}</nav>
     ${body}
   </div>`;
 }
 
+/** Champions du set (hors formes alternatives), avec les stats de parties du rang choisi. */
+function champRows() {
+  const all = Object.values(S.static?.champions || {});
+  const stats = new Map((M()?.champions || []).map((c) => [c.id, c]));
+  // Les formes (ex. « Lux (Fæ) ») sont regroupées sur le champion de base.
+  const merged = new Map();
+  for (const c of all) {
+    const base = c.variantOf || c.apiName;
+    const st = stats.get(c.apiName);
+    if (!st) continue;
+    const cur = merged.get(base);
+    if (!cur) merged.set(base, { ...st, id: base });
+    else {
+      const n = cur.games + st.games;
+      for (const k of ['avg', 'top4', 'win']) cur[k] = (cur[k] * cur.games + st[k] * st.games) / (n || 1);
+      cur.pick += st.pick;
+      if (st.games > cur.games) cur.items = st.items;
+      cur.games = n;
+    }
+  }
+  return all.filter((c) => !c.variantOf).map((c) => ({ id: c.apiName, c, st: merged.get(c.apiName) || null }));
+}
+
 function exploreChampions() {
-  const m = M();
-  if (!m?.champions?.length) return noData();
+  if (!S.static?.champions) return noData();
   const q = query();
-  const rows = m.champions
-    .filter((c) => champ(c.id).traits.length || champ(c.id).cost)
-    .filter((c) => !S.f.cost || champ(c.id).cost === S.f.cost)
-    .filter((c) => matches(champ(c.id), q));
+  const rows = champRows()
+    .filter((r) => !S.f.cost || r.c.cost === S.f.cost)
+    .filter((r) => !S.f.champTrait || r.c.traits.includes(S.f.champTrait))
+    .filter((r) => matches(r.c, q) || r.c.traits.some((t) => matches(trait(t), q)));
+  if (!rows.length) return '<p class="small" style="padding:8px 16px">Aucun champion ne correspond.</p>';
+  const hasStats = rows.some((r) => r.st);
+  const traitsCell = (r) => `<div class="icons">${r.c.traits.map((t) => traitIcon(t)).join('')}</div>`;
+  if (S.f.champView === 'grid') {
+    const list = [...rows].sort((a, b) => a.c.cost - b.c.cost || a.c.name.localeCompare(b.c.name, 'fr'));
+    return `<div class="champ-grid">${list.map((r) => `<button class="champ-card" data-champ="${esc(r.id)}">
+      ${champIcon(r.id, 'xl')}
+      <b>${esc(r.c.name)}</b>
+      <span class="small">${r.c.cost} PO${r.st ? ` · top 4 ${pct(r.st.top4)}` : ''}</span>
+      ${traitsCell(r)}
+    </button>`).join('')}</div>`;
+  }
+  const st = (r, k, d = -1) => (r.st ? r.st[k] : d);
   return table('champs', [
-    { key: 'name', label: 'Champion', value: (r) => champ(r.id).name, render: (r) => `<div class="name-cell">${champIcon(r.id, 'sm')}${esc(label(champ(r.id)))}</div>` },
-    { key: 'top4', label: 'Top 4', num: true, help: HELP.top4, render: (r) => pct(r.top4) },
-    { key: 'avg', label: 'Place moy.', num: true, help: HELP.avg, expert: true, render: (r) => `<span class="${avgClass(r.avg)}">${nf(r.avg)}</span>` },
-    { key: 'win', label: 'Victoire', num: true, expert: true, render: (r) => pct(r.win, 1) },
-    { key: 'pick', label: 'Jouée', num: true, help: HELP.pick, render: (r) => pct(r.pick) },
-    { key: 'three', label: '3★', num: true, expert: true, value: (r) => r.stars[2], render: (r) => pct(r.stars[2], 1) },
-    { key: 'items', label: 'Objets favoris', value: (r) => r.items.length, render: (r) => `<div class="icons">${r.items.slice(0, expert() ? 5 : 3).map((i) => itemIcon(i.id)).join('')}</div>` }
-  ], rows, { key: 'top4', dir: -1 });
+    { key: 'name', label: 'Champion', value: (r) => r.c.name, render: (r) => `<div class="name-cell">${champIcon(r.id, 'sm')}${esc(label(r.c))}</div>` },
+    { key: 'cost', label: 'Coût', num: true, value: (r) => r.c.cost, render: (r) => `${r.c.cost} PO` },
+    { key: 'traits', label: 'Synergies', value: (r) => r.c.traits.length, render: traitsCell },
+    { key: 'hp', label: 'PV', num: true, expert: true, value: (r) => r.c.stats?.hp ?? 0, render: (r) => int(r.c.stats?.hp) },
+    { key: 'ad', label: 'AD', num: true, expert: true, value: (r) => r.c.stats?.ad ?? 0, render: (r) => int(r.c.stats?.ad) },
+    { key: 'range', label: 'Portée', num: true, expert: true, value: (r) => r.c.stats?.range ?? 0, render: (r) => int(r.c.stats?.range) },
+    { key: 'mana', label: 'Mana', num: true, expert: true, value: (r) => r.c.stats?.mana ?? 0, render: (r) => (r.c.stats ? `${int(r.c.stats.mana0)}/${int(r.c.stats.mana)}` : '—') },
+    ...(hasStats ? [
+      { key: 'top4', label: 'Top 4', num: true, help: HELP.top4, value: (r) => st(r, 'top4'), render: (r) => (r.st ? pct(r.st.top4) : '—') },
+      { key: 'avg', label: 'Place moy.', num: true, help: HELP.avg, expert: true, value: (r) => st(r, 'avg', 9), render: (r) => (r.st ? `<span class="${avgClass(r.st.avg)}">${nf(r.st.avg)}</span>` : '—') },
+      { key: 'pick', label: 'Jouée', num: true, help: HELP.pick, value: (r) => st(r, 'pick'), render: (r) => (r.st ? pct(r.st.pick) : '—') },
+      { key: 'items', label: 'Objets favoris', value: (r) => r.st?.items?.length || 0, render: (r) => `<div class="icons">${(r.st?.items || []).slice(0, expert() ? 5 : 3).map((i) => itemIcon(i.id)).join('')}</div>` }
+    ] : [])
+  ], rows, hasStats ? { key: 'top4', dir: -1 } : { key: 'cost', dir: 1 }, (r) => `data-champ="${esc(r.id)}" class="clickable"`);
+}
+
+// ===================== Fiche champion =====================
+const STAR = [1, 1.8, 3.24]; // PV et dégâts d'attaque à 1★, 2★, 3★
+function viewChampion() {
+  const back = `<a class="back" data-back="champions">${ICON.back}Champions</a>`;
+  const c = S.static?.champions?.[S.champId];
+  if (!c) return `${back}<div class="card empty"><p class="lede">Champion introuvable.</p></div>`;
+  const row = champRows().find((r) => r.id === c.apiName);
+  const s = c.stats || {};
+  const forms = Object.values(S.static.champions).filter((x) => x.variantOf === c.apiName);
+  const stars = (v) => STAR.map((m) => int(Math.round(v * m))).join(' / ');
+  const statTile = (k, v, sub = '') => `<div class="stat"><span class="small">${esc(k)}</span><b>${v}</b>${sub ? `<span class="small">${esc(sub)}</span>` : ''}</div>`;
+  const comps = (M()?.comps || []).filter((x) => x.carry === c.apiName || x.units.some((u) => u.id === c.apiName && u.rate >= 35)).slice(0, 6);
+  const hasX = /\bX\b/.test(c.ability?.desc || '');
+  return `${back}
+  <div class="stack" style="margin-top:8px">
+    <div class="card">
+      <div class="champ-head">
+        ${champIcon(c.apiName, 'xxl')}
+        <div>
+          <div class="badges"><span class="pill grad">${c.cost} PO</span>${c.traits.map((t) => `<span class="pill">${traitIcon(t)}${esc(trait(t).name)}</span>`).join('')}</div>
+          <h1 class="h1">${esc(label(c))}</h1>
+          ${forms.length ? `<p class="small" style="margin-top:6px">Formes : ${forms.map((f) => esc(f.form)).join(', ')}</p>` : ''}
+        </div>
+      </div>
+    </div>
+
+    ${s.hp ? `<div class="card">
+      <h2 class="title">Statistiques</h2>
+      <div class="stat-grid">
+        ${statTile('PV', stars(s.hp), '1★ / 2★ / 3★')}
+        ${statTile("Dégâts d'attaque", stars(s.ad), '1★ / 2★ / 3★')}
+        ${statTile("Vitesse d'attaque", nf(s.as, 2))}
+        ${statTile('Portée', `${int(s.range)} case${s.range > 1 ? 's' : ''}`)}
+        ${statTile('Mana', `${int(s.mana0)} / ${int(s.mana)}`, 'au départ / pour lancer le sort')}
+        ${statTile('Armure', int(s.armor))}
+        ${statTile('Résistance magique', int(s.mr))}
+        ${statTile('Coup critique', pct((s.crit || 0) * 100))}
+      </div>
+      <p class="small" style="margin-top:10px">PV et dégâts d'attaque × 1,8 à chaque étoile.</p>
+    </div>` : ''}
+
+    ${c.ability ? `<div class="card">
+      <h2 class="title">Sort · ${esc(c.ability.name)}</h2>
+      <p class="prewrap">${esc(c.ability.desc)}</p>
+      ${c.ability.values?.length ? `<div class="vals">${c.ability.values.map((v) => `<span class="pill">${esc(v.name.replace(/([a-z])([A-Z])/g, '$1 $2'))} : ${esc(v.v)}</span>`).join('')}</div>` : ''}
+      ${hasX ? '<p class="small" style="margin-top:10px">X : valeur calculée par le jeu, absente des données publiques de Riot.</p>' : ''}
+    </div>` : ''}
+
+    <div class="card">
+      <h2 class="title">Synergies</h2>
+      <div class="xgrid">${c.traits.map((t) => `<div><div class="name-cell">${traitIcon(t)}${esc(label(trait(t)))}</div><p class="small prewrap" style="margin-top:8px">${esc(trait(t).desc || '')}</p></div>`).join('')}</div>
+    </div>
+
+    ${row?.st ? `<div class="card">
+      <h2 class="title">En partie · ${esc(bracketLabel(S.f.bracket))}</h2>
+      <div class="stats">
+        <div class="card tonal"><div class="gnum">${pct(row.st.top4)}</div><div>finissent dans le top 4</div></div>
+        <div class="card tonal"><div class="gnum">${nf(row.st.avg, 1)}</div><div>place moyenne</div></div>
+        <div class="card tonal"><div class="gnum">${pct(row.st.pick)}</div><div>des joueurs le prennent</div></div>
+        <div class="card tonal"><div class="gnum">${int(row.st.games)}</div><div>fois joué</div></div>
+      </div>
+      ${row.st.items?.length ? `<p class="label-sm" style="margin-top:16px">Objets favoris</p><div class="rows">${row.st.items.slice(0, 5).map((i) => `<div>${itemIcon(i.id, true)}<span class="grow">${esc(label(item(i.id)))}</span><span class="aside">${pct(i.rate)}</span></div>`).join('')}</div>` : ''}
+      ${comps.length ? `<p class="label-sm" style="margin-top:16px">Compos où il joue</p><div class="tags">${comps.map((x) => `<button class="tag" data-guide="${esc(x.id)}"><span class="tier sm ${x.tier}">${x.tier}</span>${esc(compName(x))}</button>`).join('')}</div>` : ''}
+    </div>` : ''}
+  </div>`;
+}
+
+// ===================== Boutique =====================
+function exploreShop() {
+  const ref = S.static?.reference;
+  if (!ref || ref.stale) {
+    return `<div class="notice" style="margin:0 8px"><strong>Chances du set ${esc(S.static?.setNumber ?? '')} pas encore disponibles.</strong> Elles arriveront automatiquement dès qu’elles seront publiées dans HexaRise, sans mise à jour à installer.</div>`;
+  }
+  const levels = Object.keys(ref.odds).map(Number).sort((a, b) => a - b).filter((l) => l >= 2);
+  const counts = S.static.shopCounts || [];
+  const cell = (v) => `<td class="n heat" style="--h:${(v / 100).toFixed(2)}">${v ? `${v} %` : '—'}</td>`;
+  return `<div style="padding:0 8px">
+    <p class="lede" style="margin:0 0 16px">À chaque niveau, chaque case de la boutique a ces chances de proposer un champion de chaque coût.</p>
+    <div class="table-wrap"><table class="odds">
+      <thead><tr><th>Niveau</th>${[1, 2, 3, 4, 5].map((c) => `<th class="num-h"><span class="cost-dot cost-${c}"></span>${c} PO</th>`).join('')}</tr></thead>
+      <tbody>${levels.map((l) => `<tr><td>Niv. ${l}</td>${ref.odds[l].map(cell).join('')}</tr>`).join('')}</tbody>
+    </table></div>
+    <h2 class="title" style="margin-top:24px">Exemplaires dans le jeu</h2>
+    <div class="table-wrap"><table class="odds">
+      <thead><tr><th>Coût</th><th class="num-h">Exemplaires de chaque champion</th><th class="num-h">Champions</th><th class="num-h">Total</th></tr></thead>
+      <tbody>${ref.copies.map((n, i) => `<tr><td><span class="cost-dot cost-${i + 1}"></span>${i + 1} PO</td><td class="n">${n}</td><td class="n">${counts[i] ?? '—'}</td><td class="n">${counts[i] ? int(n * counts[i]) : '—'}</td></tr>`).join('')}</tbody>
+    </table></div>
+    <p class="small" style="margin-top:12px">Les exemplaires sont partagés entre les 8 joueurs : si d’autres jouent le même champion, il en reste moins pour toi. Set ${ref.set} · vérifié le ${new Date(ref.updated).toLocaleDateString('fr-FR')} · sources : ${esc(ref.sources.join(', '))}.</p>
+  </div>`;
 }
 
 function exploreTraits() {
@@ -751,8 +926,9 @@ async function saveSettings(patch, message = 'Réglages enregistrés') {
 }
 
 // ===================== Rendu et navigation =====================
-const VIEWS = { meta: viewMeta, guide: viewGuide, game: viewGame, explore: viewExplore, player: viewPlayer, settings: viewSettings };
-const ALIASES = { champions: 'champions', traits: 'traits', items: 'items', augments: 'augments' };
+const VIEWS = { meta: viewMeta, guide: viewGuide, champion: viewChampion, game: viewGame, explore: viewExplore, player: viewPlayer, settings: viewSettings };
+const ALIASES = { champions: 'champions', traits: 'traits', items: 'items', augments: 'augments', shop: 'shop' };
+const CHILD = { guide: 'meta', champion: 'explore' }; // vue enfant -> destination parente
 
 function render(anim = '') {
   const scroll = view.scrollTop;
@@ -767,7 +943,7 @@ function render(anim = '') {
       if (caret !== undefined && el.setSelectionRange) el.setSelectionRange(caret, caret);
     }
   }
-  const navRoute = S.route === 'guide' ? 'meta' : S.route;
+  const navRoute = CHILD[S.route] || S.route;
   document.querySelectorAll('.rail-item').forEach((a) => a.classList.toggle('active', a.dataset.route === navRoute));
   document.body.classList.toggle('no-motion', S.reduceMotion);
   $('#sample-label').textContent = sampleText();
@@ -789,7 +965,7 @@ function go(route, anim) {
   }
   route = VIEWS[route] ? route : 'meta';
   if (route === 'settings' && S.route !== 'settings') S.setPage = 'root';
-  const dir = anim || (route === 'guide' ? 'fwd' : S.route === 'guide' && route === 'meta' ? 'back' : 'fade');
+  const dir = anim || (CHILD[route] ? 'fwd' : CHILD[S.route] === route ? 'back' : 'fade');
   S.route = route;
   if (location.hash.slice(1) !== route) location.hash = route;
   closeLayer();
@@ -861,6 +1037,13 @@ document.addEventListener('click', async (e) => {
       return openMenu(opener, bracketItems(), (v) => {
         S.f.bracket = v;
         remember('bracket', v);
+        render();
+      });
+    }
+    if (kind === 'champ-trait') {
+      const list = Object.values(S.static?.traits || {}).filter((t) => (t.breakpoints || []).length > 1 || t.breakpoints?.[0]?.min > 1).sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+      return openMenu(opener, [{ value: '', label: 'Toutes les synergies', checked: !S.f.champTrait }, ...list.map((t) => ({ value: t.apiName, label: t.name, checked: t.apiName === S.f.champTrait }))], (v) => {
+        S.f.champTrait = v;
         render();
       });
     }
@@ -956,6 +1139,17 @@ document.addEventListener('click', async (e) => {
       f.classList.add('anim-fade');
     }
     return;
+  }
+  const cv = t.closest('[data-champ-view]');
+  if (cv) {
+    S.f.champView = cv.dataset.champView;
+    remember('champView', S.f.champView);
+    return render('fade');
+  }
+  const champEl = t.closest('[data-champ]');
+  if (champEl) {
+    S.champId = champEl.dataset.champ;
+    return go('champion');
   }
   const play = t.closest('[data-play]');
   if (play) {
@@ -1097,7 +1291,7 @@ setInterval(renderStatus, 30000);
   }
   const r = location.hash.slice(1);
   if (ALIASES[r]) S.f.exploreTab = ALIASES[r];
-  S.route = ALIASES[r] ? 'explore' : VIEWS[r] && r !== 'guide' ? r : 'meta';
+  S.route = ALIASES[r] ? 'explore' : VIEWS[r] && !CHILD[r] ? r : 'meta';
   renderStatus();
   render('fade');
   if (!S.app?.hasKey) setTimeout(openKeyDialog, 400);

@@ -67,6 +67,37 @@ const { parseLimitHeader } = require('../core/riot');
   const t = await e2.testKey();
   assert.ok(!t.ok && /clé API/i.test(t.message));
 
+  // Chances en boutique du set en cours
+  const ref = engine.getStatic().reference;
+  assert.ok(ref && !ref.stale && ref.odds[7][2] === 43, 'chances en boutique du set 18');
+  assert.deepStrictEqual(engine.getStatic().shopCounts.length, 5);
+
+  // Identifiants au format du set 18 (« DA_18_… ») retrouvés depuis un autre format
+  const { buildStatic, StaticData } = require('../core/static-data');
+  const sd18 = buildStatic({
+    items: [],
+    setData: [{
+      number: 18, mutator: 'TFTSet18', name: 'Set10',
+      traits: [{ apiName: 'DA_18_Elderwood', name: 'Sylvestre', desc: 'Intro<br><row>(@MinUnits@) Bonus @X@.</row><br><row>(@MinUnits@) Bonus @X@.</row>', effects: [{ minUnits: 3, variables: { X: 10 } }, { minUnits: 5, variables: { X: 25 } }] }],
+      champions: [
+        { apiName: 'DA_18_Maokai', name: 'Maokai', cost: 5, traits: ['Sylvestre'], stats: { hp: 1000, damage: 50 }, ability: { name: 'S', desc: 'Soigne @Heal@ PV et @HealthCalc1@.\\nFin', variables: [{ name: 'Heal', value: [0, 350, 400, 475] }] } },
+        { apiName: 'DA_Lux18_Base', name: 'Lux', cost: 5, traits: ['Sylvestre'] },
+        { apiName: 'DA_18_Lux_Fae', name: 'Lux (Fæ)', cost: 5, traits: ['Sylvestre'] }
+      ]
+    }]
+  }, 'test');
+  const st18 = new StaticData({ dataDir: fs.mkdtempSync(path.join(os.tmpdir(), 'tft-')), fetchImpl });
+  st18.data = sd18;
+  assert.strictEqual(st18.champion('TFT18_Maokai').name, 'Maokai');
+  assert.strictEqual(st18.champion('TFT18_Lux').name, 'Lux');
+  assert.strictEqual(st18.trait('TFT18_Elderwood').name, 'Sylvestre');
+  assert.strictEqual(sd18.setName, '');
+  assert.deepStrictEqual(sd18.shopCounts, [0, 0, 0, 0, 2]);
+  assert.strictEqual(sd18.champions.DA_18_Lux_Fae.variantOf, 'DA_Lux18_Base');
+  assert.strictEqual(sd18.champions.DA_18_Maokai.ability.desc, 'Soigne 350/400/475 PV et X.\nFin');
+  assert.strictEqual(sd18.traits.DA_18_Elderwood.desc, 'Intro\n(3) Bonus 10.\n(5) Bonus 25.');
+  assert.strictEqual(formatDesc('Tick @V*100@ %', { V: 0.155 }), 'Tick 15,5 %');
+
   engine.stop();
   const sgc = meta.comps.find((c) => c.carry === 'TFT15_Ahri');
   assert.ok(typeof sgc.carry3 === 'number' && sgc.levelDist.length === 4 && sgc.augStages.length === 3);

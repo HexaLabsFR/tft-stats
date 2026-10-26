@@ -8,6 +8,8 @@ const path = require('path');
 
 const CDRAGON = 'https://raw.communitydragon.org/latest';
 const REFRESH_MS = 6 * 60 * 60 * 1000;
+// Incrémenté quand la structure change : force un nouveau téléchargement.
+const FORMAT = 2;
 
 const COMPONENTS = new Set([
   'TFT_Item_BFSword', 'TFT_Item_RecurveBow', 'TFT_Item_NeedlesslyLargeRod',
@@ -20,30 +22,92 @@ function iconUrl(p) {
   return `${CDRAGON}/game/${p.toLowerCase().replace(/\.(tex|dds)$/, '.png')}`;
 }
 
-/** Remplace les variables @Var@ par leurs valeurs et nettoie le balisage. */
+const roundNum = (v) => Math.round(v * 100) / 100;
+const fmtNum = (v) => String(roundNum(v)).replace('.', ',');
+
+/** Valeurs d'un sort par étoile (1★/2★/3★) : « 350/400/475 », ou une seule si identiques. */
+function starValues(value, pct) {
+  const vals = [1, 2, 3].map((i) => value?.[i]).filter((v) => typeof v === 'number').map((v) => (pct ? v * 100 : v));
+  if (!vals.length) return null;
+  return vals.every((v) => roundNum(v) === roundNum(vals[0])) ? fmtNum(vals[0]) : vals.map(fmtNum).join('/');
+}
+
+/**
+ * Remplace les variables @Var@ par leurs valeurs et nettoie le balisage.
+ * effects : { Nom: valeur } (synergies, objets) ou [{ name, value: [..] }] (sorts, valeurs par étoile).
+ * Les valeurs calculées par le jeu et absentes des données deviennent « X ».
+ */
 function formatDesc(desc, effects = {}) {
   if (!desc) return '';
   const lower = {};
-  for (const [k, v] of Object.entries(effects || {})) lower[k.toLowerCase()] = v;
-  let out = desc.replace(/@([\w.]+?)(\*100)?@/g, (_, key, pct) => {
+  if (Array.isArray(effects)) {
+    for (const v of effects) if (v?.name) lower[v.name.toLowerCase()] = { star: v.value };
+  } else {
+    for (const [k, v] of Object.entries(effects || {})) lower[k.toLowerCase()] = v;
+  }
+  let out = desc.replace(/@([\w.:]+?)(\*100)?@/g, (_, key, pct) => {
+    if (/^TFTUnitProperty/i.test(key)) return '';
     let v = lower[key.toLowerCase()];
-    if (v === undefined || v === null) return '?';
-    if (typeof v === 'number') {
-      if (pct) v *= 100;
-      v = Math.round(v * 100) / 100;
-    }
+    if (v && typeof v === 'object' && 'star' in v) return starValues(v.star, pct) ?? 'X';
+    if (v === undefined || v === null || typeof v === 'object') return 'X';
+    if (typeof v === 'number') v = fmtNum(pct ? v * 100 : v);
     return String(v);
   });
   out = out
+    .replace(/\r/g, '')
+    .replace(/\\n/g, '\n')
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/%i:[^%]+%/g, '')
+    .replace(/\{\{[^}]*\}\}/g, '')
     .replace(/<[^>]+>/g, '')
     .replace(/&nbsp;/g, ' ')
-    .replace(/[ \t]+/g, ' ')
+    .replace(/\(\s*\)/g, '')
+    .replace(/[ \t\u00a0]+/g, ' ')
+    .replace(/ +([.,:)])/g, '$1')
+    .replace(/ *\n */g, '\n')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
   return out;
 }
+
+// Statistiques de base d'un objet (le jeu les affiche en icônes, pas dans le texte).
+const ITEM_STATS = [
+  ['AD', "dégâts d'attaque", 'ratio'], ['AP', 'puissance', 'flat'], ['AS', "vitesse d'attaque", 'pct'],
+  ['Armor', 'armure', 'flat'], ['MagicResist', 'résistance magique', 'flat'], ['Health', 'PV', 'flat'],
+  ['Mana', 'mana', 'flat'], ['CritChance', 'chances de coup critique', 'pct'], ['Omnivamp', 'omnivampirisme', 'ratio']
+];
+function itemStats(effects = {}) {
+  const out = [];
+  for (const [key, label, kind] of ITEM_STATS) {
+    const v = effects?.[key];
+    if (typeof v !== 'number' || !v) continue;
+    if (kind === 'ratio' && Math.abs(v) < 1) out.push(`+${fmtNum(v * 100)} % ${label}`);
+    else if (kind === 'pct') out.push(`+${fmtNum(v)} % ${label}`);
+    else out.push(`+${fmtNum(v)} ${label}`);
+  }
+  return out.join(' · ');
+}
+
+/** Description d'une synergie : chaque ligne <row> reçoit les valeurs de son palier. */
+function formatTraitDesc(t) {
+  const effects = t.effects || [];
+  const fill = (text, e = {}) => formatDesc(
+    text.replace(/@MinUnits@/gi, String(e.minUnits ?? 'X')).replace(/@MaxUnits@/gi, String(e.maxUnits ?? 'X')),
+    e.variables
+  );
+  let desc = t.desc || '';
+  // <expandRow> : une ligne répétée pour chaque palier
+  desc = desc.replace(/<expandRow>([\s\S]*?)<\/expandRow>/gi, (_, row) => effects.map((e) => `<row>${row}</row>`).join('<br>'));
+  let i = 0;
+  const rows = [];
+  const head = desc.replace(/<row>([\s\S]*?)<\/row>/gi, (_, row) => {
+    rows.push(fill(row, effects[i++]));
+    return '';
+  });
+  return [fill(head, effects[0]), ...rows].filter(Boolean).join('\n');
+}
+
+const isAugLike = (it) => /Augment/i.test(it.apiName);
 
 function itemKind(apiName) {
   if (COMPONENTS.has(apiName)) return 'composant';
@@ -64,10 +128,32 @@ function augmentTier(a) {
 
 function prettyApiName(apiName = '') {
   return apiName
-    .replace(/^TFT\d*_?(Augment_|Item_|Set\d+_)?/i, '')
+    .replace(/^(TFT\d*|DA)_?(\d+_)?(Augment_|Item_|Set\d+_)?/i, '')
+    .replace(/\d+(?=_|$)/g, '')
     .replace(/_/g, ' ')
     .replace(/([a-z])([A-Z])/g, '$1 $2')
     .trim();
+}
+
+/**
+ * Clé tolérante d'un identifiant : « DA_18_Maokai », « TFT18_Maokai » et « DA_Maokai18 » donnent « maokai ».
+ * Les identifiants du set 18 ont changé de format ; si l'API de match n'emploie pas exactement
+ * celui de CommunityDragon, on retrouve quand même le nom français et l'image.
+ */
+function idKey(id = '') {
+  return String(id).toLowerCase().replace(/^(tft\d*|da)_/, '').replace(/^set\d+_/, '').replace(/\d+/g, '').replace(/_/g, '');
+}
+const LOOSE = /(base|small|big|mini|ap|ad)$/;
+
+function buildAliases(map) {
+  const out = {};
+  for (const id of Object.keys(map)) {
+    const k = idKey(id);
+    if (!(k in out)) out[k] = id;
+    const loose = k.replace(LOOSE, '');
+    if (loose && loose !== k && !(loose in out)) out[loose] = id;
+  }
+  return out;
 }
 
 /** Noms anglais par apiName, pour l'affichage « Français (English) ». */
@@ -99,7 +185,7 @@ function buildStatic(raw, version, rawEn) {
       apiName: t.apiName,
       name: t.name,
       en: en[t.apiName] || '',
-      desc: formatDesc(t.desc, (t.effects?.[0] || {}).variables),
+      desc: formatTraitDesc(t),
       icon: iconUrl(t.icon),
       breakpoints: (t.effects || []).map((e) => ({ min: e.minUnits, max: e.maxUnits, style: e.style }))
     };
@@ -109,6 +195,8 @@ function buildStatic(raw, version, rawEn) {
   const champions = {};
   for (const c of set.champions || []) {
     if (!c.apiName || !c.traits?.length) continue; // ignore les unités non jouables
+    const st = c.stats || {};
+    const vars = (c.ability?.variables || []).filter((v) => v?.name && Array.isArray(v.value));
     champions[c.apiName] = {
       apiName: c.apiName,
       name: c.name,
@@ -116,9 +204,29 @@ function buildStatic(raw, version, rawEn) {
       cost: c.cost,
       traits: c.traits.map((n) => traitByName[n] || n),
       icon: iconUrl(c.squareIcon || c.tileIcon || c.icon),
-      ability: c.ability ? { name: c.ability.name, desc: formatDesc(c.ability.desc) } : null
+      stats: c.stats
+        ? { hp: st.hp, ad: st.damage, as: st.attackSpeed, armor: st.armor, mr: st.magicResist, range: st.range, mana: st.mana, mana0: st.initialMana, crit: st.critChance }
+        : null,
+      ability: c.ability
+        ? {
+          name: c.ability.name,
+          desc: formatDesc(c.ability.desc, vars),
+          values: vars.map((v) => ({ name: v.name, v: starValues(v.value) })).filter((v) => v.v !== null).slice(0, 8)
+        }
+        : null
     };
   }
+  // Formes d'un même champion (ex. « Lux (Fæ) ») : pas des unités de boutique à part.
+  const byName = {};
+  for (const c of Object.values(champions)) byName[c.name] = c.apiName;
+  for (const c of Object.values(champions)) {
+    const m = c.name.match(/^(.+) \((.+)\)$/);
+    if (m && byName[m[1]] && byName[m[1]] !== c.apiName) {
+      c.variantOf = byName[m[1]];
+      c.form = m[2];
+    }
+  }
+  const shopCounts = [1, 2, 3, 4, 5].map((cost) => Object.values(champions).filter((c) => c.cost === cost && !c.variantOf).length);
 
   const setItemNames = new Set(set.items || []);
   const setAugNames = new Set(set.augments || []);
@@ -132,6 +240,7 @@ function buildStatic(raw, version, rawEn) {
       name: it.name,
       en: en[it.apiName] || '',
       desc: formatDesc(it.desc, it.effects),
+      stats: isAugLike(it) ? '' : itemStats(it.effects),
       icon: iconUrl(it.icon),
       composition: it.composition || []
     };
@@ -150,15 +259,19 @@ function buildStatic(raw, version, rawEn) {
   }
 
   return {
+    format: FORMAT,
     version,
     hasEn: Boolean(rawEn),
     fetchedAt: Date.now(),
     setNumber: set.number,
-    setName: set.name,
+    // CommunityDragon renvoie parfois un nom de set erroné (« Set10 » pour le set 18).
+    setName: /^Set\d+$/i.test(set.name || '') ? '' : set.name || '',
     champions,
     traits,
     items,
-    augments
+    augments,
+    shopCounts,
+    aliases: { champions: buildAliases(champions), traits: buildAliases(traits), items: buildAliases(items), augments: buildAliases(augments) }
   };
 }
 
@@ -184,8 +297,8 @@ class StaticData {
 
   /** Retourne true si les données ont changé (nouveau patch). */
   async refresh({ force = false } = {}) {
-    // Anciennes données sans noms anglais : on retélécharge.
-    if (this.data && !this.data.hasEn) force = true;
+    // Anciennes données (sans noms anglais, sans stats…) : on retélécharge.
+    if (this.data && (!this.data.hasEn || this.data.format !== FORMAT)) force = true;
     const fresh = this.data && Date.now() - this.data.fetchedAt < REFRESH_MS;
     if (fresh && !force) return false;
     let version;
@@ -225,18 +338,34 @@ class StaticData {
     fs.writeFileSync(this.file, JSON.stringify(this.data));
   }
 
+  /** Identifiant tel que connu de CommunityDragon (gère les variations de format). */
+  canon(kind, id) {
+    const map = this.data?.[kind];
+    if (!map || !id || map[id]) return id;
+    if (this._canonData !== this.data) {
+      this._canonData = this.data;
+      this._canon = new Map();
+    }
+    const key = `${kind}:${id}`;
+    if (this._canon.has(key)) return this._canon.get(key);
+    const al = this.data.aliases?.[kind] || {};
+    const k = idKey(id);
+    const found = al[k] || al[k.replace(LOOSE, '')] || id;
+    this._canon.set(key, found);
+    return found;
+  }
   champion(id) {
-    return this.data?.champions[id] || { apiName: id, name: prettyApiName(id), cost: 0, traits: [], icon: '' };
+    return this.data?.champions[this.canon('champions', id)] || { apiName: id, name: prettyApiName(id), cost: 0, traits: [], icon: '' };
   }
   trait(id) {
-    return this.data?.traits[id] || { apiName: id, name: prettyApiName(id), icon: '', breakpoints: [] };
+    return this.data?.traits[this.canon('traits', id)] || { apiName: id, name: prettyApiName(id), icon: '', breakpoints: [] };
   }
   item(id) {
-    return this.data?.items[id] || { apiName: id, name: prettyApiName(id), icon: '', kind: itemKind(id) };
+    return this.data?.items[this.canon('items', id)] || { apiName: id, name: prettyApiName(id), icon: '', kind: itemKind(id) };
   }
   augment(id) {
-    return this.data?.augments[id] || { apiName: id, name: prettyApiName(id), icon: '', tier: 'inconnu' };
+    return this.data?.augments[this.canon('augments', id)] || { apiName: id, name: prettyApiName(id), icon: '', tier: 'inconnu' };
   }
 }
 
-module.exports = { StaticData, buildStatic, formatDesc, iconUrl, itemKind, prettyApiName };
+module.exports = { StaticData, buildStatic, formatDesc, iconUrl, itemKind, prettyApiName, idKey };

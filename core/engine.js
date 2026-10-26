@@ -8,7 +8,8 @@ const path = require('path');
 const { EventEmitter } = require('events');
 const { RiotClient, PLATFORMS } = require('./riot');
 const { StaticData } = require('./static-data');
-const { aggregate, compactMatch, latestPatch, RANKED_QUEUE } = require('./aggregate');
+const { Reference } = require('./reference');
+const { aggregate, canonPlayer, compactMatch, latestPatch, RANKED_QUEUE } = require('./aggregate');
 
 /** Tranches d'élo analysées séparément (les lobbys Riot regroupent des joueurs de niveau proche). */
 const BRACKETS = [
@@ -45,6 +46,7 @@ class Engine extends EventEmitter {
     this.keyStore = keyStore || memoryKeyStore();
     this.riot = new RiotClient({ getApiKey: () => this.keyStore.get(), fetchImpl });
     this.static = new StaticData({ dataDir, fetchImpl, log: (m) => this.log(m) });
+    this.reference = new Reference({ dataDir, fetchImpl, log: (m) => this.log(m) });
 
     this.settings = { ...DEFAULT_SETTINGS, ...this._read('settings.json', {}) };
     const saved = this._read('matches.json', { matches: [], lastRun: 0, platform: null });
@@ -112,8 +114,9 @@ class Engine extends EventEmitter {
     } catch (err) {
       this.log(`Données statiques : ${err.message}`);
     }
+    await this.reference.refresh();
     // L'interface a pu s'ouvrir avant la fin du téléchargement : on la prévient.
-    if (this.static.data) this.emit('static', this.static.data);
+    if (this.static.data) this.emit('static', this.getStatic());
     if (!this.meta && this.static.data && this.matches.size) this._recompute();
     if (this.meta) this.emit('meta', this.meta);
     if (this.settings.autoStart && (await this.keyStore.get())) this.refreshNow();
@@ -140,8 +143,10 @@ class Engine extends EventEmitter {
     };
   }
 
+  /** Données du set + chances en boutique (si elles correspondent au set en cours). */
   getStatic() {
-    return this.static.data;
+    if (!this.static.data) return null;
+    return { ...this.static.data, reference: this.reference.forSet(this.static.data.setNumber) };
   }
 
   getMeta() {
@@ -260,7 +265,8 @@ class Engine extends EventEmitter {
       this.log(`Données statiques : ${e.message}`);
       return false;
     });
-    if (changed) this.emit('static', this.static.data);
+    const refChanged = await this.reference.refresh();
+    if (changed || refChanged) this.emit('static', this.getStatic());
     const currentSet = this.static.data?.setNumber;
     if (currentSet) {
       for (const [id, m] of this.matches) if (m.set !== currentSet) this.matches.delete(id);
@@ -391,7 +397,7 @@ class Engine extends EventEmitter {
       }
       if (!m) continue;
       const me = m.players.find((p) => p.puuid === account.puuid);
-      if (me) games.push({ id: m.id, ts: m.ts, queue: m.queue, patch: m.patch, ...me, puuid: undefined });
+      if (me) games.push({ id: m.id, ts: m.ts, queue: m.queue, patch: m.patch, ...canonPlayer(this.static, me), puuid: undefined });
     }
     this._saveMatches();
 

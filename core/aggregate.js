@@ -115,6 +115,17 @@ function topN(map, total, n, extra = () => ({})) {
     .slice(0, n);
 }
 
+/** Ramène les identifiants Riot à ceux de CommunityDragon (formats différents selon les sets). */
+function canonPlayer(sd, pl) {
+  if (typeof sd.canon !== 'function') return pl;
+  return {
+    ...pl,
+    traits: pl.traits.map(([id, n, style]) => [sd.canon('traits', id), n, style]),
+    units: pl.units.map(([id, star, items]) => [sd.canon('champions', id), star, (items || []).map((i) => sd.canon('items', i))]),
+    aug: (pl.aug || []).map((a) => sd.canon('augments', a))
+  };
+}
+
 function aggregate(matches, sd, { patch, set } = {}) {
   const pool = matches.filter(
     (m) => m && m.queue === RANKED_QUEUE && (!set || m.set === set) && (!patch || m.patch === patch)
@@ -128,8 +139,9 @@ function aggregate(matches, sd, { patch, set } = {}) {
   const traits = new Map();
 
   for (const m of pool) {
-    for (const pl of m.players) {
-      if (!pl.p) continue;
+    for (const rawPl of m.players) {
+      if (!rawPl.p) continue;
+      const pl = canonPlayer(sd, rawPl);
       totalPlayers++;
       const place = pl.p;
 
@@ -329,4 +341,4 @@ function comparePatch(a = '0.0', b = '0.0') {
   return a1 - b1 || a2 - b2;
 }
 
-module.exports = { aggregate, compactMatch, parsePatch, latestPatch, comparePatch, tierOf, RANKED_QUEUE };
+module.exports = { canonPlayer, aggregate, compactMatch, parsePatch, latestPatch, comparePatch, tierOf, RANKED_QUEUE };

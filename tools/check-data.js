@@ -36,6 +36,11 @@ async function head(url) {
   for (const c of Object.values(sd.champions)) (byCost[c.cost] ||= []).push(c.name);
   for (const [cost, names] of Object.entries(byCost)) console.log(`Coût ${cost} : ${names.length} · ${names.join(', ')}`);
   console.log(`Synergies : ${Object.keys(sd.traits).length} · objets : ${Object.keys(sd.items).length} · augments : ${Object.keys(sd.augments).length}`);
+  console.log(`Champions de boutique par coût : ${sd.shopCounts.join(' / ')} · formes alternatives : ${Object.values(sd.champions).filter((c) => c.variantOf).map((c) => c.name).join(', ') || 'aucune'}`);
+  const ref = require('../core/reference-data.json');
+  console.log(ref.set === sd.setNumber ? `Chances en boutique : à jour (set ${ref.set}, ${ref.updated})` : `::warning::Chances en boutique du set ${ref.set}, set en cours ${sd.setNumber} : mettre à jour core/reference-data.json`);
+  const ex = Object.values(sd.champions).find((c) => c.cost === 1 && c.ability);
+  if (ex) console.log(`Exemple de sort (${ex.name}) : ${ex.ability.desc.replace(/\n/g, ' ')}`);
 
   // Extrait brut du set en cours
   const set = (fr.setData || []).find((s) => s.number === sd.setNumber && /^TFTSet\d+$/i.test(s.mutator || ''));

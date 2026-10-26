@@ -103,7 +103,7 @@ function cdragonJson() {
     ],
     setData: [
       {
-        number: 15, mutator: 'TFTSet15', name: 'Démonstration',
+        number: 18, mutator: 'TFTSet18', name: 'Démonstration',
         traits: TRAITS.map(([apiName, name, bps]) => ({
           apiName, name, desc: `Bonus de ${name}.`, icon: `ASSETS/UX/TraitIcons/${apiName}.tex`,
           effects: bps.map((min, i) => ({ minUnits: min, maxUnits: bps[i + 1] ? bps[i + 1] - 1 : 25000, style: bps.length === 1 ? 3 : i + 1, variables: {} }))
@@ -111,7 +111,12 @@ function cdragonJson() {
         champions: CHAMPS.map(([apiName, name, cost, traits]) => ({
           apiName, name, cost, traits,
           squareIcon: `ASSETS/Characters/${apiName}/HUD/${apiName}_Square.tex`,
-          ability: { name: `Sort de ${name}`, desc: 'Inflige des dégâts.' }
+          stats: { hp: 450 + cost * 150, damage: 40 + cost * 8, attackSpeed: 0.7 + cost * 0.02, armor: 30 + cost * 5, magicResist: 30 + cost * 5, range: cost % 2 ? 1 : 4, mana: 60 + cost * 10, initialMana: 20, critChance: 0.25 },
+          ability: {
+            name: `Sort de ${name}`,
+            desc: 'Inflige <magicDamage>@Damage@ (%i:scaleAP%)</magicDamage> pts de dégâts magiques à la cible et @ModifiedHeal@ PV aux alliés proches pendant @Duration@ sec.',
+            variables: [{ name: 'Damage', value: [0, 180 + cost * 20, 270 + cost * 30, 420 + cost * 60, 0, 0, 0] }, { name: 'Duration', value: [0, 3, 3, 3, 3, 3, 3] }]
+          }
         })),
         augments: AUGS.map((a) => a[0])
       }
@@ -133,7 +138,7 @@ function buildMatch(id, puuids, r, withAug) {
       game_datetime: ts,
       game_version: 'Version 15.20.715.1234 (Oct 10 2026/12:00:00) [PUBLIC] ',
       queue_id: 1100,
-      tft_set_number: 15,
+      tft_set_number: 18,
       participants: picks.map((pk, idx) => {
         const [mainTrait, units, carry, carryItems] = pk.arch;
         const n = 6 + Math.floor(r() * 3);

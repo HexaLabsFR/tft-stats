@@ -7,6 +7,102 @@
 
 const unique = (arr) => [...new Set(arr)];
 
+// ===================== Plan de niveaux =====================
+// Plan type par style de compo, selon ta série en cours. HexaRise ne lit pas ta partie
+// (règles Riot) : les trois colonnes sont affichées, tu suis celle qui te correspond.
+export const STREAKS = [['win', 'Série de victoires'], ['mixed', 'Mixte'], ['lose', 'Série de défaites']];
+
+const W = (win, mixed, lose, key = false) => ({ win, mixed, lose: lose ?? mixed, key });
+const PLANS = {
+  lvl8: [
+    ['2-1', W('Niv. 4', 'Niv. 4', 'Niv. 4')],
+    ['2-5', W('Niv. 5', 'Niv. 5', 'Économise')],
+    ['3-2', W('Niv. 6', 'Niv. 6', 'Niv. 6')],
+    ['3-5', W('Niv. 7 s’il reste 30 PO', 'Niv. 7 s’il reste 30 PO', 'Niv. 7 s’il reste 40 PO')],
+    ['4-1', W('Niv. 8, roll un peu pour garder la série', 'Garde 50 PO', 'Niv. 8 et gros roll', true)],
+    ['4-2', W('Roll jusqu’à stabiliser', 'Niv. 8 et gros roll', 'Finis le plateau', true)],
+    ['4-5', W('Remonte à 50 PO', 'Remonte à 50 PO', 'Remonte à 50 PO')],
+    ['5-1', W('Niv. 9 si le plateau tient', 'Niv. 9 à 5-1 ou 5-2', 'Roll si PV < 40, sinon niv. 9')]
+  ],
+  fast9: [
+    ['2-1', W('Niv. 4', 'Niv. 4', 'Niv. 4')],
+    ['2-5', W('Niv. 5', 'Niv. 5', 'Économise')],
+    ['3-2', W('Niv. 6', 'Niv. 6', 'Niv. 6')],
+    ['3-5', W('Niv. 7', 'Niv. 7 s’il reste 30 PO', 'Économise, vise 50 PO')],
+    ['4-1', W('Niv. 8, garde 50 PO', 'Garde 50 PO', 'Niv. 8 et roll pour tenir')],
+    ['4-2', W('Roll juste assez pour tenir', 'Niv. 8, roll juste assez', 'Garde au moins 30 PO')],
+    ['4-5', W('Niv. 9', 'Remonte à 50 PO', 'Remonte à 50 PO')],
+    ['5-1', W('Roll pour les unités 5 PO', 'Niv. 9 et roll pour les 5 PO', 'Niv. 9 si PV > 40, sinon roll niv. 8', true)]
+  ],
+  reroll1: [
+    ['2-1', W('Niv. 4', 'Niv. 4', 'Niv. 4')],
+    ['2-5', W('Reste niv. 4', 'Reste niv. 4', 'Reste niv. 4, économise')],
+    ['3-1', W('Roll ce qui dépasse 50 PO', 'Roll ce qui dépasse 50 PO', 'Gros roll jusqu’à ~30 PO', true)],
+    ['3-2', W('Continue jusqu’aux 3★', 'Continue jusqu’aux 3★', 'Continue jusqu’aux 3★', true)],
+    ['3-5', W('3★ trouvés : niv. 6', '3★ trouvés : niv. 6', 'Stabilise, garde 20 PO')],
+    ['4-1', W('Niv. 7', 'Niv. 7', 'Niv. 6 puis 7')],
+    ['4-5', W('Niv. 8', 'Niv. 8 s’il reste 30 PO', 'Niv. 8')],
+    ['5-1', W('Ajoute les unités 4 PO', 'Ajoute les unités 4 PO', 'Ajoute les unités 4 PO')]
+  ],
+  reroll2: [
+    ['2-1', W('Niv. 4', 'Niv. 4', 'Niv. 4')],
+    ['2-5', W('Niv. 5', 'Niv. 5', 'Économise')],
+    ['3-1', W('Niv. 6', 'Niv. 6', 'Niv. 6')],
+    ['3-2', W('Roll ce qui dépasse 50 PO', 'Roll ce qui dépasse 50 PO', 'Gros roll jusqu’à ~20 PO', true)],
+    ['3-5', W('Continue jusqu’aux 3★', 'Continue jusqu’aux 3★', 'Continue jusqu’aux 3★', true)],
+    ['4-1', W('3★ trouvés : niv. 7', '3★ trouvés : niv. 7', 'Niv. 7 dès les 3★')],
+    ['4-5', W('Niv. 8', 'Niv. 8', 'Niv. 8 s’il reste 30 PO')],
+    ['5-1', W('Ajoute les unités 4 PO', 'Ajoute les unités 4 PO', 'Ajoute les unités 4 PO')]
+  ],
+  reroll3: [
+    ['2-1', W('Niv. 4', 'Niv. 4', 'Niv. 4')],
+    ['2-5', W('Niv. 5', 'Niv. 5', 'Économise')],
+    ['3-2', W('Niv. 6', 'Niv. 6', 'Niv. 6')],
+    ['3-5', W('Niv. 7 et roll ce qui dépasse 50 PO', 'Niv. 7 et roll ce qui dépasse 50 PO', 'Niv. 7 et gros roll', true)],
+    ['4-1', W('Continue jusqu’aux 3★', 'Continue jusqu’aux 3★', 'Continue jusqu’aux 3★', true)],
+    ['4-2', W('Continue jusqu’aux 3★', 'Continue jusqu’aux 3★', 'Stabilise, garde 20 PO')],
+    ['4-5', W('3★ trouvés : niv. 8', '3★ trouvés : niv. 8', 'Niv. 8 s’il reste 30 PO')],
+    ['5-1', W('Ajoute les unités 4 PO', 'Ajoute les unités 4 PO', 'Ajoute les unités 4 PO')]
+  ]
+};
+
+// Niveau de référence où l'on cherche le carry, pour citer les chances en boutique.
+const ROLL_LEVEL = { reroll1: 4, reroll2: 6, reroll3: 7, lvl8: 8, fast9: 9 };
+
+const planKey = (type) => (type.id === 'reroll' ? `reroll${Math.min(3, Math.max(1, type.cost || 1))}` : type.id);
+
+/** Chances (en %) d'un coût donné à un niveau, si les données du set en cours sont connues. */
+export function oddsAt(sd, level, cost) {
+  const ref = sd?.reference;
+  if (!ref || ref.stale) return null;
+  return ref.odds?.[level]?.[cost - 1] ?? null;
+}
+
+/** Plan de niveaux : lignes (manche, 3 colonnes), conseils généraux, chances citées. */
+export function levelPlan(type, sd, carryCost) {
+  const key = planKey(type);
+  const rows = (PLANS[key] || PLANS.lvl8).map(([round, cells]) => ({ round, ...cells }));
+  const lvl = ROLL_LEVEL[key];
+  const cost = type.id === 'fast9' ? 5 : type.id === 'lvl8' ? 4 : carryCost;
+  const odds = oddsAt(sd, lvl, cost);
+  const hint = odds !== null && cost
+    ? `Au niveau ${lvl}, ${odds} % des champions de la boutique coûtent ${cost} PO${type.id === 'reroll' ? ' : c’est le meilleur niveau pour chercher ton carry' : ''}.`
+    : '';
+  return {
+    key,
+    rows,
+    rollLevel: lvl,
+    hint,
+    tips: [
+      'Intérêts : 1 PO par tranche de 10 PO, jusqu’à 50 PO. Garde-les tant que tes PV le permettent.',
+      'Une série (victoires ou défaites) rapporte de l’or en plus : évite d’alterner.',
+      '« Roll ce qui dépasse 50 PO » : tu ne dépenses que l’or au-dessus de 50 et tu gardes les intérêts.',
+      'Sous 40 PV, arrête d’économiser : roll pour renforcer ton plateau.'
+    ]
+  };
+}
+
+
 /** Type de compo : reroll, niveau 8 standard ou fast 9. */
 export function compType(comp, carryCost) {
   const lvl9 = (comp.levelDist?.[2] || 0) + (comp.levelDist?.[3] || 0);
@@ -74,9 +170,41 @@ export function buildGuide(comp, sd, label = (x) => x.name) {
     ]
   });
 
-  const eco2 = type.id === 'reroll'
-    ? 'Niveau 4 à 2-1, niveau 5 à 2-5. Garde ton or pour les intérêts (10, 20, 30 PO).'
-    : 'Niveau 4 à 2-1, niveau 5 à 2-5. Vise 50 PO au début de l’étape 3 sans perdre trop de PV.';
+  const plan = levelPlan(type, sd, carry.cost);
+  const cName = label(carry);
+  const SAY = {
+    lvl8: [
+      'Niveau 4 à 2-1, niveau 5 à 2-5. Vise 50 PO au début de l’étape 3 sans perdre trop de PV.',
+      'Niveau 6 à 3-2, niveau 7 à 3-5 s’il te reste au moins 30 PO. Garde 50 PO.',
+      `Niveau 8 à 4-1 ou 4-2, puis gros roll pour ${cName} 2★ et le cœur de compo.`,
+      'Remonte à 50 PO, puis niveau 9 à 5-1 ou 5-2 si ton plateau tient.'
+    ],
+    fast9: [
+      'Niveau 4 à 2-1, niveau 5 à 2-5. Vise 50 PO au début de l’étape 3.',
+      'Niveau 6 à 3-2, niveau 7 à 3-5. Économise au maximum en restant sur une série.',
+      'Niveau 8 à 4-1 ou 4-2, roll juste assez pour tenir, puis remonte à 50 PO.',
+      'Niveau 9 à 4-5 ou 5-1, puis roll pour les unités 5 PO.'
+    ],
+    reroll1: [
+      'Niveau 4 à 2-1, puis reste niveau 4 : c’est là que les unités 1 PO sortent le plus. Garde ton or pour les intérêts.',
+      `À partir de 3-1, roll tout ce qui dépasse 50 PO jusqu’à ${cName} 3★.`,
+      'Une fois les 3★ trouvés, monte niveau 6, 7 puis 8 pour ajouter des unités plus chères.',
+      'Niveau 8 et ajoute les unités 4 PO de la compo finale.'
+    ],
+    reroll2: [
+      'Niveau 4 à 2-1, niveau 5 à 2-5. Garde ton or pour les intérêts.',
+      `Niveau 6 à 3-1, puis roll tout ce qui dépasse 50 PO jusqu’à ${cName} 3★.`,
+      '3★ trouvés : niveau 7 à 4-1, niveau 8 à 4-5.',
+      'Niveau 8 et ajoute les unités 4 PO de la compo finale.'
+    ],
+    reroll3: [
+      'Niveau 4 à 2-1, niveau 5 à 2-5. Garde ton or pour les intérêts.',
+      `Niveau 6 à 3-2, niveau 7 à 3-5, puis roll tout ce qui dépasse 50 PO jusqu’à ${cName} 3★.`,
+      'Continue le roll lent jusqu’aux 3★, puis niveau 8 à 4-5.',
+      'Niveau 8 et ajoute les unités 4 PO de la compo finale.'
+    ]
+  }[plan.key];
+  const eco2 = SAY[0];
   stages.push({
     stage: 'Étape 2',
     rounds: '2-1 → 2-7',
@@ -88,15 +216,7 @@ export function buildGuide(comp, sd, label = (x) => x.name) {
     ].filter(Boolean)
   });
 
-  const tempo3 = {
-    reroll: {
-      1: 'Niveau 5 à 3-1 et roll jusqu’à avoir ton carry 3★, en gardant environ 50 PO quand c’est possible.',
-      2: 'Niveau 6 à 3-1 et roll lentement au-dessus de 50 PO jusqu’aux 3★.',
-      3: 'Niveau 7 à 3-2 (ou 3-5) et roll pour les 3★ de ton carry.'
-    }[type.cost],
-    lvl8: 'Niveau 6 à 3-1, niveau 7 à 3-2. Stabilise avec ton meilleur plateau et garde 50 PO.',
-    fast9: 'Niveau 6 à 3-1, niveau 7 à 3-2, puis économise au maximum (série de victoires ou de défaites).'
-  }[type.id];
+  const tempo3 = SAY[1];
   stages.push({
     stage: 'Étape 3',
     rounds: '3-1 → 3-7',
@@ -108,11 +228,7 @@ export function buildGuide(comp, sd, label = (x) => x.name) {
     ].filter(Boolean)
   });
 
-  const tempo4 = {
-    reroll: `Une fois les 3★ trouvés, monte niveau 7 puis 8 pour ajouter ${cappers.length ? 'les unités 4 PO de la compo finale' : 'des unités plus chères'}.`,
-    lvl8: `Niveau 8 à 4-1 (ou 4-2 si tu as moins de 50 PO) et roll pour ${label(carry)} 2★ et le cœur de compo.`,
-    fast9: 'Niveau 8 à 4-2, roll juste assez pour stabiliser, puis remonte à 50 PO.'
-  }[type.id];
+  const tempo4 = SAY[2];
   stages.push({
     stage: 'Étape 4',
     rounds: '4-1 → 4-7',
@@ -129,17 +245,17 @@ export function buildGuide(comp, sd, label = (x) => x.name) {
     rounds: 'Fin de partie',
     steps: [
       { kind: 'final', text: 'Plateau final :', ids: final.map((u) => u.id) },
+      { kind: 'text', text: SAY[3] },
       {
-        kind: 'text',
-        text: type.id === 'fast9'
-          ? `Niveau 9 à 5-1 avec 50 PO et cherche les unités 5 PO (${lvl9} % des parties finissent niveau 9 ou plus).`
-          : `Niveau final moyen : ${String(comp.avgLevel).replace('.', ',')} (${lvl9} % des parties atteignent le niveau 9).`
+        kind: 'note',
+        text: `Niveau final moyen : ${String(comp.avgLevel).replace('.', ',')} · ${lvl9} % des parties atteignent le niveau 9 ou plus.`
       }
     ]
   });
 
   return {
     type,
+    plan,
     carry: comp.carry,
     tank: comp.tank,
     coreTraits,

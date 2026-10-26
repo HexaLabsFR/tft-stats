@@ -1,7 +1,7 @@
 // Mode partie : guide de la compo choisie avant la partie, recettes et augments.
 // Aucune donnée de la partie en cours n'est lue ici (règles Riot pour TFT).
 import { api, isDesktop } from './api.js';
-import { buildGuide } from './guide.js';
+import { buildGuide, compType, levelPlan } from './guide.js';
 
 if (!isDesktop) document.body.classList.add('web');
 
@@ -13,10 +13,11 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '
 const nf = (v, d = 2) => (v === null || v === undefined ? '—' : Number(v).toLocaleString('fr-FR', { minimumFractionDigits: d, maximumFractionDigits: d }));
 const initials = (n = '?') => n.replace(/[^\p{L}\p{N} ]/gu, '').split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase();
 const label = (x) => (x?.en && x.en.toLowerCase() !== String(x.name).toLowerCase() ? `${x.name} (${x.en})` : x?.name || '');
-const champ = (id) => S.static?.champions?.[id] || { apiName: id, name: id.replace(/^TFT\d+_/, ''), cost: 0, traits: [], icon: '' };
-const trait = (id) => S.static?.traits?.[id] || { apiName: id, name: id.replace(/^TFT\d+_/, ''), icon: '' };
-const item = (id) => S.static?.items?.[id] || { apiName: id, name: id.replace(/^TFT\d*_Item_/, ''), icon: '', composition: [] };
-const aug = (id) => S.static?.augments?.[id] || { apiName: id, name: id.replace(/^TFT\d*_Augment_/, ''), icon: '' };
+const pretty = (id = '') => String(id).replace(/^(TFT\d*|DA)_(\d+_)?(Item_|Augment_)?/i, '').replace(/\d+(?=_|$)/g, '').replace(/_/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').trim();
+const champ = (id) => S.static?.champions?.[id] || { apiName: id, name: pretty(id), cost: 0, traits: [], icon: '' };
+const trait = (id) => S.static?.traits?.[id] || { apiName: id, name: pretty(id), icon: '' };
+const item = (id) => S.static?.items?.[id] || { apiName: id, name: pretty(id), icon: '', composition: [] };
+const aug = (id) => S.static?.augments?.[id] || { apiName: id, name: pretty(id), icon: '' };
 const img = (src, alt) => (src ? `<img src="${esc(src)}" alt="" loading="lazy" data-fallback="${esc(initials(alt))}">` : esc(initials(alt)));
 const champIcon = (id) => `<span class="ic champ cost-${champ(id).cost || 1}" data-tip="champ" data-id="${esc(id)}">${img(champ(id).icon, champ(id).name)}</span>`;
 const itemIcon = (id, lg) => `<span class="ic item ${lg ? 'lg' : ''}" data-tip="item" data-id="${esc(id)}">${img(item(id).icon, item(id).name)}</span>`;
@@ -38,7 +39,7 @@ document.addEventListener('mouseover', (e) => {
   const id = el.dataset.id;
   const src = { champ, item, aug }[el.dataset.tip]?.(id);
   if (!src) return;
-  const desc = el.dataset.tip === 'champ' ? src.traits.map((t) => label(trait(t))).join(' · ') : src.desc || '';
+  const desc = el.dataset.tip === 'champ' ? src.traits.map((t) => label(trait(t))).join(' · ') : [src.stats, src.desc].filter(Boolean).join('\n\n');
   tip.innerHTML = `<div class="t">${esc(label(src))}</div>${desc ? `<div class="d">${esc(desc).slice(0, 400)}</div>` : ''}`;
   tip.classList.remove('hidden');
   const r = el.getBoundingClientRect();
@@ -78,6 +79,7 @@ function viewGuide() {
         total++;
         if (checks[key]) done++;
         let ids = '';
+        if (step.kind === 'note') return `<p class="ov-note">${esc(step.text)}</p>`;
         if (step.kind === 'units' || step.kind === 'final') ids = `<div class="comp-units">${step.ids.map((id) => unitEl(id, step.kind === 'final' ? stars[id] : 0)).join('')}</div>`;
         else if (step.kind === 'items') ids = `<div class="tags">${step.ids.map((id) => `<span class="tag">${itemIcon(id)}${esc(item(id).name)}</span>`).join('')}</div>`;
         else if (step.kind === 'augs') ids = `<div class="tags">${step.ids.map((id) => `<span class="tag">${augIcon(id)}${esc(aug(id).name)}</span>`).join('')}</div>`;
@@ -90,6 +92,26 @@ function viewGuide() {
     <div class="comp-units">${g.final.map((u) => unitEl(u.id, stars[u.id], u.id === c.carry ? g.carryItems : u.id === g.tank ? g.tankItems : [])).join('')}</div>
     <div class="ov-progress"><i style="width:${total ? (done / total) * 100 : 0}%"></i></div>
     ${stages}`;
+}
+
+function viewLevels() {
+  const c = S.comp;
+  const type = c ? compType(c, champ(c.carry).cost || 4) : { id: 'lvl8', label: 'Niveau 8 standard' };
+  const plan = levelPlan(type, S.static, c ? champ(c.carry).cost : 4);
+  const rows = plan.rows.map((r) => {
+    const same = r.win === r.mixed && r.mixed === r.lose;
+    return `<tr class="${r.key ? 'key' : ''}"><td class="rd">${esc(r.round)}</td>${same ? `<td colspan="3">${esc(r.win)}</td>` : `<td>${esc(r.win)}</td><td>${esc(r.mixed)}</td><td>${esc(r.lose)}</td>`}</tr>`;
+  }).join('');
+  const ref = S.static?.reference;
+  const lv = plan.rollLevel;
+  const odds = ref && !ref.stale
+    ? `<h5>Chances en boutique</h5><table class="ov-odds"><thead><tr><th>Niv.</th>${[1, 2, 3, 4, 5].map((k) => `<th>${k} PO</th>`).join('')}</tr></thead>
+      <tbody>${[4, 5, 6, 7, 8, 9, 10].filter((l) => ref.odds[l]).map((l) => `<tr class="${l === lv ? 'hl' : ''}"><td>${l}</td>${ref.odds[l].map((v) => `<td>${v || '—'}</td>`).join('')}</tr>`).join('')}</tbody></table>`
+    : '';
+  return `<p class="ov-note">${c ? `${esc(type.label)} · suis la colonne de ta série.` : 'Plan type niveau 8 : choisis ta compo pour un plan adapté.'}</p>
+    <table class="plan ov-plan"><thead><tr><th></th><th>Victoires</th><th>Mixte</th><th>Défaites</th></tr></thead><tbody>${rows}</tbody></table>
+    ${plan.hint ? `<p class="ov-note">${esc(plan.hint)}</p>` : ''}
+    ${odds}`;
 }
 
 function viewItems() {
@@ -120,7 +142,7 @@ function viewAugs() {
     ${list.map((a) => `<div class="ov-recipe" style="grid-template-columns:26px 1fr">${augIcon(a.apiName)}<span>${esc(label(a))}</span></div>`).join('')}`;
 }
 
-const VIEWS = { guide: viewGuide, items: viewItems, augs: viewAugs };
+const VIEWS = { guide: viewGuide, levels: viewLevels, items: viewItems, augs: viewAugs };
 
 function render() {
   const data = bracketData();

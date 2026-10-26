@@ -55,3 +55,13 @@ body.ov { font-size: 13px; overflow: hidden; display: flex; flex-direction: colu
 .ov-augs td { padding: 4px; border-bottom: 1px solid rgba(34, 44, 71, .6); }
 .ov-augs td:first-child { width: 30px; }
 .ov-augs .ic.aug { width: 24px; height: 24px; border-radius: 6px; }
+
+/* Onglet Niveaux */
+.ov-note { margin: 6px 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+table.ov-plan th { padding: 4px 5px; font-size: 11px; }
+table.ov-plan td { padding: 5px; font-size: 11.5px; line-height: 1.3; }
+table.ov-plan td.rd { font-size: 12px; }
+.ov-odds { width: 100%; border-collapse: collapse; font-size: 11.5px; font-variant-numeric: tabular-nums; }
+.ov-odds th, .ov-odds td { padding: 3px 4px; text-align: right; border-top: 1px solid var(--line); cursor: default; position: static; background: transparent; }
+.ov-odds th:first-child, .ov-odds td:first-child { text-align: left; color: var(--faint); }
+.ov-odds tr.hl td { background: rgba(124, 58, 237, .18); color: var(--text); }

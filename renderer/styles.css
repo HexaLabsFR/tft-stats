@@ -116,6 +116,7 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round
 .seg { display: inline-flex; border: 1px solid var(--outline); border-radius: 16px; overflow: hidden; }
 .seg button { height: 32px; padding: 0 14px; border: 0; background: transparent; color: var(--muted); font-size: 14px; font-weight: 500; cursor: pointer; transition: background .25s var(--ease), color .2s; }
 .seg button + button { border-left: 1px solid var(--outline); }
+.seg button svg { width: 18px; height: 18px; vertical-align: middle; }
 .seg button.on { background: linear-gradient(90deg, rgba(124, 58, 237, .55), rgba(37, 99, 235, .55)); color: #fff; }
 .pill { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 12px; border-radius: 8px; background: var(--surface-4); color: var(--text); font-size: 13px; }
 .pill.grad { background: var(--grad); color: #fff; font-weight: 600; }
@@ -323,6 +324,40 @@ tbody tr:hover { background: rgba(202, 196, 208, .05); }
 .tooltip .t { font-weight: 600; margin-bottom: 4px; }
 .tooltip .d { color: var(--muted); font-size: 12.5px; line-height: 1.5; white-space: pre-line; }
 
+/* ---------- Plan de niveaux ---------- */
+table.plan th { cursor: default; position: static; background: transparent; }
+table.plan td { font-size: 14px; line-height: 1.4; }
+table.plan td.rd { font: 700 15px var(--display); white-space: nowrap; width: 1%; }
+table.plan tr.key td { background: rgba(124, 58, 237, .12); }
+table.plan tr.key td.rd { box-shadow: inset 3px 0 0 #7c3aed; }
+.kb { display: inline-block; margin-left: 8px; padding: 1px 7px; border-radius: 6px; background: var(--grad); color: #fff; font: 600 11px var(--sans); vertical-align: 2px; }
+.tips { margin: 14px 0 0; padding-left: 20px; color: var(--muted); font-size: 14px; line-height: 1.6; }
+
+/* ---------- Boutique ---------- */
+table.odds th { cursor: default; }
+table.odds td.heat { background: rgba(124, 58, 237, calc(var(--h) * .7)); color: var(--text); }
+.cost-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; vertical-align: 0; background: var(--c1); }
+.cost-dot.cost-2 { background: var(--c2); } .cost-dot.cost-3 { background: var(--c3); } .cost-dot.cost-4 { background: var(--c4); } .cost-dot.cost-5 { background: var(--c5); }
+
+/* ---------- Champions ---------- */
+tr.clickable { cursor: pointer; }
+.ic.champ.xl { width: 64px; height: 64px; }
+.ic.champ.xxl { width: 96px; height: 96px; border-width: 3px; }
+.champ-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; padding: 0 8px; }
+.champ-card { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 16px 10px; border: 0; border-radius: 16px; background: var(--surface-3); color: var(--text); cursor: pointer; text-align: center; transition: background .2s, transform .15s var(--ease); }
+.champ-card:hover { background: var(--surface-4); }
+.champ-card:active { transform: scale(.98); }
+.champ-card b { font-size: 14px; }
+.champ-head { display: flex; gap: 20px; align-items: center; }
+.stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.stat { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border-radius: 16px; background: var(--surface-3); }
+.stat b { font: 600 18px var(--display); font-variant-numeric: tabular-nums; }
+.prewrap { white-space: pre-line; line-height: 1.6; margin: 0; }
+.vals { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.tier.sm { width: 22px; height: 22px; font-size: 11px; box-shadow: none; }
+button.tag { border: 0; color: var(--text); cursor: pointer; }
+button.tag:hover { background: var(--outline-2); }
+
 /* ---------- Animations réduites ---------- */
 body.no-motion *, body.no-motion *::before, body.no-motion *::after { animation-duration: 1ms !important; transition-duration: 1ms !important; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 1ms !important; transition-duration: 1ms !important; } }
@@ -334,5 +369,6 @@ body.no-motion *, body.no-motion *::before, body.no-motion *::after { animation-
   .stats, .kpis { grid-template-columns: 1fr 1fr; }
   .steps { grid-template-columns: 1fr; }
   .gstage { grid-template-columns: 1fr; }
+  .stat-grid { grid-template-columns: 1fr 1fr; }
   .snackbar { left: 16px; right: 16px; }
 }
