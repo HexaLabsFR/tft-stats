@@ -98,6 +98,14 @@ const { parseLimitHeader } = require('../core/riot');
   assert.strictEqual(sd18.traits.DA_18_Elderwood.desc, 'Intro\n(3) Bonus 10.\n(5) Bonus 25.');
   assert.strictEqual(formatDesc('Tick @V*100@ %', { V: 0.155 }), 'Tick 15,5 %');
 
+  // Clé refusée : code et fin de clé affichés ; clé mal copiée détectée avant l'appel à Riot
+  const deny = async () => ({ ok: false, status: 403, headers: { get: () => null }, json: async () => ({ status: { message: 'Forbidden', status_code: 403 } }) });
+  const e3 = new Engine({ dataDir: fs.mkdtempSync(path.join(os.tmpdir(), 'tft-')), keyStore: memoryKeyStore('RGAPI-00000000-0000-0000-0000-00000000abcd'), fetchImpl: deny });
+  const t3 = await e3.testKey();
+  assert.ok(!t3.ok && /403/.test(t3.message) && /…abcd/.test(t3.message), t3.message);
+  const bad = await e3.setApiKey('RGAPI-1234 5678');
+  assert.ok(!bad.ok && /ne ressemble pas/.test(bad.message), bad.message);
+
   engine.stop();
   const sgc = meta.comps.find((c) => c.carry === 'TFT15_Ahri');
   assert.ok(typeof sgc.carry3 === 'number' && sgc.levelDist.length === 4 && sgc.augStages.length === 3);

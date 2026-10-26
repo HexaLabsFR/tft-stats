@@ -212,12 +212,22 @@ function openDialog({ title, body, actions }) {
   setTimeout(() => layer.querySelector('.dialog input')?.focus(), 60);
 }
 
+/** Clé refusée pendant la collecte : on propose directement de la remplacer (une fois par session). */
+let keyPrompted = false;
+function promptKeyIfRefused(st) {
+  if (keyPrompted || st?.state !== 'error' || st.code !== 'BAD_KEY' || layer.innerHTML) return;
+  keyPrompted = true;
+  openKeyDialog();
+  const msg = $('#key-msg');
+  if (msg) msg.innerHTML = `<span class="bad">${esc(st.message)}</span>`;
+}
+
 function openKeyDialog() {
   openDialog({
     title: 'Clé API Riot',
     body: `<label for="key-input">Clé (RGAPI-…)</label>
       <input id="key-input" type="password" placeholder="${S.app?.hasKey ? '•••••••• (enregistrée)' : 'Colle ta clé ici'}" autocomplete="off">
-      <p>Une clé de développement expire après 24 h. Génère-la sur developer.riotgames.com.</p>
+      <p>Une clé de développement expire après 24 h. Sur developer.riotgames.com, clique sur « Regenerate API Key » puis copie-la avec l’icône de copie.</p>
       <p class="msg" id="key-msg"></p>`,
     actions: '<button class="btn text" data-close="1">Annuler</button><button class="btn filled" data-action="save-key">Enregistrer</button>'
   });
@@ -1240,6 +1250,7 @@ window.addEventListener('resize', () => menuState && closeLayer());
 api.on('status', (st) => {
   if (S.app) S.app.status = st;
   renderStatus();
+  promptKeyIfRefused(st);
 });
 api.on('meta', async (meta) => {
   S.meta = meta;
@@ -1295,4 +1306,5 @@ setInterval(renderStatus, 30000);
   renderStatus();
   render('fade');
   if (!S.app?.hasKey) setTimeout(openKeyDialog, 400);
+  else setTimeout(() => promptKeyIfRefused(S.app?.status), 400);
 })();

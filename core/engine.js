@@ -9,6 +9,8 @@ const { EventEmitter } = require('events');
 const { RiotClient, PLATFORMS } = require('./riot');
 const { StaticData } = require('./static-data');
 const { Reference } = require('./reference');
+
+const KEY_FORMAT = /^RGAPI-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const { aggregate, canonPlayer, compactMatch, latestPatch, RANKED_QUEUE } = require('./aggregate');
 
 /** Tranches d'élo analysées séparément (les lobbys Riot regroupent des joueurs de niveau proche). */
@@ -189,17 +191,49 @@ class Engine extends EventEmitter {
   }
 
   async setApiKey(key) {
-    await this.keyStore.set((key || '').trim());
+    // Copie depuis le portail : on retire espaces et retours à la ligne éventuels.
+    const clean = String(key || '').replace(/\s+/g, '');
+    if (clean && !KEY_FORMAT.test(clean)) {
+      return {
+        ok: false,
+        message: `Cette clé ne ressemble pas à une clé Riot (RGAPI- suivi de 36 caractères, ici ${clean.length} au total). Recopie-la avec l’icône de copie du portail.`
+      };
+    }
+    await this.keyStore.set(clean);
     const ok = await this.testKey();
     if (ok.ok && !this.running) this.refreshNow();
     return ok;
   }
 
+  /**
+   * Teste la clé en deux temps pour distinguer une clé refusée d'un accès refusé à une API précise.
+   */
   async testKey() {
+    const key = (await this.keyStore.get()) || '';
+    const end = key ? ` (clé enregistrée se terminant par …${key.slice(-4)})` : '';
+    try {
+      await this.riot.tftStatus(this.settings.platform);
+    } catch (err) {
+      if (err.code === 'BAD_KEY') {
+        return {
+          ok: false,
+          code: err.status,
+          message: `Riot refuse cette clé${end} : code ${err.status}${err.detail ? ` « ${err.detail} »` : ''}. ${err.status === 401 ? 'La clé est mal copiée ou incomplète.' : 'La clé est expirée ou désactivée : régénère-la sur developer.riotgames.com, puis vérifie que « Expires » affiche demain.'}`
+        };
+      }
+      return { ok: false, message: err.message };
+    }
     try {
       await this.riot.apexLeague(this.settings.platform, 'challenger');
       return { ok: true, message: 'Clé valide.' };
     } catch (err) {
+      if (err.code === 'BAD_KEY') {
+        return {
+          ok: false,
+          code: err.status,
+          message: `Ta clé est acceptée par Riot${end}, mais l’accès au classement TFT est refusé (code ${err.status}${err.detail ? ` « ${err.detail} »` : ''} sur ${err.path}). Ce n’est pas la clé : envoie ce message pour diagnostic.`
+        };
+      }
       return { ok: false, message: err.message };
     }
   }
@@ -210,7 +244,7 @@ class Engine extends EventEmitter {
     this.running = this._collect()
       .catch((err) => {
         this.log(`Erreur : ${err.message}`);
-        this._setStatus({ state: 'error', message: err.message });
+        this._setStatus({ state: 'error', message: err.message, code: err.code || '' });
       })
       .finally(() => {
         this.running = null;
@@ -259,7 +293,7 @@ class Engine extends EventEmitter {
 
   async _collect() {
     const { platform, matchesPerPlayer } = this.settings;
-    this._setStatus({ state: 'running', phase: 'Données du set', done: 0, total: 0, message: '' });
+    this._setStatus({ state: 'running', phase: 'Données du set', done: 0, total: 0, message: '', code: '' });
 
     const changed = await this.static.refresh().catch((e) => {
       this.log(`Données statiques : ${e.message}`);

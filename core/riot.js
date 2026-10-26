@@ -142,11 +142,18 @@ class RiotClient {
         continue;
       }
       if (res.status === 401 || res.status === 403) {
-        throw new RiotError(
-          'Clé API Riot refusée (expirée ou invalide). Une clé de développement expire après 24 h : génère-en une nouvelle sur developer.riotgames.com.',
+        let detail = '';
+        try {
+          detail = (await res.json())?.status?.message || '';
+        } catch { /* corps vide */ }
+        const err = new RiotError(
+          `Clé API Riot refusée (code ${res.status}${detail ? ` : ${detail}` : ''}). Une clé de développement expire après 24 h : génère-en une nouvelle sur developer.riotgames.com.`,
           res.status,
           'BAD_KEY'
         );
+        err.detail = detail;
+        err.path = path.split('?')[0];
+        throw err;
       }
       if (res.status >= 500 && attempt < retries) {
         await sleep(2000 * (attempt + 1));
@@ -180,6 +187,11 @@ class RiotClient {
 
   leagueByPuuid(platform, puuid) {
     return this.request(platform, `/tft/league/v1/by-puuid/${puuid}`);
+  }
+
+  /** État du serveur TFT : accessible avec n'importe quelle clé valide (sert au test de la clé). */
+  tftStatus(platform) {
+    return this.request(platform, '/tft/status/v1/platform-data', { retries: 1 });
   }
 
   /** tier : challenger | grandmaster | master */
