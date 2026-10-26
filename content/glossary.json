@@ -1,0 +1,380 @@
+{
+ "version": 1,
+ "updated": "2026-10-26",
+ "terms": [
+  {
+   "term": "Économie",
+   "aliases": [
+    "éco",
+    "econ"
+   ],
+   "def": "Gestion de ton or : garder des intérêts, profiter des séries, choisir quand dépenser."
+  },
+  {
+   "term": "Intérêts",
+   "aliases": [
+    "intérêt"
+   ],
+   "def": "Or bonus à chaque manche : 1 PO par tranche de 10 PO que tu possèdes, jusqu'à 5 PO à partir de 50 PO."
+  },
+  {
+   "term": "Série de victoires",
+   "aliases": [
+    "win streak"
+   ],
+   "def": "Plusieurs victoires d'affilée : elles rapportent de l'or en plus et protègent tes PV."
+  },
+  {
+   "term": "Série de défaites",
+   "aliases": [
+    "lose streak",
+    "loss streak"
+   ],
+   "def": "Plusieurs défaites d'affilée, parfois voulues : elles rapportent de l'or en plus et te donnent un meilleur choix au carrousel, mais coûtent des PV."
+  },
+  {
+   "term": "Série",
+   "aliases": [
+    "streak"
+   ],
+   "def": "Suite de victoires ou de défaites d'affilée. Les deux rapportent de l'or en plus ; alterner n'en rapporte pas.",
+   "auto": false
+  },
+  {
+   "term": "Roll",
+   "aliases": [
+    "roller",
+    "rerolls"
+   ],
+   "def": "Payer 2 PO pour renouveler les champions de la boutique."
+  },
+  {
+   "term": "Rolldown",
+   "aliases": [
+    "gros roll",
+    "roll down"
+   ],
+   "def": "Dépenser beaucoup d'or d'un coup en roll pour améliorer ton plateau, souvent à un moment clé (par exemple niveau 8 à l'étape 4)."
+  },
+  {
+   "term": "Roll lent",
+   "aliases": [
+    "slow roll",
+    "roll lentement"
+   ],
+   "def": "Ne dépenser en roll que l'or au-dessus de 50 PO, pour garder les intérêts tout en cherchant tes 3★."
+  },
+  {
+   "term": "Reroll",
+   "aliases": [],
+   "def": "Style de compo qui reste à petit niveau pour trouver des unités bon marché en 3★, au lieu de monter vite pour les unités chères."
+  },
+  {
+   "term": "Hyper roll",
+   "aliases": [],
+   "def": "Mode de jeu rapide de TFT, ou style qui roll énormément très tôt."
+  },
+  {
+   "term": "Niveau 8 rapide",
+   "aliases": [
+    "fast 8"
+   ],
+   "def": "Monter au niveau 8 tôt (vers 4-1 ou 4-2) pour trouver les unités à 4 PO."
+  },
+  {
+   "term": "Niveau 9 rapide",
+   "aliases": [
+    "fast 9"
+   ],
+   "def": "Économiser pour atteindre le niveau 9 et jouer les unités à 5 PO."
+  },
+  {
+   "term": "XP",
+   "aliases": [
+    "expérience"
+   ],
+   "def": "Expérience pour monter de niveau : tu en gagnes un peu à chaque manche, ou 4 XP pour 4 PO.",
+   "auto": false
+  },
+  {
+   "term": "Carry",
+   "aliases": [
+    "carrys"
+   ],
+   "def": "Le champion qui inflige l'essentiel des dégâts de ta compo et reçoit les objets offensifs.",
+   "auto": false
+  },
+  {
+   "term": "Tank",
+   "aliases": [
+    "tanks"
+   ],
+   "def": "Champion résistant placé devant pour encaisser les coups pendant que le carry frappe.",
+   "auto": false
+  },
+  {
+   "term": "Ligne avant",
+   "aliases": [
+    "frontline"
+   ],
+   "def": "Les unités placées devant, surtout des tanks.",
+   "auto": false
+  },
+  {
+   "term": "Ligne arrière",
+   "aliases": [
+    "backline"
+   ],
+   "def": "Les unités placées derrière, souvent les carrys à distance.",
+   "auto": false
+  },
+  {
+   "term": "Pivot",
+   "aliases": [
+    "pivoter"
+   ],
+   "def": "Changer de compo en cours de partie quand ton plan de départ ne marche pas ou qu'il est trop disputé."
+  },
+  {
+   "term": "Forcer",
+   "aliases": [
+    "force"
+   ],
+   "def": "Jouer une compo choisie à l'avance quoi qu'il arrive."
+  },
+  {
+   "term": "Contester",
+   "aliases": [
+    "contestée",
+    "disputée",
+    "contest"
+   ],
+   "def": "Plusieurs joueurs prennent les mêmes champions : il en reste moins pour chacun."
+  },
+  {
+   "term": "Scouter",
+   "aliases": [
+    "scout",
+    "scouting"
+   ],
+   "def": "Regarder les plateaux adverses pour savoir ce qu'ils jouent et adapter ton placement ou ta compo."
+  },
+  {
+   "term": "Carrousel",
+   "aliases": [],
+   "def": "Manche commune où chaque joueur choisit un champion avec un objet, en commençant par celui qui a le moins de PV."
+  },
+  {
+   "term": "Composant",
+   "aliases": [
+    "composants"
+   ],
+   "def": "Objet de base (BF Glaive, Arc courbe…). Deux composants forment un objet complet.",
+   "auto": false
+  },
+  {
+   "term": "Slam",
+   "aliases": [
+    "slammer"
+   ],
+   "def": "Fabriquer un objet tôt, même s'il n'est pas idéal, pour gagner des manches et protéger tes PV."
+  },
+  {
+   "term": "BIS",
+   "aliases": [
+    "best in slot"
+   ],
+   "def": "Les meilleurs objets possibles pour un champion."
+  },
+  {
+   "term": "Emblème",
+   "aliases": [
+    "emblèmes"
+   ],
+   "def": "Objet qui donne une synergie à son porteur, souvent fabriqué avec une Spatule ou une Poêle à frire."
+  },
+  {
+   "term": "Artefact",
+   "aliases": [
+    "artefacts"
+   ],
+   "def": "Objet spécial plus puissant, obtenu par des augments ou certaines synergies."
+  },
+  {
+   "term": "Radieux",
+   "aliases": [
+    "objet radieux"
+   ],
+   "def": "Version améliorée d'un objet classique, très puissante."
+  },
+  {
+   "term": "Augment",
+   "aliases": [
+    "augments",
+    "augmentation"
+   ],
+   "def": "Bonus permanent choisi parmi trois propositions à 2-1, 3-2 et 4-2 (argent, or ou prismatique).",
+   "auto": false
+  },
+  {
+   "term": "Synergie",
+   "aliases": [
+    "synergies",
+    "trait"
+   ],
+   "def": "Bonus activé quand tu joues assez de champions qui partagent une origine ou une classe.",
+   "auto": false
+  },
+  {
+   "term": "Palier",
+   "aliases": [
+    "paliers",
+    "breakpoint"
+   ],
+   "def": "Nombre d'unités nécessaire pour activer un niveau de synergie (par exemple 3, 5, 7).",
+   "auto": false
+  },
+  {
+   "term": "Vertical",
+   "aliases": [
+    "verticale"
+   ],
+   "def": "Compo qui empile beaucoup d'unités d'une même synergie pour atteindre son plus haut palier."
+  },
+  {
+   "term": "Flex",
+   "aliases": [
+    "flexible"
+   ],
+   "def": "Compo ou style qui s'adapte aux unités et objets que la partie te donne."
+  },
+  {
+   "term": "Tempo",
+   "aliases": [],
+   "def": "Être fort au bon moment : monter de niveau ou roll pour gagner des manches au lieu d'économiser."
+  },
+  {
+   "term": "Stabiliser",
+   "aliases": [
+    "stable"
+   ],
+   "def": "Avoir un plateau assez fort pour arrêter de perdre des PV."
+  },
+  {
+   "term": "Encaisser",
+   "aliases": [
+    "cash out",
+    "cashout"
+   ],
+   "def": "Récupérer la récompense accumulée par une synergie ou un augment (souvent après une série de défaites)."
+  },
+  {
+   "term": "Paire",
+   "aliases": [
+    "paires"
+   ],
+   "def": "Deux exemplaires du même champion : il en manque un pour l'amélioration 2★."
+  },
+  {
+   "term": "3★",
+   "aliases": [
+    "3 étoiles",
+    "trois étoiles"
+   ],
+   "def": "Champion amélioré deux fois (9 exemplaires au total) : beaucoup plus puissant.",
+   "auto": false
+  },
+  {
+   "term": "Banc",
+   "aliases": [],
+   "def": "Les cases sous ton plateau où tu gardes les unités qui ne combattent pas.",
+   "auto": false
+  },
+  {
+   "term": "Ouverture",
+   "aliases": [
+    "opener",
+    "début de partie"
+   ],
+   "def": "Ton plateau des étapes 1 et 2, choisi pour gagner des manches et préparer ta compo finale."
+  },
+  {
+   "term": "Lobby",
+   "aliases": [],
+   "def": "Les 8 joueurs de ta partie.",
+   "auto": false
+  },
+  {
+   "term": "Top 4",
+   "aliases": [],
+   "def": "Finir entre la 1re et la 4e place : en partie classée, ça fait gagner des LP.",
+   "auto": false
+  },
+  {
+   "term": "Place moyenne",
+   "aliases": [],
+   "def": "Place moyenne d'une compo sur 8 joueurs : plus elle est basse, mieux c'est.",
+   "auto": false
+  },
+  {
+   "term": "Tier list",
+   "aliases": [
+    "tier"
+   ],
+   "def": "Classement des compos de S (les meilleures) à C ou D.",
+   "auto": false
+  },
+  {
+   "term": "PV",
+   "aliases": [],
+   "def": "Points de vie de ton Tacticien : à 0, tu es éliminé.",
+   "auto": false
+  },
+  {
+   "term": "PO",
+   "aliases": [],
+   "def": "Pièces d'or : la monnaie de la partie.",
+   "auto": false
+  },
+  {
+   "term": "PA",
+   "aliases": [
+    "AP"
+   ],
+   "def": "Puissance : augmente les dégâts et soins des sorts.",
+   "auto": false
+  },
+  {
+   "term": "AD",
+   "aliases": [],
+   "def": "Dégâts d'attaque : augmente les dégâts des attaques de base.",
+   "auto": false
+  },
+  {
+   "term": "Focus",
+   "aliases": [
+    "concentrer les dégâts"
+   ],
+   "def": "Concentrer les attaques sur une même cible pour l'éliminer vite."
+  },
+  {
+   "term": "Aggro",
+   "aliases": [],
+   "def": "Qui attaque qui : le placement permet d'attirer les attaques adverses sur tes tanks."
+  },
+  {
+   "term": "Anti-soin",
+   "aliases": [
+    "Blessure"
+   ],
+   "def": "Effet qui réduit les soins reçus par l'adversaire."
+  },
+  {
+   "term": "Esprit",
+   "aliases": [
+    "Esprits"
+   ],
+   "def": "Mécanique du set 18 : objets à usage unique proposés en boutique (bonus de combat, or, XP ou pari risqué), un par manche."
+  }
+ ]
+}

@@ -67,6 +67,18 @@ const { parseLimitHeader } = require('../core/riot');
   const t = await e2.testKey();
   assert.ok(!t.ok && /clé API/i.test(t.message));
 
+  // Contenu éditorial et conditions
+  const ct = engine.getContent();
+  assert.ok(ct.guides.comps.length >= 30 && ct.guides.guides.length >= 8 && ct.glossary.terms.length >= 40, 'guides et glossaire');
+  for (const g of [...ct.guides.guides, ...ct.guides.videos]) assert.ok(/^https:\/\//.test(g.url) && ['debutant', 'intermediaire', 'avance'].includes(g.level), `fiche ${g.id}`);
+  for (const g of ct.guides.guides) assert.ok(g.summary.length >= 3 && g.summary.every((t) => typeof t === 'string' && t.length > 10), `résumé ${g.id}`);
+  for (const c of ct.guides.comps) {
+    assert.ok(c.carries.length && (c.bm || c.ta), `compo ${c.id}`);
+    for (const k of ['bm', 'ta']) if (c[k]) assert.ok(/^https:\/\//.test(c[k].url) && 'SABCD'.includes(c[k].tier), `${c.id}.${k}`);
+  }
+  assert.strictEqual(new Set(ct.guides.comps.map((c) => c.id)).size, ct.guides.comps.length, 'identifiants uniques');
+  assert.ok(Object.keys(meta.conditions.items).length > 0 && Object.keys(meta.conditions.augments).length > 0, 'conditions');
+
   // Chances en boutique du set en cours
   const ref = engine.getStatic().reference;
   assert.ok(ref && !ref.stale && ref.odds[7][2] === 43, 'chances en boutique du set 18');

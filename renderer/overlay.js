@@ -5,7 +5,7 @@ import { buildGuide, compType, levelPlan } from './guide.js';
 
 if (!isDesktop) document.body.classList.add('web');
 
-const S = { static: null, meta: null, app: null, ov: null, filter: '', comp: null };
+const S = { static: null, meta: null, app: null, ov: null, filter: '', comp: null, content: null };
 const $ = (s) => document.querySelector(s);
 
 // ---------- Utilitaires (mêmes conventions que l'app principale) ----------
@@ -49,6 +49,17 @@ document.addEventListener('mouseover', (e) => {
   tip.style.top = `${r.top - h - 6 < 6 ? r.bottom + 6 : r.top - h - 6}px`;
 });
 
+// Conseils des experts (résumés HexaRise) pour le carry choisi
+function expertTips(carryId) {
+  const byName = new Map();
+  for (const c of Object.values(S.static?.champions || {})) if (!c.variantOf) for (const n of [c.en, c.name]) if (n) byName.set(n.toLowerCase(), c.apiName);
+  const e = (S.content?.guides?.comps || []).find((x) => x.carries.some((n) => byName.get(n.toLowerCase()) === carryId));
+  if (!e) return '';
+  const tips = [...(e.bm?.tips || []).map((t) => ['BunnyMuffins', t]), ...(e.ta?.tips || []).map((t) => ['TFT Academy', t])].slice(0, 4);
+  if (!tips.length) return '';
+  return `<div class="ov-stage"><h4>Conseils des experts <span>${esc(e.name)}</span></h4>${tips.map(([src, t]) => `<p class="ov-note"><b>${src}</b> · ${esc(t)}</p>`).join('')}</div>`;
+}
+
 // ---------- Sélection de la compo ----------
 function renderPick() {
   const data = bracketData();
@@ -91,6 +102,7 @@ function viewGuide() {
     <div class="sub">${esc(g.type.label)} · moy. ${nf(c.avg)} · top 4 ${nf(c.top4, 1)} %</div></div></div>
     <div class="comp-units">${g.final.map((u) => unitEl(u.id, stars[u.id], u.id === c.carry ? g.carryItems : u.id === g.tank ? g.tankItems : [])).join('')}</div>
     <div class="ov-progress"><i style="width:${total ? (done / total) * 100 : 0}%"></i></div>
+    ${expertTips(c.carry)}
     ${stages}`;
 }
 
@@ -215,6 +227,10 @@ api.on('static', (d) => {
   S.static = d;
   render();
 });
+api.on('content', (d) => {
+  S.content = d;
+  render();
+});
 // Version web : synchronisation avec l'onglet principal.
 window.addEventListener('storage', async (e) => {
   if (e.key !== 'overlay') return;
@@ -224,7 +240,7 @@ window.addEventListener('storage', async (e) => {
 });
 
 (async function boot() {
-  [S.static, S.meta, S.app, S.ov] = await Promise.all([api.static(), api.meta(), api.state(), api.overlayGet()]);
+  [S.static, S.meta, S.app, S.ov, S.content] = await Promise.all([api.static(), api.meta(), api.state(), api.overlayGet(), api.content().catch(() => null)]);
   renderPick();
   render();
 })();

@@ -19,6 +19,7 @@ const S = {
   route: 'meta',
   static: null,
   meta: null,
+  content: null,
   app: null,
   appInfo: null,
   update: null,
@@ -38,6 +39,11 @@ const S = {
     exploreTab: stored('exploreTab', 'champions'),
     cost: 0,
     champTrait: '',
+    learnTab: stored('learnTab', 'guides'),
+    learnLevel: 'tous',
+    expertSrc: 'all',
+    expertFocus: null,
+    condKind: 'complet',
     champView: stored('champView', 'list'),
     itemKind: 'complet',
     augTier: 'tous'
@@ -78,6 +84,52 @@ const aug = (id) => S.static?.augments?.[id] || { apiName: id, name: pretty(id),
 const label = (x) => (x?.en && x.en.toLowerCase() !== String(x.name).toLowerCase() ? `${x.name} (${x.en})` : x?.name || '');
 const matches = (x, q) => !q || String(x.name).toLowerCase().includes(q) || String(x.en || '').toLowerCase().includes(q);
 const query = () => S.f.q.trim().toLowerCase();
+// ===================== Glossaire et correspondances de noms =====================
+let GLOSS = null;
+/** Échappe le texte et souligne la première occurrence de chaque terme du glossaire (info-bulle). */
+function gloss(text) {
+  const out = esc(text);
+  const terms = S.content?.glossary?.terms;
+  if (!terms) return out;
+  if (!GLOSS || GLOSS.src !== terms) {
+    const map = new Map();
+    for (const t of terms) if (t.auto !== false) for (const w of [t.term, ...(t.aliases || [])]) map.set(w.toLowerCase(), t);
+    const alts = [...map.keys()].sort((a, b) => b.length - a.length).map((w) => esc(w).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    GLOSS = { src: terms, map, re: alts.length ? new RegExp(`(^|[^\\p{L}\\p{N}])(${alts.join('|')})(?=$|[^\\p{L}\\p{N}])`, 'giu') : null };
+  }
+  if (!GLOSS.re) return out;
+  const used = new Set();
+  return out.replace(GLOSS.re, (m, pre, word) => {
+    const t = GLOSS.map.get(word.toLowerCase());
+    if (!t || used.has(t.term)) return m;
+    used.add(t.term);
+    return `${pre}<span class="gl" data-tip="help" data-title="${esc(t.term)}" data-desc="${esc(t.def)}">${word}</span>`;
+  });
+}
+
+let IDX = null;
+/** Noms anglais ou français -> identifiants du set (pour les fiches des experts). */
+function nameIndex() {
+  if (IDX && IDX.sd === S.static) return IDX;
+  const champEn = new Map();
+  const itemEn = new Map();
+  for (const c of Object.values(S.static?.champions || {})) {
+    if (c.variantOf) continue;
+    for (const n of [c.en, c.name]) if (n) champEn.set(n.toLowerCase(), c.apiName);
+  }
+  const canonical = (id) => (/^TFT_Item_[A-Za-z]+$/.test(id) ? 0 : 1);
+  const items = Object.values(S.static?.items || {}).filter((it) => !it.outOfSet).sort((a, b) => canonical(a.apiName) - canonical(b.apiName));
+  for (const it of items) for (const n of [it.en, it.name]) if (n && !itemEn.has(n.toLowerCase())) itemEn.set(n.toLowerCase(), it.apiName);
+  IDX = { sd: S.static, champEn, itemEn };
+  return IDX;
+}
+const champByName = (n) => nameIndex().champEn.get(String(n).toLowerCase()) || null;
+const itemByName = (n) => nameIndex().itemEn.get(String(n).toLowerCase()) || null;
+const expertComps = () => S.content?.guides?.comps || [];
+const expertsFor = (carryId) => expertComps().filter((e) => e.carries.some((n) => champByName(n) === carryId));
+const watchChanges = () => S.content?.watch?.changes || [];
+const frDate = (d) => (d ? new Date(`${d}T12:00:00Z`).toLocaleDateString('fr-FR') : '');
+
 const compTitle = (c) => label(trait(c.main));
 const compName = (c) => `${label(trait(c.main))} · ${label(champ(c.carry))}`;
 const DIFF = { lvl8: 'Facile', reroll: 'Moyen', fast9: 'Difficile' };
@@ -393,9 +445,9 @@ function fiche(c) {
 
   <section>
     <h2 class="title">Le plan en 3 étapes</h2>
-    <ol class="steps">${g.summary.map((s) => `<li><span class="step-n">${s.n}</span><b>${esc(s.title)}</b><p>${esc(s.text)}</p></li>`).join('')}</ol>
+    <ol class="steps">${g.summary.map((s) => `<li><span class="step-n">${s.n}</span><b>${esc(s.title)}</b><p>${gloss(s.text)}</p></li>`).join('')}</ol>
   </section>
-
+  ${expertPills(c)}
   <section>
     <h2 class="title">Objets de ${esc(champ(c.carry).name)}</h2>
     <div class="rows">${g.carryItems.map((id) => `<div>${itemIcon(id, true)}<span class="grow">${esc(label(item(id)))}</span><span class="aside">${esc(recipeText(id))}</span></div>`).join('') || '<p class="small">Pas assez de données.</p>'}</div>
@@ -453,7 +505,7 @@ function planCard(g) {
     </div>
     ${planTable(g.plan)}
     ${g.plan.hint ? `<div class="notice" style="margin-top:12px">${esc(g.plan.hint)}</div>` : ''}
-    <ul class="tips">${g.plan.tips.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>
+    <ul class="tips">${g.plan.tips.map((t) => `<li>${gloss(t)}</li>`).join('')}</ul>
   </div>`;
 }
 
@@ -495,11 +547,12 @@ function viewGuide() {
   </div>
 
   ${planCard(g)}
+  ${expertTipsCard(c)}
 
   <div class="card">${g.stages.map((st) => `
     <div class="gstage">
       <div><div class="gstage-name">${esc(st.stage)}</div><div class="small">${esc(st.rounds)}</div></div>
-      <div>${st.steps.map((step) => `<div class="gstep">${step.kind === 'note' ? `<p class="small">${esc(step.text)}</p>` : `<p>${esc(step.text)}</p>`}${stepIds(step)}</div>`).join('')}</div>
+      <div>${st.steps.map((step) => `<div class="gstep">${step.kind === 'note' ? `<p class="small">${esc(step.text)}</p>` : `<p>${gloss(step.text)}</p>`}${stepIds(step)}</div>`).join('')}</div>
     </div>`).join('')}
   </div>
 
@@ -770,6 +823,233 @@ function exploreAugments() {
     <div class="grid" style="padding:0 8px">${list.map((a) => `<div class="card tonal"><div class="name-cell">${augIcon(a.apiName)}<div><h3>${esc(label(a))}</h3><span class="small">${TIER_LABEL[a.tier]}</span></div></div><p>${esc(a.desc)}</p></div>`).join('') || '<p class="small">Aucun augment.</p>'}</div>`;
 }
 
+// ===================== Avis des experts (fiche et guide) =====================
+const TIER_RANK = { S: 0, A: 1, B: 2, C: 3, D: 4 };
+const TREND = { hausse: '↗ en hausse', baisse: '↘ en baisse', nouveau: '✦ nouveau' };
+
+function expertPills(c) {
+  const list = expertsFor(c.carry);
+  if (!list.length) return '';
+  return `<section>
+    <h2 class="title">Avis des experts</h2>
+    <div class="tags">${list.map((e) => `<button class="tag" data-expert="${esc(e.id)}">${esc(e.name)}${e.bm ? ` · <span class="src bm">BunnyMuffins</span> <span class="tier sm ${e.bm.tier}">${e.bm.tier}</span>` : ''}${e.ta ? ` · <span class="src ta">TFT Academy</span> <span class="tier sm ${e.ta.tier}">${e.ta.tier}</span>` : ''}</button>`).join('')}</div>
+  </section>`;
+}
+
+function expertTipsCard(c) {
+  const list = expertsFor(c.carry);
+  if (!list.length) return '';
+  const e = list[0];
+  const tips = [...(e.bm?.tips || []).map((t) => ['bm', t]), ...(e.ta?.tips || []).map((t) => ['ta', t])];
+  if (!tips.length) return '';
+  return `<div class="card">
+    <div class="fiche-head"><div><h2 class="title" style="margin:0">Conseils des experts · ${esc(e.name)}</h2>
+      <p class="small" style="margin:6px 0 0">Résumés HexaRise des guides BunnyMuffins (prioritaires) et TFT Academy.</p></div>
+      <button class="btn text" data-expert="${esc(e.id)}">Fiche complète ${ICON.chevron}</button></div>
+    <ul class="tips">${tips.map(([src, t]) => `<li><span class="src ${src}">${src === 'bm' ? 'BunnyMuffins' : 'TFT Academy'}</span> ${gloss(t)}</li>`).join('')}</ul>
+  </div>`;
+}
+
+// ===================== Apprendre =====================
+const LEARN_TABS = [['guides', 'Guides'], ['experts', 'Avis des experts'], ['openers', 'Ouvertures'], ['conditions', 'Conditions'], ['components', 'Par composant'], ['glossary', 'Glossaire']];
+const LEVEL = { debutant: 'Débutant', intermediaire: 'Intermédiaire', avance: 'Avancé' };
+const SRC = { bunnymuffins: ['bm', 'BunnyMuffins'], tftacademy: ['ta', 'TFT Academy'] };
+const ext = (url, text) => `<a class="btn tonal sm" href="${esc(url)}" target="_blank" rel="noopener">${esc(text)} ↗</a>`;
+
+function viewLearn() {
+  const tab = LEARN_TABS.some(([k]) => k === S.f.learnTab) ? S.f.learnTab : 'guides';
+  const extra = {
+    guides: chips('learnLevel', [['tous', 'Tous'], ['debutant', 'Débutant'], ['intermediaire', 'Intermédiaire'], ['avance', 'Avancé']], S.f.learnLevel),
+    experts: chips('expertSrc', [['all', 'Toutes'], ['both', 'Dans les deux'], ['bm', 'BunnyMuffins'], ['ta', 'TFT Academy']], S.f.expertSrc),
+    conditions: chips('condKind', [['complet', 'Objets'], ['artefact', 'Artefacts'], ['radieux', 'Radieux'], ['embleme', 'Emblèmes'], ['augment', 'Augments']], S.f.condKind)
+  }[tab] || '';
+  const withRank = ['openers', 'conditions', 'components'].includes(tab);
+  const body = { guides: learnGuides, experts: learnExperts, openers: learnOpeners, conditions: learnConditions, components: learnComponents, glossary: learnGlossary }[tab]();
+  return `${withRank ? toolbar(extra) : `<div class="toolbar">${extra}</div>`}<div class="card" style="padding:8px 8px 16px">
+    <nav class="tabs">${LEARN_TABS.map(([k, l]) => `<a data-learn-tab="${k}" class="${k === tab ? 'on' : ''}">${l}</a>`).join('')}</nav>
+    <div class="learn-body">${body}</div>
+  </div>`;
+}
+
+function learnGuides() {
+  const g = S.content?.guides;
+  if (!g) return '<p class="small">Chargement des guides…</p>';
+  const lv = S.f.learnLevel;
+  const keep = (x) => lv === 'tous' || x.level === lv;
+  const upd = new Map(watchChanges().filter((c) => c.kind === 'updated').map((c) => [c.id, c]));
+  const news = watchChanges().filter((c) => c.kind === 'new' && c.source === 'bunnymuffins');
+  const dates = (x) => [x.published && `publié le ${frDate(x.published)}`, x.modified && x.modified !== x.published && `mis à jour le ${frDate(x.modified)}`].filter(Boolean).join(' · ');
+  const RELATED = { 'explore:items': 'Objets dans HexaRise', 'explore:shop': 'Chances en boutique', 'learn:openers': 'Ouvertures dans HexaRise' };
+  const card = (x) => {
+    const [cls, src] = SRC[x.source] || ['', x.source];
+    const u = upd.get(x.id);
+    return `<article class="card tonal gcard">
+      <div class="badges"><span class="pill src-pill ${cls}">${esc(src)}</span><span class="pill">${LEVEL[x.level] || ''}</span><span class="pill">${esc(x.topic)}</span>${u ? '<span class="pill warn">Mis à jour par l’auteur</span>' : ''}</div>
+      <h3>${esc(x.title)}</h3>
+      <p class="small">Titre original : ${esc(x.titleEn)}${dates(x) ? ` · ${dates(x)}` : ''}</p>
+      ${x.note ? `<p class="small note">${esc(x.note)}</p>` : ''}
+      ${u ? `<p class="small warn-text">L’auteur a modifié ce guide le ${frDate(u.date)} : la fiche est en cours de révision, lis l’original pour la dernière version.</p>` : ''}
+      <ul class="sum">${x.summary.map((t) => `<li>${gloss(t)}</li>`).join('')}</ul>
+      <div class="row">${ext(x.url, 'Lire l’original')}${x.related ? `<button class="btn text sm" data-related="${esc(x.related)}">${esc(RELATED[x.related] || 'Voir dans HexaRise')}</button>` : ''}</div>
+    </article>`;
+  };
+  const guides = g.guides.filter(keep);
+  const videos = g.videos.filter(keep);
+  return `${news.length ? `<div class="notice" style="margin-bottom:14px"><strong>Nouveaux guides publiés</strong><div class="rows" style="margin-top:8px">${news.map((n) => `<div><span class="grow">${esc(n.title)} <span class="small">· BunnyMuffins · ${frDate(n.date)}</span></span>${ext(n.url, 'Lire')}</div>`).join('')}</div><p class="small" style="margin-top:6px">Leur fiche en français arrive à la prochaine révision.</p></div>` : ''}
+    <p class="small" style="margin:0 0 14px">${esc(g.note)}</p>
+    <div class="guide-grid">${guides.map(card).join('') || '<p class="small">Aucun guide pour ce niveau.</p>'}</div>
+    ${videos.length ? `<h2 class="title" style="margin-top:24px">Vidéos de BunnyMuffins (en anglais)</h2>
+      <p class="small" style="margin:-6px 0 10px">Dans YouTube : Paramètres ⚙ › Sous-titres › Traduire automatiquement › Français.</p>
+      <div class="rows">${videos.map((v) => `<div><span class="play-dot">▶</span><span class="grow">${esc(v.title)}<span class="small"> · ${esc(v.titleEn)}</span></span><span class="pill">${LEVEL[v.level] || ''}</span>${ext(v.url, 'Voir')}</div>`).join('')}</div>` : ''}`;
+}
+
+function learnExperts() {
+  const g = S.content?.guides;
+  if (!g) return '<p class="small">Chargement…</p>';
+  const src = S.f.expertSrc;
+  const list = g.comps
+    .filter((e) => src === 'all' || (src === 'both' ? e.bm && e.ta : src === 'bm' ? e.bm : e.ta))
+    .filter((e) => {
+      const q = query();
+      return !q || e.name.toLowerCase().includes(q) || e.units.some((u) => u.toLowerCase().includes(q) || matches(champ(champByName(u) || ''), q));
+    })
+    .sort((a, b) => {
+      const r = (e) => (e.bm ? TIER_RANK[e.bm.tier] ?? 5 : 9) * 10 + (e.ta ? (TIER_RANK[e.ta.tier] ?? 5) + (e.ta.situational ? 0.5 : 0) : 9);
+      return r(a) - r(b);
+    });
+  const tl = watchChanges().filter((c) => c.kind === 'tierlist');
+  const unitIcons = (names) => names.map((n) => (champByName(n) ? champIcon(champByName(n), 'sm') : `<span class="tag">${esc(n)}</span>`)).join('');
+  const itemIcons = (names) => names.map((n) => (itemByName(n) ? itemIcon(itemByName(n)) : `<span class="tag">${esc(n)}</span>`)).join('');
+  const block = (e, k) => {
+    const x = e[k];
+    if (!x) return '';
+    const name = k === 'bm' ? 'BunnyMuffins' : 'TFT Academy';
+    const tier = x.situational ? `Situationnelle · ${x.tier}` : `Tier ${x.tier}`;
+    return `<div class="xsrc ${k}">
+      <div class="badges"><span class="pill src-pill ${k}">${name}</span>${k === 'bm' && e.ta ? '<span class="pill">Avis principal</span>' : ''}<span class="tier sm ${x.tier}">${x.tier}</span><span class="small">${esc(tier)}${x.style ? ` · ${esc(x.style)}` : ''}${x.difficulty ? ` · ${esc(x.difficulty)}` : ''}${x.trend ? ` · ${TREND[x.trend] || ''}` : ''}</span></div>
+      ${x.early?.length ? `<div class="line"><span class="small" style="min-width:110px">Début de partie</span><div class="icons">${unitIcons(x.early)}</div></div>` : ''}
+      ${x.items?.length ? `<div class="line"><span class="small" style="min-width:110px">Priorité objets</span><div class="icons">${itemIcons(x.items)}</div></div>` : ''}
+      ${x.tips?.length ? `<ul class="sum">${x.tips.map((t) => `<li>${gloss(t)}</li>`).join('')}</ul>` : '<p class="small">Pas de conseils détaillés : voir le guide original.</p>'}
+      <div class="row">${ext(x.url, `Voir sur ${name}`)}</div>
+    </div>`;
+  };
+  const ours = (e) => {
+    const ids = e.carries.map(champByName).filter(Boolean);
+    return (M()?.comps || []).find((c) => ids.includes(c.carry)) || null;
+  };
+  return `${tl.length ? `<div class="notice" style="margin-bottom:14px">${tl.map((c) => `<div><strong>${esc(c.title)}</strong> mise à jour le ${frDate(c.date)} : les avis seront révisés sous peu.</div>`).join('')}</div>` : ''}
+    <p class="small" style="margin:0 0 14px">Tier lists de BunnyMuffins (mise à jour le ${frDate(g.sources.bunnymuffins.tierlistModified)}) et TFT Academy, patch ${esc(g.patch)}. Quand les deux traitent la même compo, BunnyMuffins passe en premier. Résumés HexaRise.</p>
+    <div class="stack">${list.map((e) => {
+      const mine = ours(e);
+      return `<article class="card tonal xcard ${S.f.expertFocus === e.id ? 'focus' : ''}" id="x-${esc(e.id)}">
+        <div class="fiche-head" style="margin-bottom:10px">
+          <div class="name-cell"><div class="icons">${unitIcons(e.carries)}</div><div><h3 style="margin:0">${esc(e.name)}</h3><span class="small">${esc(e.units.map((u) => champ(champByName(u) || '').name || u).join(', '))}</span></div></div>
+          ${mine ? `<button class="btn text sm" data-guide="${esc(mine.id)}">Guide HexaRise ${ICON.chevron}</button>` : ''}
+        </div>
+        <div class="xgrid2">${block(e, 'bm')}${block(e, 'ta')}</div>
+      </article>`;
+    }).join('') || '<p class="small">Aucune compo.</p>'}</div>`;
+}
+
+function condRows(source, filter) {
+  return Object.entries(source || {})
+    .filter(([id]) => filter(id))
+    .map(([id, v]) => ({ id, ...v, comps: v.comps.filter((r) => expert() || r.tier !== 'D').map((r) => ({ ...r, c: findComp(r.comp) })).filter((r) => r.c) }))
+    .filter((r) => r.comps.length);
+}
+const compChip = (r) => `<button class="tag" data-guide="${esc(r.c.id)}"><span class="tier sm ${r.tier}">${r.tier}</span>${esc(compTitle(r.c))} · ${esc(champ(r.c.carry).name)}<span class="small">${pct(r.top4)} top 4</span></button>`;
+
+function learnConditions() {
+  const m = M();
+  if (!m?.conditions) return noData();
+  const q = query();
+  const kind = S.f.condKind;
+  const isAug = kind === 'augment';
+  const rows = condRows(isAug ? m.conditions.augments : m.conditions.items, (id) => (isAug || (S.static?.items?.[id]?.kind || 'complet') === kind) && matches(isAug ? aug(id) : item(id), q))
+    .sort((a, b) => b.games - a.games);
+  if (isAug && !m.hasAugments) return '<div class="notice">Riot ne fournit pas les augments choisis pour ce set : pas de conditions d’augments.</div>';
+  return `<p class="small" style="margin:0 0 12px">Pour chaque ${isAug ? 'augment' : 'objet'}, les compos où il réussit le mieux dans ce rang (place moyenne quand il est ${isAug ? 'choisi' : 'sur le plateau'}). Calculé sur ${int(m.boards)} parties, mis à jour à chaque collecte.</p>
+    <div class="cond-list">${rows.map((r) => `<div class="cond-row">
+      <div class="name-cell">${isAug ? augIcon(r.id) : itemIcon(r.id, true)}<div>${esc(label(isAug ? aug(r.id) : item(r.id)))}${!isAug && recipeText(r.id) ? `<div class="small">${esc(recipeText(r.id))}</div>` : ''}<div class="small">${int(r.games)} fois</div></div></div>
+      <div class="tags">${r.comps.map(compChip).join('')}</div>
+    </div>`).join('') || '<p class="small">Pas assez de parties pour ce type.</p>'}</div>`;
+}
+
+function learnOpeners() {
+  const m = M();
+  if (!m?.comps?.length) return noData();
+  const bmOpen = S.content?.guides?.guides.find((x) => x.id === 'bm-openers');
+  const cond = m.conditions || { items: {}, augments: {} };
+  const ifYou = [
+    ...condRows(cond.items, (id) => ['embleme', 'artefact', 'radieux'].includes(S.static?.items?.[id]?.kind)).map((r) => ({ ...r, isAug: false })),
+    ...condRows(cond.augments, () => true).map((r) => ({ ...r, isAug: true }))
+  ]
+    .map((r) => ({ ...r, best: r.comps[0] }))
+    .filter((r) => ['S', 'A'].includes(r.best.tier) && r.best.games >= 4)
+    .sort((a, b) => TIER_RANK[a.best.tier] - TIER_RANK[b.best.tier] || b.games - a.games)
+    .slice(0, 24);
+  const top = [...m.comps].sort((a, b) => a.score - b.score).slice(0, 8);
+  return `${bmOpen ? `<div class="card tonal" style="margin-bottom:16px"><div class="badges"><span class="pill src-pill bm">BunnyMuffins</span></div><h3>Les bons réflexes en début de partie</h3>
+      <ul class="sum">${bmOpen.summary.slice(1, 5).map((t) => `<li>${gloss(t)}</li>`).join('')}</ul>
+      <div class="row"><button class="btn text sm" data-learn-tab="guides">Fiche complète</button>${ext(bmOpen.url, 'Lire l’original')}</div></div>` : ''}
+    <h2 class="title">Si tu obtiens… joue…</h2>
+    <p class="small" style="margin:-6px 0 10px">Emblèmes, artefacts, objets radieux et augments qui mènent le plus souvent à une compo de tier S ou A dans ce rang.</p>
+    <div class="cond-list">${ifYou.map((r) => `<div class="cond-row"><div class="name-cell">${r.isAug ? augIcon(r.id) : itemIcon(r.id, true)}<div>${esc(label(r.isAug ? aug(r.id) : item(r.id)))}<div class="small">${r.isAug ? 'Augment' : { embleme: 'Emblème', artefact: 'Artefact', radieux: 'Radieux' }[S.static?.items?.[r.id]?.kind] || ''}</div></div></div><div class="tags">${r.comps.slice(0, 3).map(compChip).join('')}</div></div>`).join('') || '<p class="small">Pas encore assez de parties pour ce rang.</p>'}</div>
+    <h2 class="title" style="margin-top:24px">Débuts de partie des meilleures compos</h2>
+    <div class="cond-list">${top.map((c) => {
+      const gg = guideOf(c);
+      return `<div class="cond-row"><div class="name-cell"><span class="tier sm ${c.tier}">${c.tier}</span><div><b>${esc(compTitle(c))} · ${esc(champ(c.carry).name)}</b><div class="small">${esc(gg.type.label)}</div></div></div>
+        <div class="opener"><div class="icons">${gg.early.map((id) => champIcon(id, 'sm')).join('')}</div><span class="small">Composants :</span><div class="icons">${gg.components.map((id) => itemIcon(id)).join('')}</div><button class="btn text sm" data-guide="${esc(c.id)}">Guide ${ICON.chevron}</button></div></div>`;
+    }).join('')}</div>`;
+}
+
+const BASE_COMPONENTS = ['TFT_Item_BFSword', 'TFT_Item_RecurveBow', 'TFT_Item_NeedlesslyLargeRod', 'TFT_Item_TearOfTheGoddess', 'TFT_Item_ChainVest', 'TFT_Item_NegatronCloak', 'TFT_Item_GiantsBelt', 'TFT_Item_SparringGloves', 'TFT_Item_Spatula', 'TFT_Item_FryingPan'];
+function learnComponents() {
+  const m = M();
+  if (!m?.conditions) return noData();
+  const recipes = Object.values(S.static?.items || {}).filter((it) => !it.outOfSet && ['complet', 'embleme'].includes(it.kind) && it.composition?.length === 2);
+  const cards = BASE_COMPONENTS.filter((id) => S.static?.items?.[id]).map((comp) => {
+    const made = recipes.filter((it) => it.composition.includes(comp));
+    const agg = new Map();
+    for (const it of made) {
+      for (const r of m.conditions.items[it.apiName]?.comps || []) {
+        const a = agg.get(r.comp) || { n: 0, sum: 0, top4: 0 };
+        a.n += r.games;
+        a.sum += r.avg * r.games;
+        a.top4 += r.top4 * r.games;
+        agg.set(r.comp, a);
+      }
+    }
+    const best = [...agg.entries()]
+      .filter(([, a]) => a.n >= 5)
+      .map(([comp, a]) => ({ comp, c: findComp(comp), games: a.n, top4: round1(a.top4 / a.n), score: (a.sum + 4.5 * 8) / (a.n + 8) }))
+      .filter((r) => r.c)
+      .sort((x, y) => x.score - y.score)
+      .slice(0, 4)
+      .map((r) => ({ ...r, tier: r.score <= 3.95 ? 'S' : r.score <= 4.2 ? 'A' : r.score <= 4.45 ? 'B' : 'C' }));
+    const used = made.map((it) => ({ it, n: m.conditions.items[it.apiName]?.games || 0 })).sort((a, b) => b.n - a.n).slice(0, 8);
+    return `<div class="card tonal">
+      <div class="name-cell">${itemIcon(comp, true)}<h3 style="margin:0">${esc(label(item(comp)))}</h3></div>
+      <p class="label-sm" style="margin-top:12px">Objets fabriqués avec</p><div class="icons wrap">${used.map(({ it }) => itemIcon(it.apiName)).join('')}</div>
+      <p class="label-sm" style="margin-top:12px">Compos qui en profitent le plus</p><div class="tags">${best.map(compChip).join('') || '<span class="small">Pas assez de parties.</span>'}</div>
+    </div>`;
+  });
+  return `<div class="notice" style="margin-bottom:14px">Référence à consulter <strong>avant</strong> la partie. Les règles Riot interdisent qu’un outil te dise quoi construire selon tes objets pendant la partie : cette page n’existe donc pas dans le mode partie.</div>
+    <div class="guide-grid">${cards.join('')}</div>`;
+}
+const round1 = (v) => Math.round(v * 10) / 10;
+
+function learnGlossary() {
+  const terms = S.content?.glossary?.terms;
+  if (!terms) return '<p class="small">Chargement…</p>';
+  const q = query();
+  const list = terms
+    .filter((t) => !q || [t.term, ...(t.aliases || [])].some((w) => w.toLowerCase().includes(q)) || t.def.toLowerCase().includes(q))
+    .sort((a, b) => a.term.localeCompare(b.term, 'fr'));
+  return `<p class="small" style="margin:0 0 12px">Les mots soulignés en pointillés dans l’app affichent leur définition au survol.</p>
+    <div class="gloss-grid">${list.map((t) => `<div class="card tonal"><h3 style="margin:0">${esc(t.term)}</h3>${t.aliases?.length ? `<p class="small" style="margin:2px 0 0">${esc(t.aliases.join(', '))}</p>` : ''}<p style="margin:8px 0 0">${esc(t.def)}</p></div>`).join('') || '<p class="small">Aucun terme.</p>'}</div>`;
+}
+
 // ===================== Profil =====================
 const TIER_FR = { IRON: 'Fer', BRONZE: 'Bronze', SILVER: 'Argent', GOLD: 'Or', PLATINUM: 'Platine', EMERALD: 'Émeraude', DIAMOND: 'Diamant', MASTER: 'Maître', GRANDMASTER: 'Grand Maître', CHALLENGER: 'Challenger' };
 function recentSearches() {
@@ -936,7 +1216,7 @@ async function saveSettings(patch, message = 'Réglages enregistrés') {
 }
 
 // ===================== Rendu et navigation =====================
-const VIEWS = { meta: viewMeta, guide: viewGuide, champion: viewChampion, game: viewGame, explore: viewExplore, player: viewPlayer, settings: viewSettings };
+const VIEWS = { meta: viewMeta, guide: viewGuide, champion: viewChampion, game: viewGame, explore: viewExplore, learn: viewLearn, player: viewPlayer, settings: viewSettings };
 const ALIASES = { champions: 'champions', traits: 'traits', items: 'items', augments: 'augments', shop: 'shop' };
 const CHILD = { guide: 'meta', champion: 'explore' }; // vue enfant -> destination parente
 
@@ -1150,6 +1430,31 @@ document.addEventListener('click', async (e) => {
     }
     return;
   }
+  const ltab = t.closest('[data-learn-tab]');
+  if (ltab) {
+    S.f.learnTab = ltab.dataset.learnTab;
+    remember('learnTab', S.f.learnTab);
+    return render('fade');
+  }
+  const rel = t.closest('[data-related]');
+  if (rel) {
+    const [where, tab] = rel.dataset.related.split(':');
+    if (where === 'learn') {
+      S.f.learnTab = tab;
+      return go('learn');
+    }
+    S.f.exploreTab = tab;
+    return go('explore');
+  }
+  const ex = t.closest('[data-expert]');
+  if (ex) {
+    S.f.learnTab = 'experts';
+    S.f.expertSrc = 'all';
+    S.f.expertFocus = ex.dataset.expert;
+    go('learn');
+    setTimeout(() => document.getElementById(`x-${S.f.expertFocus}`)?.scrollIntoView({ block: 'center' }), 50);
+    return;
+  }
   const cv = t.closest('[data-champ-view]');
   if (cv) {
     S.f.champView = cv.dataset.champView;
@@ -1226,7 +1531,7 @@ document.addEventListener('click', async (e) => {
 
 $('#q').addEventListener('input', (e) => {
   S.f.q = e.target.value;
-  if (!['meta', 'explore'].includes(S.route)) go('meta');
+  if (!['meta', 'explore', 'learn'].includes(S.route)) go('meta');
   else render();
 });
 
@@ -1289,13 +1594,17 @@ api.on('overlay', (ov) => {
   if (S.route === 'game') render();
 });
 api.on('navigate', (route) => go(route));
+api.on('content', (c) => {
+  S.content = c;
+  softRender();
+});
 
 setInterval(renderStatus, 30000);
 
 // ===================== Démarrage =====================
 (async function boot() {
   try {
-    [S.app, S.static, S.meta, S.appInfo, S.overlay] = await Promise.all([api.state(), api.static(), api.meta(), api.appInfo(), api.overlayGet()]);
+    [S.app, S.static, S.meta, S.appInfo, S.overlay, S.content] = await Promise.all([api.state(), api.static(), api.meta(), api.appInfo(), api.overlayGet(), api.content().catch(() => null)]);
   } catch (err) {
     view.innerHTML = `<div class="card empty"><p class="h2">Erreur</p><p class="lede">${esc(err.message)}</p></div>`;
     return;

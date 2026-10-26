@@ -1,8 +1,8 @@
 'use strict';
 const { contextBridge, ipcRenderer } = require('electron');
 
-const CHANNELS = new Set(['state', 'static', 'meta', 'setSettings', 'setApiKey', 'testKey', 'refresh', 'player', 'live', 'appInfo', 'checkUpdate', 'installUpdate', 'overlayGet', 'overlaySet', 'overlayToggle', 'openMain']);
-const EVENTS = new Set(['status', 'meta', 'static', 'log', 'update', 'overlay', 'game', 'navigate']);
+const CHANNELS = new Set(['state', 'static', 'meta', 'content', 'setSettings', 'setApiKey', 'testKey', 'refresh', 'player', 'live', 'appInfo', 'checkUpdate', 'installUpdate', 'overlayGet', 'overlaySet', 'overlayToggle', 'openMain']);
+const EVENTS = new Set(['status', 'meta', 'static', 'log', 'content', 'update', 'overlay', 'game', 'navigate']);
 const listeners = {};
 
 ipcRenderer.on('tft-event', (_e, event, data) => {

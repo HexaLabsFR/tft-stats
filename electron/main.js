@@ -139,6 +139,7 @@ function registerIpc(checkUpdate) {
     state: () => engine.getState(),
     static: () => engine.getStatic(),
     meta: () => engine.getMeta(),
+    content: () => engine.getContent(),
     setSettings: (s) => engine.setSettings(s),
     setApiKey: (k) => engine.setApiKey(k),
     testKey: () => engine.testKey(),
@@ -181,7 +182,7 @@ app.whenReady().then(() => {
         fetchImpl: require('../test/mock-fetch').createMockFetch({ players: 60, matchesPerPlayer: 14 })
       })
     : new Engine({ dataDir, keyStore: keyStore(dataDir) });
-  for (const ev of ['status', 'meta', 'static', 'log']) engine.on(ev, (d) => send(ev, d));
+  for (const ev of ['status', 'meta', 'static', 'log', 'content']) engine.on(ev, (d) => send(ev, d));
 
   createWindow();
   overlay = new Overlay({

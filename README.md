@@ -13,6 +13,7 @@ Télécharger `HexaRise-Setup-x.y.z.exe` dans les [Releases](https://github.com/
 | Compos | Tier list S → D par rang (Bronze, Argent, Or, Platine, Émeraude, Diamant, Maître+), carry, plateau final, objets, moment clé du roll. Mode Simple ou Expert. |
 | Guide complet | Plan de niveaux par manche selon ta série (victoires, mixte, défaites), étapes 1 à 5, objets et recettes, augments |
 | Explorer | Champions (stats, sort, synergies, fiche détaillée, vue liste ou grille), synergies, objets, augments, chances en boutique |
+| Apprendre | Fiches en français des guides BunnyMuffins et TFT Academy (résumés HexaRise, lien vers l'original), avis des experts par compo, ouvertures, conditions (objet → compos), par composant, glossaire en info-bulles |
 | Profil | Recherche `Pseudo#TAG`, rang, 20 dernières parties, partie en cours |
 | Mode partie | Petite fenêtre au-dessus du jeu : plan à cocher, niveaux, recettes, augments. S'ouvre seule au lancement d'une partie. Raccourci **Alt+G**. |
 | Réglages | Clé API, serveur, rangs analysés, fréquence, journal, mises à jour |
@@ -28,6 +29,8 @@ Le mode partie n'affiche que des informations choisies avant la partie (guide, p
 | Statistiques méta | Riot API (TFT-LEAGUE, TFT-MATCH) | Toutes les 30 min par défaut |
 | Champions, synergies, objets, augments en français (stats, sorts, icônes) | CommunityDragon (`fr_fr.json`, `en_us.json`) | Vérifié toutes les 6 h, rechargé à chaque patch |
 | Chances en boutique et exemplaires par coût | `core/reference-data.json` de ce dépôt | Vérifié toutes les 6 h, sans nouvelle version. Masqué si le set ne correspond pas. |
+| Fiches des guides, avis des experts, glossaire | `content/*.json` de ce dépôt | Vérifié toutes les 6 h, sans nouvelle version |
+| Guides modifiés ou nouveaux | Action « Veille des guides » → `content/guides-watch.json` | Chaque jour ; l'app affiche « Mis à jour par l'auteur » ou « Nouveau » |
 | L'application | GitHub Releases via `electron-updater` | Au démarrage puis toutes les 4 h |
 
 ## Publier une version

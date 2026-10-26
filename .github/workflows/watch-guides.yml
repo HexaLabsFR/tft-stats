@@ -1,0 +1,43 @@
+# Veille quotidienne des guides (bunnymuffins.lol, tftacademy.com) : repère les guides
+# modifiés, les nouveaux guides et les nouvelles tier lists, et met à jour
+# content/guides-watch.json. L'application le récupère sans nouvelle version.
+name: Veille des guides
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['tools/watch-guides.js', '.github/workflows/watch-guides.yml', 'content/guides.json']
+  schedule:
+    - cron: '23 5 * * *'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: watch-guides
+  cancel-in-progress: true
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node tools/watch-guides.js
+      - name: Publier si quelque chose a changé
+        shell: bash
+        run: |
+          if git diff --quiet -- content/guides-watch.json && git ls-files --error-unmatch content/guides-watch.json >/dev/null 2>&1; then
+            echo "Rien de nouveau."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add content/guides-watch.json
+          git commit -q -m "Veille des guides : mise à jour"
+          git pull -q --rebase origin main
+          git push -q origin HEAD:main

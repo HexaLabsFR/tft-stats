@@ -26,7 +26,7 @@ const engine = new Engine({
 });
 
 const clients = new Set();
-for (const event of ['status', 'meta', 'static', 'log']) {
+for (const event of ['status', 'meta', 'static', 'log', 'content']) {
   engine.on(event, (data) => {
     const payload = `data: ${JSON.stringify({ event, data })}\n\n`;
     for (const res of clients) res.write(payload);
@@ -61,6 +61,7 @@ const routes = {
   'GET /api/state': () => engine.getState(),
   'GET /api/static': () => engine.getStatic(),
   'GET /api/meta': () => engine.getMeta(),
+  'GET /api/content': () => engine.getContent(),
   'POST /api/settings': (q, body) => engine.setSettings(body),
   'POST /api/key': (q, body) => engine.setApiKey(body.key),
   'POST /api/key/test': () => engine.testKey(),

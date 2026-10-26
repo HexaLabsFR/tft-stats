@@ -9,6 +9,7 @@ const { EventEmitter } = require('events');
 const { RiotClient, PLATFORMS } = require('./riot');
 const { StaticData } = require('./static-data');
 const { Reference } = require('./reference');
+const { Content } = require('./content');
 
 const KEY_FORMAT = /^RGAPI-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const { aggregate, canonPlayer, compactMatch, latestPatch, RANKED_QUEUE } = require('./aggregate');
@@ -49,6 +50,7 @@ class Engine extends EventEmitter {
     this.riot = new RiotClient({ getApiKey: () => this.keyStore.get(), fetchImpl });
     this.static = new StaticData({ dataDir, fetchImpl, log: (m) => this.log(m) });
     this.reference = new Reference({ dataDir, fetchImpl, log: (m) => this.log(m) });
+    this.content = new Content({ dataDir, fetchImpl, log: (m) => this.log(m) });
 
     this.settings = { ...DEFAULT_SETTINGS, ...this._read('settings.json', {}) };
     const saved = this._read('matches.json', { matches: [], lastRun: 0, platform: null });
@@ -117,6 +119,7 @@ class Engine extends EventEmitter {
       this.log(`Données statiques : ${err.message}`);
     }
     await this.reference.refresh();
+    if (await this.content.refresh()) this.emit('content', this.content.get());
     // L'interface a pu s'ouvrir avant la fin du téléchargement : on la prévient.
     if (this.static.data) this.emit('static', this.getStatic());
     if (!this.meta && this.static.data && this.matches.size) this._recompute();
@@ -149,6 +152,10 @@ class Engine extends EventEmitter {
   getStatic() {
     if (!this.static.data) return null;
     return { ...this.static.data, reference: this.reference.forSet(this.static.data.setNumber) };
+  }
+
+  getContent() {
+    return this.content.get();
   }
 
   getMeta() {
@@ -300,6 +307,7 @@ class Engine extends EventEmitter {
       return false;
     });
     const refChanged = await this.reference.refresh();
+    if (await this.content.refresh()) this.emit('content', this.content.get());
     if (changed || refChanged) this.emit('static', this.getStatic());
     const currentSet = this.static.data?.setNumber;
     if (currentSet) {

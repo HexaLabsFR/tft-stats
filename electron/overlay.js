@@ -11,7 +11,7 @@
 const path = require('path');
 const fs = require('fs');
 const https = require('https');
-const { BrowserWindow, screen } = require('electron');
+const { BrowserWindow, screen, shell } = require('electron');
 
 const DEFAULTS = { compId: null, bracket: 'all', autoOpen: true, opacity: 0.95, bounds: null, checks: {}, tab: 'guide' };
 const POLL_MS = 5000;
@@ -74,7 +74,10 @@ class Overlay {
     this.win.setAlwaysOnTop(true, 'screen-saver');
     this.win.setOpacity(this.state.opacity);
     this.win.loadFile(path.join(this.rendererDir, 'overlay.html'));
-    this.win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+    this.win.webContents.setWindowOpenHandler(({ url }) => {
+      if (/^https:\/\//.test(url)) shell.openExternal(url);
+      return { action: 'deny' };
+    });
     this.win.webContents.on('will-navigate', (e) => e.preventDefault());
     const remember = () => {
       if (!this.win || this.win.isDestroyed()) return;

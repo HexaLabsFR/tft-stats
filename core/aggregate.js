@@ -154,7 +154,7 @@ function aggregate(matches, sd, { patch, set } = {}) {
         c = {
           key, main, carry, acc: new Acc(), units: new Map(), traits: new Map(), carryItems: new Map(), augs: new Map(),
           levels: 0, levelDist: [0, 0, 0, 0], carryStars: [0, 0, 0, 0], unitItems: new Map(), unitStars: new Map(),
-          augStages: [new Map(), new Map(), new Map()]
+          augStages: [new Map(), new Map(), new Map()], itemAny: new Map()
         };
         comps.set(key, c);
       }
@@ -181,6 +181,10 @@ function aggregate(matches, sd, { patch, set } = {}) {
         }
       }
       for (const [id] of pl.traits) mapInc(c.traits, id, place);
+      // Objets présents sur le plateau (une fois par joueur), pour les « conditions »
+      const held = new Set();
+      for (const [, , its] of pl.units) for (const it of its) held.add(it);
+      for (const it of held) if (sd.item(it).kind !== 'composant') mapInc(c.itemAny, it, place);
       pl.aug.forEach((a, idx) => {
         mapInc(c.augs, a, place);
         if (idx < 3) mapInc(c.augStages[idx], a, place);
@@ -269,6 +273,38 @@ function aggregate(matches, sd, { patch, set } = {}) {
     })
     .sort((a, b) => a.score - b.score);
 
+  // ---- Conditions : objet ou augment -> compos où il réussit le mieux ----
+  const kept = new Set(compList.map((c) => c.id));
+  const condOf = (pick) => {
+    const by = new Map();
+    for (const c of comps.values()) {
+      if (!kept.has(c.key)) continue;
+      for (const [id, a] of pick(c)) {
+        let list = by.get(id);
+        if (!list) by.set(id, (list = []));
+        list.push({ comp: c.key, a });
+      }
+    }
+    const out = {};
+    for (const [id, list] of by) {
+      const total = list.reduce((sum, x) => sum + x.a.n, 0);
+      const rows = list
+        .filter((x) => x.a.n >= 3)
+        .map((x) => {
+          const score = bayesAvg(x.a.sum, x.a.n, 8);
+          return { comp: x.comp, games: x.a.n, avg: round(x.a.sum / x.a.n), top4: round((x.a.top4 / x.a.n) * 100, 1), share: round((x.a.n / total) * 100, 1), score: round(score), tier: tierOf(score) };
+        })
+        .sort((x, y) => x.score - y.score)
+        .slice(0, 5);
+      if (rows.length) out[id] = { games: total, comps: rows };
+    }
+    return out;
+  };
+  const conditions = {
+    items: condOf((c) => [...c.itemAny.entries()].filter(([id]) => ['complet', 'artefact', 'radieux', 'embleme'].includes(sd.item(id).kind))),
+    augments: condOf((c) => c.augs.entries())
+  };
+
   const champList = [...champs.entries()]
     .map(([id, ch]) => {
       const starTotal = ch.stars.reduce((s, v) => s + v, 0) || 1;
@@ -321,7 +357,8 @@ function aggregate(matches, sd, { patch, set } = {}) {
     champions: champList,
     items: itemList,
     augments: augList,
-    traits: traitList
+    traits: traitList,
+    conditions
   };
 }
 
