@@ -475,3 +475,38 @@ body.no-motion *, body.no-motion *::before, body.no-motion *::after { animation-
   .ln-grid { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); }
 }
 .ln-comp { height: auto; min-height: 32px; padding-top: 4px; padding-bottom: 4px; text-align: left; }
+
+/* ---------- Placement conseillé (plateau hexagonal) ---------- */
+.board-wrap { display: grid; grid-template-columns: auto 1fr; gap: 24px; align-items: start; }
+.board-wrap .tips { margin: 0; }
+.hx-board { --hx: 64px; --hh: calc(var(--hx) * 1.1547); padding: 4px calc(var(--hx) / 2 + 4px) 8px 4px; }
+.hx-board.compact { --hx: 36px; padding-right: calc(var(--hx) / 2 + 2px); }
+.hx-enemy { font-size: 11px; color: var(--faint); text-align: center; margin-bottom: 6px; letter-spacing: .3px; }
+.hx-row { display: flex; gap: 4px; }
+.hx-row + .hx-row { margin-top: calc(var(--hh) * -0.25 + 4px); }
+.hx-row:nth-child(odd) { margin-left: calc(var(--hx) / 2 + 2px); } /* rangées 2 et 4 décalées (1er enfant = légende) */
+.hx { position: relative; width: var(--hx); height: var(--hh); flex: none; clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); background: var(--surface-3); }
+.hx.hx-free { background: rgba(255, 255, 255, .05); }
+.unit-hx { clip-path: none; background: none; }
+.unit-hx::before { content: ""; position: absolute; inset: 0; clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); background: var(--c1); }
+.unit-hx.cost-2::before { background: var(--c2); } .unit-hx.cost-3::before { background: var(--c3); }
+.unit-hx.cost-4::before { background: var(--c4); } .unit-hx.cost-5::before { background: var(--c5); }
+.hx-in { position: absolute; inset: 3px; clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); background: var(--surface-4); display: grid; place-items: center; font-size: 11px; font-weight: 600; color: var(--faint); overflow: hidden; }
+.hx-in img { width: 100%; height: 100%; object-fit: cover; }
+.unit-hx.carry .hx-in { box-shadow: inset 0 0 0 2px #fff; }
+.hx-star { position: absolute; top: 2px; left: 50%; transform: translateX(-50%); font-size: 10px; color: #fbbf24; text-shadow: 0 1px 2px #000; z-index: 2; letter-spacing: -1px; }
+.hx-role { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2; font-size: 9.5px; font-weight: 700; padding: 0 5px; border-radius: 4px; background: rgba(0, 0, 0, .7); color: #fff; text-transform: uppercase; letter-spacing: .4px; }
+.hx-role.carry { background: var(--grad); }
+.hx-role.tank { background: rgba(34, 211, 238, .85); color: #04212a; }
+.hx-items { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 1px; z-index: 2; }
+.hx-items .ic.item { width: 15px; height: 15px; border-radius: 3px; border: 1px solid rgba(0, 0, 0, .5); font-size: 6px; }
+.hx-name { position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%); z-index: 3; font-size: 10px; white-space: nowrap; background: rgba(11, 11, 20, .85); padding: 0 4px; border-radius: 4px; color: var(--text); }
+.hx-board.compact .hx-items { bottom: 4px; }
+.hx-board.compact .hx-items .ic.item { width: 10px; height: 10px; }
+.ov-board { margin: 8px 0; }
+.ov-board summary { cursor: pointer; font-size: 12px; font-weight: 600; color: var(--primary); margin-bottom: 4px; }
+@media (max-width: 900px) {
+  .board-wrap { grid-template-columns: 1fr; }
+  .hx-board { --hx: 46px; }
+  .hx-name { display: none; }
+}

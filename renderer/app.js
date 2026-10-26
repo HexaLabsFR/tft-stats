@@ -1,5 +1,5 @@
 import { api, isDesktop } from './api.js';
-import { buildGuide, compType, STREAKS } from './guide.js';
+import { buildGuide, compType, STREAKS, placement, boardHtml } from './guide.js';
 
 // ===================== État =====================
 const stored = (k, d) => {
@@ -46,7 +46,8 @@ const S = {
     condKind: 'complet',
     champView: stored('champView', 'list'),
     itemKind: 'complet',
-    augTier: 'tous'
+    augTier: 'tous',
+    boardMirror: 0
   },
   player: { loading: false, error: '', data: null, live: null, query: '' }
 };
@@ -561,7 +562,21 @@ function viewGuide() {
     </div>
   </div>
 
-  <div class="card tonal"><p class="small">Placement (conseil général) : Riot ne fournit pas la position des unités. ${esc(champ(c.carry).name)} dans un coin de la dernière ligne, ${g.tank ? esc(champ(g.tank).name) : 'le tank principal'} devant lui. Guide généré à partir de ${int(c.games)} parties (${esc(bracketLabel(S.f.bracket))}, patch ${esc(S.meta?.patch || 'actuel')}).</p></div>
+  ${placementCard(c, g)}
+
+  <div class="card tonal"><p class="small">Guide généré à partir de ${int(c.games)} parties (${esc(bracketLabel(S.f.bracket))}, patch ${esc(S.meta?.patch || 'actuel')}).</p></div>
+  </div>`;
+}
+
+function placementCard(c, g) {
+  const mirror = S.f.boardMirror === 1;
+  const p = placement(c, S.static, g, { mirror, label });
+  return `<div class="card">
+    <div class="fiche-head" style="margin-bottom:12px"><div><h2 class="title" style="margin:0">Placement conseillé</h2>
+      <p class="small" style="margin:6px 0 0">Calculé par HexaRise selon le rôle de chaque unité (portée, résistance, carry, tank) : Riot ne fournit pas la position des unités dans les parties.</p></div>
+      <button class="btn tonal sm" data-chip="boardMirror" data-v="${mirror ? 0 : 1}">⇄ Inverser le plateau</button></div>
+    <div class="board-wrap">${boardHtml(p, { champ, img, itemIcon, esc })}
+      <ul class="tips">${p.tips.map((t) => `<li>${gloss(t)}</li>`).join('')}</ul></div>
   </div>`;
 }
 

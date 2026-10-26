@@ -1,7 +1,7 @@
 // Mode partie : guide de la compo choisie avant la partie, recettes et augments.
 // Aucune donnée de la partie en cours n'est lue ici (règles Riot pour TFT).
 import { api, isDesktop } from './api.js';
-import { buildGuide, compType, levelPlan } from './guide.js';
+import { buildGuide, compType, levelPlan, placement, boardHtml } from './guide.js';
 
 if (!isDesktop) document.body.classList.add('web');
 
@@ -101,6 +101,8 @@ function viewGuide() {
   return `<div class="ov-head"><span class="tier ${c.tier}">${c.tier}</span><div><div class="name">${esc(compName(c))}</div>
     <div class="sub">${esc(g.type.label)} · moy. ${nf(c.avg)} · top 4 ${nf(c.top4, 1)} %</div></div></div>
     <div class="comp-units">${g.final.map((u) => unitEl(u.id, stars[u.id], u.id === c.carry ? g.carryItems : u.id === g.tank ? g.tankItems : [])).join('')}</div>
+    <details class="ov-board" ${S.ov.boardOpen === false ? '' : 'open'}><summary>Placement conseillé</summary>
+      ${boardHtml(placement(c, S.static, g, { label }), { champ, img, itemIcon, esc }, { compact: true })}</details>
     <div class="ov-progress"><i style="width:${total ? (done / total) * 100 : 0}%"></i></div>
     ${expertTips(c.carry)}
     ${stages}`;

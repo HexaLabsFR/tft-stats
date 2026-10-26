@@ -35,6 +35,24 @@ const { parseLimitHeader } = require('../core/riot');
     assert.strictEqual(st.canon('items', 'DA_InfinityEdge'), 'TFT_Item_InfinityEdge', 'parties DA_ comptées sur l’objet gardé');
   }
 
+  // Placement conseillé : carry à distance dans le coin arrière, tank devant, aucune case en double
+  {
+    const { placement } = await import('../renderer/guide.js');
+    const ch = (apiName, range, hp = 600) => ({ apiName, name: apiName, cost: 2, traits: [], stats: { range, hp, armor: 40, mr: 40 } });
+    const sd = { champions: Object.fromEntries([ch('C', 4), ch('T', 1, 1000), ch('M1', 1), ch('M2', 1), ch('R1', 6), ch('R2', 4), ch('X', 2)].map((c) => [c.apiName, c])) };
+    const comp = { carry: 'C', tank: 'T', units: ['C', 'T', 'M1', 'M2', 'R1', 'R2', 'X'].map((id) => ({ id, rate: 90, star: 2 })) };
+    const g = { final: comp.units, carryItems: ['i1', 'i2', 'i3'], tankItems: ['t1'] };
+    const p = placement(comp, sd, g);
+    const at = (id) => p.cells.find((c) => c.id === id);
+    assert.deepStrictEqual([at('C').row, at('C').col], [3, 0], 'carry dans le coin arrière');
+    assert.strictEqual(at('T').row, 0, 'tank en ligne avant');
+    assert.strictEqual(at('X').row, 1, 'portée 2 en deuxième rangée');
+    assert.strictEqual(new Set(p.cells.map((c) => `${c.row}:${c.col}`)).size, 7, 'une unité par case');
+    assert.deepStrictEqual(at('C').items, ['i1', 'i2', 'i3']);
+    const m = placement(comp, sd, g, { mirror: true });
+    assert.strictEqual(m.cells.find((c) => c.id === 'C').col, 6, 'plateau inversé');
+  }
+
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tft-'));
   const fetchImpl = createMockFetch();
   const engine = new Engine({ dataDir: dir, keyStore: memoryKeyStore('RGAPI-test'), fetchImpl });
