@@ -1,0 +1,28 @@
+# Vérifie que HexaRise lit correctement les données CommunityDragon du set en cours
+# (champions, sorts, icônes). Se lance à la main, quand ce fichier ou le script change,
+# et chaque lundi pour repérer un nouveau set.
+name: Vérifier les données du set
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['tools/check-data.js', '.github/workflows/check-data.yml', 'core/static-data.js']
+  schedule:
+    - cron: '17 6 * * 1'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node tools/check-data.js
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cdragon-sample
+          path: check/cdragon-sample.json
+          retention-days: 7
