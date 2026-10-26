@@ -75,6 +75,20 @@ function tierOf(score) {
   return 'D';
 }
 
+/**
+ * Niveau d'une compo pour un objet ou un augment (sélection de ligne).
+ * Cœur : la compo l'utilise souvent (25 % des plateaux ou plus) et réussit avec (tier B ou mieux).
+ * Bon : tier B ou mieux, ou compo qui l'utilise souvent avec un tier C.
+ * Correct : tier C. Au-delà (tier D), la compo n'est pas proposée.
+ */
+function lineLevel(score, use) {
+  if (use >= 25 && score <= 4.45) return 'coeur';
+  if (score <= 4.45 || (use >= 25 && score <= 4.7)) return 'bon';
+  if (score <= 4.7) return 'correct';
+  return null;
+}
+const LEVEL_RANK = { coeur: 0, bon: 1, correct: 2 };
+
 function mapInc(map, key, place) {
   let a = map.get(key);
   if (!a) map.set(key, (a = new Acc()));
@@ -282,21 +296,37 @@ function aggregate(matches, sd, { patch, set } = {}) {
       for (const [id, a] of pick(c)) {
         let list = by.get(id);
         if (!list) by.set(id, (list = []));
-        list.push({ comp: c.key, a });
+        list.push({ comp: c.key, a, compN: c.acc.n });
       }
     }
     const out = {};
     for (const [id, list] of by) {
       const total = list.reduce((sum, x) => sum + x.a.n, 0);
-      const rows = list
+      const all = list
         .filter((x) => x.a.n >= 3)
         .map((x) => {
           const score = bayesAvg(x.a.sum, x.a.n, 8);
-          return { comp: x.comp, games: x.a.n, avg: round(x.a.sum / x.a.n), top4: round((x.a.top4 / x.a.n) * 100, 1), share: round((x.a.n / total) * 100, 1), score: round(score), tier: tierOf(score) };
+          const use = round((x.a.n / x.compN) * 100, 1);
+          return {
+            comp: x.comp,
+            games: x.a.n,
+            avg: round(x.a.sum / x.a.n),
+            top4: round((x.a.top4 / x.a.n) * 100, 1),
+            share: round((x.a.n / total) * 100, 1),
+            use,
+            score: round(score),
+            tier: tierOf(score),
+            level: lineLevel(score, use)
+          };
         })
-        .sort((x, y) => x.score - y.score)
-        .slice(0, 5);
-      if (rows.length) out[id] = { games: total, comps: rows };
+        .sort((x, y) => x.score - y.score);
+      const rows = all.slice(0, 5);
+      // Sélection de ligne : jusqu'à 12 compos classées Cœur / Bon / Correct.
+      const lines = all
+        .filter((r) => r.level)
+        .sort((x, y) => LEVEL_RANK[x.level] - LEVEL_RANK[y.level] || x.score - y.score)
+        .slice(0, 12);
+      if (rows.length) out[id] = { games: total, comps: rows, lines };
     }
     return out;
   };
@@ -378,4 +408,4 @@ function comparePatch(a = '0.0', b = '0.0') {
   return a1 - b1 || a2 - b2;
 }
 
-module.exports = { canonPlayer, aggregate, compactMatch, parsePatch, latestPatch, comparePatch, tierOf, RANKED_QUEUE };
+module.exports = { canonPlayer, aggregate, compactMatch, parsePatch, latestPatch, comparePatch, tierOf, lineLevel, RANKED_QUEUE };

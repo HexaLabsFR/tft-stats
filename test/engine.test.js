@@ -38,6 +38,18 @@ const { parseLimitHeader } = require('../core/riot');
   assert.ok(meta.comps.length >= 4, `compos : ${meta.comps.length}`);
   assert.strictEqual(meta.patch, '15.20');
   assert.ok(meta.hasAugments);
+
+  // Sélection de ligne : niveaux Cœur / Bon / Correct par objet et par augment
+  const { lineLevel } = require('../core/aggregate');
+  assert.strictEqual(lineLevel(4.1, 40), 'coeur');
+  assert.strictEqual(lineLevel(4.1, 10), 'bon');
+  assert.strictEqual(lineLevel(4.6, 30), 'bon');
+  assert.strictEqual(lineLevel(4.6, 10), 'correct');
+  assert.strictEqual(lineLevel(4.9, 50), null);
+  const condLines = [...Object.values(meta.conditions.items), ...Object.values(meta.conditions.augments)].flatMap((v) => v.lines);
+  assert.ok(condLines.length > 0, 'lignes de sélection');
+  assert.ok(condLines.every((r) => ['coeur', 'bon', 'correct'].includes(r.level) && r.use > 0 && r.use <= 100), 'niveaux et taux d’utilisation');
+  assert.strictEqual(engine.getMeta().format, 2, 'format de méta');
   const sg = meta.comps.find((c) => c.carry === 'TFT15_Ahri');
   assert.ok(sg, 'compo Gardienne des étoiles détectée');
   assert.strictEqual(sg.name, 'Gardienne des étoiles · Ahri');

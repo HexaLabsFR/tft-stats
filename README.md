@@ -11,6 +11,7 @@ Télécharger `HexaRise-Setup-x.y.z.exe` dans les [Releases](https://github.com/
 | Écran | Contenu |
 |---|---|
 | Compos | Tier list S → D par rang (Bronze, Argent, Or, Platine, Émeraude, Diamant, Maître+), carry, plateau final, objets, moment clé du roll. Mode Simple ou Expert. |
+| Ligne | Sélection de ligne façon tftflow, en français : clique tes composants, objets, emblèmes et augments (avec quantités), HexaRise classe les compos de ton rang en Cœur, Bon et Correct, avec un classement cumulé. Infobulle complète au survol (description, stats, place moyenne par étape, meilleures lignes). |
 | Guide complet | Plan de niveaux par manche selon ta série (victoires, mixte, défaites), étapes 1 à 5, objets et recettes, augments |
 | Explorer | Champions (stats, sort, synergies, fiche détaillée, vue liste ou grille), synergies, objets, augments, chances en boutique |
 | Apprendre | Fiches en français des guides BunnyMuffins et TFT Academy (résumés HexaRise, lien vers l'original), avis des experts par compo, ouvertures, conditions (objet → compos), par composant, glossaire en info-bulles |

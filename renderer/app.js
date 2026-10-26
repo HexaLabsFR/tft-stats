@@ -185,27 +185,23 @@ document.addEventListener('mouseover', (e) => {
   const id = el.dataset.id;
   let title = '';
   let desc = '';
-  if (el.dataset.tip === 'champ') {
+  let html = '';
+  if (el.dataset.tip === 'aug' || el.dataset.tip === 'item') {
+    html = richTip(el.dataset.tip, id);
+  } else if (el.dataset.tip === 'champ') {
     const c = champ(id);
     title = `${label(c)} · ${c.cost || '?'} PO`;
     desc = [c.traits.map((t) => label(trait(t))).join(' · '), c.ability ? `${c.ability.name} — ${c.ability.desc}` : ''].filter(Boolean).join('\n\n');
-  } else if (el.dataset.tip === 'item') {
-    const it = item(id);
-    title = label(it);
-    desc = [recipeText(id) && `Recette : ${recipeText(id)}`, it.stats, it.desc].filter(Boolean).join('\n\n');
   } else if (el.dataset.tip === 'trait') {
     const t = trait(id);
     title = label(t);
     desc = [(t.breakpoints || []).map((b) => b.min).join(' / '), t.desc].filter(Boolean).join('\n');
-  } else if (el.dataset.tip === 'aug') {
-    const a = aug(id);
-    title = label(a);
-    desc = a.desc || '';
   } else {
     title = el.dataset.title || '';
     desc = el.dataset.desc || '';
   }
-  tip.innerHTML = `<div class="t">${esc(title)}</div>${desc ? `<div class="d">${esc(desc).slice(0, 600)}</div>` : ''}`;
+  tip.innerHTML = html || `<div class="t">${esc(title)}</div>${desc ? `<div class="d">${esc(desc).slice(0, 600)}</div>` : ''}`;
+  tip.classList.toggle('rich', Boolean(html));
   tip.classList.remove('hidden');
   const r = el.getBoundingClientRect();
   const w = tip.offsetWidth;
@@ -850,6 +846,321 @@ function expertTipsCard(c) {
   </div>`;
 }
 
+// ===================== Sélection de ligne =====================
+// Choisis tes objets, emblèmes et augments : HexaRise propose les compos (« lignes ») qui en profitent le plus
+// dans ton rang, classées Cœur / Bon / Correct. Calcul sur les parties Riot analysées par l'app.
+const LEVELS = [['coeur', 'Cœur', 'La compo s’appuie dessus et réussit avec'], ['bon', 'Bon', 'Réussit bien avec'], ['correct', 'Correct', 'Jouable, sans plus']];
+const LEVEL_NAME = Object.fromEntries(LEVELS.map(([k, l]) => [k, l]));
+const LEVEL_W = { coeur: 3, bon: 2, correct: 1 };
+const LINE_CATS = [['crafted', 'Objets fabriqués'], ['special', 'Objets spéciaux'], ['augments', 'Augments']];
+const ROLE_GROUPS = [['tank', 'Tank'], ['ad', 'Dégâts d’attaque'], ['ap', 'Puissance'], ['hybride', 'Hybride'], ['mana', 'Mana'], ['omnivamp', 'Soins et omnivampirisme'], ['utilitaire', 'Utilitaire']];
+const SPECIAL_GROUPS = [['embleme', 'Emblèmes'], ['artefact', 'Artefacts'], ['radieux', 'Radieux'], ['special', 'Autres objets spéciaux']];
+const AUG_GROUPS = [['eco', 'Économie'], ['objets', 'Objets'], ['synergie', 'Synergie'], ['autres', 'Autres']];
+const AUG_TIER = { argent: 'Argent', or: 'Or', prismatique: 'Prismatique' };
+
+S.lineSel = (() => {
+  try {
+    const v = JSON.parse(stored('lineSel', '{}'));
+    return v && typeof v === 'object' ? v : {};
+  } catch {
+    return {};
+  }
+})();
+S.f.lineCat = stored('lineCat', 'crafted');
+S.f.lineLevel = 'all';
+S.f.lineTier = 'tous';
+const saveLineSel = () => remember('lineSel', JSON.stringify(S.lineSel));
+
+/** Rôle d'un objet complet d'après ses statistiques. */
+function itemRole(it) {
+  const s = (it.stats || '').toLowerCase();
+  const has = (w) => s.includes(w);
+  const ad = has('dégâts d\'attaque') || has('coup critique');
+  const ap = has('puissance');
+  if (has('mana')) return 'mana';
+  if (has('omnivampirisme')) return 'omnivamp';
+  if (ad && ap) return 'hybride';
+  if (ap) return 'ap';
+  if (ad || has('vitesse d\'attaque')) return 'ad';
+  if (has('armure') || has('résistance magique') || has('pv')) return 'tank';
+  return 'utilitaire';
+}
+
+let TRAITIDX = null;
+/** Synergie liée à un augment ou un emblème (nom technique, puis nom français dans le texte). */
+function linkedTrait(x) {
+  if (!x) return null;
+  if (!TRAITIDX || TRAITIDX.sd !== S.static) {
+    const list = Object.values(S.static?.traits || {})
+      .map((t) => ({ id: t.apiName, key: String(t.apiName).replace(/^TFT\d*_(Set\d+_)?/i, '').toLowerCase(), name: String(t.name || '').toLowerCase() }))
+      .filter((t) => t.key.length >= 4 || t.name.length >= 4)
+      .sort((a, b) => b.name.length - a.name.length);
+    TRAITIDX = { sd: S.static, list, cache: new Map() };
+  }
+  if (TRAITIDX.cache.has(x.apiName)) return TRAITIDX.cache.get(x.apiName);
+  const api = String(x.apiName || '').toLowerCase();
+  const text = `${x.name || ''} ${x.desc || ''}`.toLowerCase();
+  let hit = TRAITIDX.list.find((t) => t.key.length >= 4 && api.includes(t.key));
+  if (!hit) {
+    hit = TRAITIDX.list.find((t) => t.name.length >= 4 && new RegExp(`(^|[^\\p{L}])${t.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\p{L}])`, 'u').test(text));
+  }
+  const id = hit ? hit.id : null;
+  TRAITIDX.cache.set(x.apiName, id);
+  return id;
+}
+
+/** Catégorie d'un augment : économie, objets, synergie ou autres. */
+function augCategory(a) {
+  if (linkedTrait(a)) return 'synergie';
+  const d = `${a.name || ''} ${a.desc || ''}`;
+  if (/\bPO\b|\bor\b|intérêt|expérience|\bXP\b|niveau|boutique|actualisation/i.test(d)) return 'eco';
+  if (/objet|composant|artefact|enclume|radieu|forge/i.test(d)) return 'objets';
+  return 'autres';
+}
+
+const augStat = (id) => M()?.augments?.find((x) => x.id === id) || null;
+const itemStat = (id) => M()?.items?.find((x) => x.id === id) || null;
+
+function levelFromTier(tier) {
+  return ['S', 'A', 'B'].includes(tier) ? 'bon' : tier === 'C' ? 'correct' : null;
+}
+const withComp = (rows) => rows.map((r) => ({ ...r, c: findComp(r.comp) })).filter((r) => r.c);
+
+/** Lignes déduites d'une synergie (augments sans statistiques Riot, emblèmes peu joués). */
+function traitLines(traitId) {
+  const comps = M()?.comps || [];
+  return comps
+    .map((c) => {
+      const rate = c.traits.find((t) => t.id === traitId)?.rate || 0;
+      let level = null;
+      if (c.main === traitId) level = ['S', 'A', 'B'].includes(c.tier) ? 'coeur' : 'bon';
+      else if (rate >= 60) level = 'bon';
+      else if (rate >= 25) level = 'correct';
+      return level && c.tier !== 'D' ? { comp: c.id, c, level, tier: c.tier, top4: c.top4, games: c.games, use: rate } : null;
+    })
+    .filter(Boolean)
+    .sort((a, b) => LEVEL_W[b.level] - LEVEL_W[a.level] || a.c.score - b.c.score)
+    .slice(0, 12);
+}
+
+/**
+ * Lignes d'un élément sélectionné.
+ * basis : stats (parties analysées), synergie (déduit de la synergie liée), general (aucune compo précise).
+ */
+function linesFor(id) {
+  const m = M();
+  const cond = m?.conditions || { items: {}, augments: {} };
+  const fromCond = (v) => withComp(v.lines || v.comps.map((r) => ({ ...r, level: levelFromTier(r.tier) })).filter((r) => r.level));
+  if (S.static?.augments?.[id]) {
+    const a = aug(id);
+    const cat = augCategory(a);
+    const st = cond.augments?.[id];
+    if (m?.hasAugments && st) return { rows: fromCond(st), basis: 'stats', cat };
+    const t = linkedTrait(a);
+    if (t) return { rows: traitLines(t), basis: 'synergie', trait: t, cat };
+    return { rows: [], basis: 'general', cat };
+  }
+  if (BASE_COMPONENTS.includes(id)) {
+    const recipes = Object.values(S.static?.items || {}).filter((it) => !it.outOfSet && ['complet', 'embleme'].includes(it.kind) && it.composition?.includes(id));
+    const agg = new Map();
+    for (const it of recipes) {
+      const v = cond.items?.[it.apiName];
+      for (const r of v ? v.lines || v.comps : []) {
+        const x = agg.get(r.comp) || { n: 0, sum: 0, top4: 0, use: 0 };
+        x.n += r.games;
+        x.sum += r.avg * r.games;
+        x.top4 += r.top4 * r.games;
+        x.use += r.use || 0;
+        agg.set(r.comp, x);
+      }
+    }
+    const rows = [...agg.entries()]
+      .filter(([, x]) => x.n >= 5)
+      .map(([comp, x]) => {
+        const score = (x.sum + 4.5 * 8) / (x.n + 8);
+        const use = Math.min(100, x.use);
+        const level = use >= 25 && score <= 4.45 ? 'coeur' : score <= 4.45 || (use >= 25 && score <= 4.7) ? 'bon' : score <= 4.7 ? 'correct' : null;
+        return { comp, games: x.n, top4: round1(x.top4 / x.n), use: round1(use), score, level, tier: score <= 3.95 ? 'S' : score <= 4.2 ? 'A' : score <= 4.45 ? 'B' : 'C' };
+      })
+      .filter((r) => r.level)
+      .sort((a, b) => LEVEL_W[b.level] - LEVEL_W[a.level] || a.score - b.score)
+      .slice(0, 12);
+    return { rows: withComp(rows), basis: 'stats', recipes: recipes.map((it) => it.apiName) };
+  }
+  const v = cond.items?.[id];
+  const rows = v ? fromCond(v) : [];
+  if (!rows.length && item(id).kind === 'embleme') {
+    const t = linkedTrait(item(id));
+    if (t) return { rows: traitLines(t), basis: 'synergie', trait: t };
+  }
+  return { rows, basis: 'stats' };
+}
+
+/** Classement cumulé : chaque élément vaut 3 (Cœur), 2 (Bon) ou 1 (Correct) point par exemplaire. */
+function combinedLines(sel) {
+  const by = new Map();
+  for (const [id, n] of sel) {
+    for (const r of linesFor(id).rows) {
+      const x = by.get(r.comp) || { c: r.c, pts: 0, from: [] };
+      x.pts += LEVEL_W[r.level] * n;
+      x.from.push({ id, level: r.level });
+      by.set(r.comp, x);
+    }
+  }
+  return [...by.values()].sort((a, b) => b.pts - a.pts || a.c.score - b.c.score).slice(0, 6);
+}
+
+const selIcon = (id) => (S.static?.augments?.[id] ? augIcon(id) : itemIcon(id, true));
+const selName = (id) => (S.static?.augments?.[id] ? aug(id).name : item(id).name);
+
+/** Catalogue de la catégorie affichée, rangé en groupes. */
+function lineCatalog() {
+  const q = query();
+  const cat = LINE_CATS.some(([k]) => k === S.f.lineCat) ? S.f.lineCat : 'crafted';
+  const items = Object.values(S.static?.items || {}).filter((it) => !it.outOfSet && matches(it, q));
+  const byName = (a, b) => a.name.localeCompare(b.name, 'fr');
+  if (cat === 'crafted') {
+    const comps = BASE_COMPONENTS.filter((id) => S.static?.items?.[id] && matches(item(id), q)).map((id) => item(id));
+    const full = items.filter((it) => it.kind === 'complet' && it.composition?.length === 2).sort(byName);
+    return [['composant', 'Composants', comps], ...ROLE_GROUPS.map(([k, l]) => [k, l, full.filter((it) => itemRole(it) === k)])];
+  }
+  if (cat === 'special') {
+    return SPECIAL_GROUPS.map(([k, l]) => [k, l, items.filter((it) => it.kind === k).sort(byName)]);
+  }
+  const tier = S.f.lineTier;
+  const augs = Object.values(S.static?.augments || {}).filter((a) => (tier === 'tous' || a.tier === tier) && matches(a, q)).sort(byName);
+  return AUG_GROUPS.map(([k, l]) => [k, l, augs.filter((a) => augCategory(a) === k)]);
+}
+
+function lineTile(x) {
+  const id = x.apiName;
+  const n = S.lineSel[id] || 0;
+  const isAug = Boolean(S.static?.augments?.[id]);
+  return `<div class="ln-tile ${n ? 'on' : ''}">
+    <button class="ln-pick" data-line-add="${esc(id)}" aria-label="Ajouter ${esc(x.name)}">${isAug ? augIcon(id) : itemIcon(id, true)}${n ? `<span class="ln-badge">${n}</span>` : ''}</button>
+    <span class="ln-name">${esc(x.name)}</span>
+    ${n ? `<span class="ln-count"><button data-line-dec="${esc(id)}" aria-label="Retirer un ${esc(x.name)}">−</button><b>${n}</b><button data-line-add="${esc(id)}" aria-label="Ajouter un ${esc(x.name)}">+</button></span>` : ''}
+  </div>`;
+}
+
+const lineChip = (r) => `<button class="tag ln-comp" data-guide="${esc(r.c.id)}"><span class="tier sm ${r.tier || r.c.tier}">${r.tier || r.c.tier}</span>${esc(compTitle(r.c))} · ${esc(champ(r.c.carry).name)}${r.top4 !== undefined ? `<span class="small">${pct(r.top4)} top 4</span>` : ''}</button>`;
+
+function lineBlock(id, n) {
+  const res = linesFor(id);
+  const lvl = S.f.lineLevel;
+  const rows = res.rows.filter((r) => lvl === 'all' || r.level === lvl);
+  const basis = {
+    stats: '',
+    synergie: res.trait ? `Déduit de la synergie ${label(trait(res.trait))} : Riot ne fournit pas assez de données pour cet élément.` : '',
+    general: ''
+  }[res.basis];
+  let body;
+  if (res.basis === 'general') {
+    const lvlComps = (M()?.comps || []).filter((c) => compType(c, champ(c.carry).cost || 4).id !== 'reroll' && c.tier !== 'D').slice(0, 4);
+    const hint = {
+      eco: 'Augment d’économie : il ne mène pas à une compo précise. Il aide surtout les lignes qui montent de niveau (niveau 8, fast 9).',
+      objets: 'Augment d’objets : il ne mène pas à une compo précise. Garde la ligne que tes objets indiquent déjà.',
+      autres: 'Effet général : compatible avec toutes les lignes.'
+    }[res.cat] || 'Compatible avec toutes les lignes.';
+    body = `<p class="small" style="margin:0">${hint}</p>${res.cat === 'eco' && lvlComps.length ? `<p class="label-sm" style="margin:10px 0 6px">Lignes qui montent de niveau</p><div class="tags">${lvlComps.map((c) => lineChip({ c, tier: c.tier, top4: c.top4 })).join('')}</div>` : ''}`;
+  } else if (!res.rows.length) {
+    body = '<p class="small" style="margin:0">Pas assez de parties dans ce rang pour classer les compos avec cet élément.</p>';
+  } else {
+    body = LEVELS.filter(([k]) => lvl === 'all' || k === lvl)
+      .map(([k, l]) => {
+        const list = rows.filter((r) => r.level === k);
+        return `<div class="ln-level ${k}"><span class="ln-lvl" data-tip="help" data-title="${l}" data-desc="${esc(LEVELS.find((x) => x[0] === k)[2])}.">${l}</span><div class="tags">${list.map(lineChip).join('') || '<span class="small">—</span>'}</div></div>`;
+      })
+      .join('');
+  }
+  return `<article class="ln-block">
+    <div class="ln-head">${selIcon(id)}<div class="grow"><strong>${esc(label(S.static?.augments?.[id] ? aug(id) : item(id)))}</strong>${n > 1 ? ` <span class="pill">×${n}</span>` : ''}
+      ${basis ? `<div class="small">${esc(basis)}</div>` : ''}</div>
+      <button class="icon-btn" data-line-remove="${esc(id)}" aria-label="Retirer de la sélection">✕</button></div>
+    ${body}
+  </article>`;
+}
+
+function viewLine() {
+  if (!S.static) return '<div class="card empty"><p class="lede">Chargement des données du set…</p></div>';
+  const cat = LINE_CATS.some(([k]) => k === S.f.lineCat) ? S.f.lineCat : 'crafted';
+  const sel = Object.entries(S.lineSel).filter(([id, n]) => n > 0 && (S.static.items?.[id] || S.static.augments?.[id]));
+  const m = M();
+  const extra = `${chips('lineLevel', [['all', 'Tous les niveaux'], ...LEVELS.map(([k, l]) => [k, l])], S.f.lineLevel)}`;
+  const groups = lineCatalog()
+    .filter(([, , list]) => list.length)
+    .map(([k, l, list]) => `<section class="ln-group"><h3 class="label-sm">${esc(l)} <span class="small">${list.length}</span></h3><div class="ln-grid">${list.map(lineTile).join('')}</div></section>`)
+    .join('');
+  const combined = sel.length ? combinedLines(sel).filter((x) => S.f.lineLevel === 'all' || x.from.some((f) => f.level === S.f.lineLevel)) : [];
+  const augNote = cat === 'augments' && m && !m.hasAugments
+    ? '<div class="notice" style="margin-bottom:12px">Riot ne fournit pas les augments choisis pour ce set : les augments de synergie sont reliés aux compos par leur synergie, les autres ne mènent pas à une compo précise.</div>'
+    : '';
+  return `${toolbar(extra)}
+  <div class="ln-layout">
+    <div class="card" style="padding:8px 8px 16px">
+      <nav class="tabs">${LINE_CATS.map(([k, l]) => `<a data-line-cat="${k}" class="${k === cat ? 'on' : ''}">${l}</a>`).join('')}</nav>
+      <div class="learn-body">
+        ${cat === 'augments' ? `<div class="toolbar" style="padding:0 0 12px">${chips('lineTier', [['tous', 'Tous'], ['argent', 'Argent'], ['or', 'Or'], ['prismatique', 'Prismatique']], S.f.lineTier)}</div>` : ''}
+        ${augNote}
+        <p class="small" style="margin:0 0 12px">Clique sur un élément pour l’ajouter (plusieurs fois si tu en as plusieurs). Survole-le pour voir toutes ses infos.</p>
+        ${groups || '<p class="small">Aucun élément ne correspond à ta recherche.</p>'}
+      </div>
+    </div>
+    <div class="ln-side">
+      <div class="card">
+        <div class="fiche-head" style="margin-bottom:10px"><h2 class="title" style="margin:0">Ta sélection</h2>${sel.length ? '<button class="btn text sm" data-line-clear="1">Tout effacer</button>' : ''}</div>
+        ${sel.length
+          ? `<div class="ln-sel">${sel.map(([id, n]) => `<span class="tag ln-chip">${selIcon(id)}${esc(selName(id))}${n > 1 ? ` ×${n}` : ''}<button data-line-dec="${esc(id)}" aria-label="Retirer">✕</button></span>`).join('')}</div>`
+          : '<p class="small" style="margin:0">Rien de sélectionné. Ajoute tes composants, objets, emblèmes ou augments à gauche.</p>'}
+        ${!m ? noData() : ''}
+      </div>
+      ${combined.length ? `<div class="card">
+        <h2 class="title" style="margin:0 0 4px">Meilleures lignes pour ta sélection</h2>
+        <p class="small" style="margin:0 0 12px">Cumul sur tout ce que tu as choisi (Cœur 3 points, Bon 2, Correct 1, par exemplaire). ${esc(bracketLabel(S.f.bracket))}.</p>
+        <div class="ln-best">${combined.map((x, i) => `<button class="ln-best-row" data-guide="${esc(x.c.id)}">
+          <span class="ln-rank">${i + 1}</span><span class="tier sm ${x.c.tier}">${x.c.tier}</span>
+          <span class="grow"><strong>${esc(compTitle(x.c))}</strong> · ${esc(champ(x.c.carry).name)}<span class="small"> · ${pct(x.c.top4)} top 4</span></span>
+          <span class="icons">${x.from.slice(0, 6).map((f) => `<span class="ln-from ${f.level}">${selIcon(f.id)}</span>`).join('')}</span>
+          <span class="ln-pts">${x.pts} pts</span>${ICON.chevron}</button>`).join('')}</div>
+      </div>` : ''}
+      ${sel.length && m ? `<div class="card"><h2 class="title" style="margin:0 0 12px">Détail par élément</h2><div class="stack">${sel.map(([id, n]) => lineBlock(id, n)).join('')}</div></div>` : ''}
+      <p class="small" style="margin:4px 8px">Référence à consulter <strong>avant</strong> la partie : cette page n’existe pas dans le mode partie (règles Riot). Inspiré de l’outil Line Selection de tftflow.com ; les classements sont calculés par HexaRise sur ${m ? int(m.boards) : 0} parties de ton rang.</p>
+    </div>
+  </div>`;
+}
+
+// ---------- Infobulles enrichies (augments et objets) ----------
+function richTip(kind, id) {
+  const m = M();
+  const bestOf = (res) => res.rows.slice(0, 3).map((r) => `<div class="tt-line"><span class="tier sm ${r.tier || r.c.tier}">${r.tier || r.c.tier}</span>${esc(compTitle(r.c))} · ${esc(champ(r.c.carry).name)}<span class="tt-lvl ${r.level}">${LEVEL_NAME[r.level]}</span></div>`).join('');
+  if (kind === 'aug') {
+    const a = aug(id);
+    const st = augStat(id);
+    const res = linesFor(id);
+    const t = linkedTrait(a);
+    const cat = AUG_GROUPS.find(([k]) => k === res.cat)?.[1] || '';
+    const stages = st?.stages?.some((v) => v !== null)
+      ? `<div class="tt-row">${['2-1', '3-2', '4-2'].map((s, i) => `<span>${s} <b>${st.stages[i] === null || st.stages[i] === undefined ? '—' : nf(st.stages[i])}</b></span>`).join('')}</div>`
+      : '';
+    return `<div class="t">${esc(a.name)}${AUG_TIER[a.tier] ? ` <span class="tt-tier ${a.tier}">${AUG_TIER[a.tier]}</span>` : ''}</div>
+      ${a.en && a.en !== a.name ? `<div class="tt-en">${esc(a.en)}</div>` : ''}
+      ${a.desc ? `<div class="d">${esc(a.desc).slice(0, 900)}</div>` : ''}
+      <div class="tt-sub">${esc(cat)}${t ? ` · ${traitIcon(t)} ${esc(trait(t).name)}` : ''}</div>
+      ${st ? `<div class="tt-row"><span>Place moy. <b>${nf(st.avg)}</b></span><span>Top 4 <b>${pct(st.top4)}</b></span><span>Choisi <b>${pct(st.pick, 1)}</b></span></div>${stages ? `<div class="tt-sub">Place moyenne selon l’étape où il est pris</div>${stages}` : ''}` : (m && !m.hasAugments ? '<div class="tt-sub">Statistiques indisponibles : Riot ne fournit pas les augments de ce set.</div>' : '')}
+      ${res.rows.length ? `<div class="tt-sub">Meilleures lignes${res.basis === 'synergie' ? ' (par la synergie)' : ''}</div>${bestOf(res)}` : ''}`;
+  }
+  const it = item(id);
+  const st = itemStat(id);
+  const res = m ? linesFor(id) : { rows: [] };
+  return `<div class="t">${esc(it.name)}</div>
+    ${it.en && it.en !== it.name ? `<div class="tt-en">${esc(it.en)}</div>` : ''}
+    ${recipeText(id) ? `<div class="tt-sub">Recette : ${esc(recipeText(id))}</div>` : ''}
+    ${it.stats ? `<div class="tt-sub">${esc(it.stats)}</div>` : ''}
+    ${it.desc ? `<div class="d">${esc(it.desc).slice(0, 700)}</div>` : ''}
+    ${st && st.games ? `<div class="tt-row"><span>Place moy. <b>${nf(st.avg)}</b></span><span>Top 4 <b>${pct(st.top4)}</b></span><span>Vu <b>${int(st.games)}</b> fois</span></div>` : ''}
+    ${res.rows.length ? `<div class="tt-sub">Meilleures lignes</div>${bestOf(res)}` : ''}`;
+}
+
 // ===================== Apprendre =====================
 const LEARN_TABS = [['guides', 'Guides'], ['experts', 'Avis des experts'], ['openers', 'Ouvertures'], ['conditions', 'Conditions'], ['components', 'Par composant'], ['glossary', 'Glossaire']];
 const LEVEL = { debutant: 'Débutant', intermediaire: 'Intermédiaire', avance: 'Avancé' };
@@ -1218,7 +1529,7 @@ async function saveSettings(patch, message = 'Réglages enregistrés') {
 }
 
 // ===================== Rendu et navigation =====================
-const VIEWS = { meta: viewMeta, guide: viewGuide, champion: viewChampion, game: viewGame, explore: viewExplore, learn: viewLearn, player: viewPlayer, settings: viewSettings };
+const VIEWS = { meta: viewMeta, line: viewLine, guide: viewGuide, champion: viewChampion, game: viewGame, explore: viewExplore, learn: viewLearn, player: viewPlayer, settings: viewSettings };
 const ALIASES = { champions: 'champions', traits: 'traits', items: 'items', augments: 'augments', shop: 'shop' };
 const CHILD = { guide: 'meta', champion: 'explore' }; // vue enfant -> destination parente
 
@@ -1408,6 +1719,38 @@ document.addEventListener('click', async (e) => {
     S.sort[id] = st && st.key === key ? { key, dir: -st.dir } : { key, dir: key === 'name' || key === 'avg' ? 1 : -1 };
     return render();
   }
+  const lnAdd = t.closest('[data-line-add]');
+  if (lnAdd) {
+    const id = lnAdd.dataset.lineAdd;
+    S.lineSel[id] = Math.min(9, (S.lineSel[id] || 0) + 1);
+    saveLineSel();
+    return render();
+  }
+  const lnDec = t.closest('[data-line-dec]');
+  if (lnDec) {
+    const id = lnDec.dataset.lineDec;
+    S.lineSel[id] = (S.lineSel[id] || 0) - 1;
+    if (S.lineSel[id] <= 0) delete S.lineSel[id];
+    saveLineSel();
+    return render();
+  }
+  const lnRem = t.closest('[data-line-remove]');
+  if (lnRem) {
+    delete S.lineSel[lnRem.dataset.lineRemove];
+    saveLineSel();
+    return render();
+  }
+  if (t.closest('[data-line-clear]')) {
+    S.lineSel = {};
+    saveLineSel();
+    return render();
+  }
+  const lnCat = t.closest('[data-line-cat]');
+  if (lnCat) {
+    S.f.lineCat = lnCat.dataset.lineCat;
+    remember('lineCat', S.f.lineCat);
+    return render('fade');
+  }
   const chip = t.closest('[data-chip]');
   if (chip) {
     const v = chip.dataset.v;
@@ -1533,7 +1876,7 @@ document.addEventListener('click', async (e) => {
 
 $('#q').addEventListener('input', (e) => {
   S.f.q = e.target.value;
-  if (!['meta', 'explore', 'learn'].includes(S.route)) go('meta');
+  if (!['meta', 'line', 'explore', 'learn'].includes(S.route)) go('meta');
   else render();
 });
 

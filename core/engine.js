@@ -9,6 +9,8 @@ const { EventEmitter } = require('events');
 const { RiotClient, PLATFORMS } = require('./riot');
 const { StaticData } = require('./static-data');
 const { Reference } = require('./reference');
+
+const META_FORMAT = 2; // 2 : conditions avec niveaux Cœur / Bon / Correct (sélection de ligne)
 const { Content } = require('./content');
 
 const KEY_FORMAT = /^RGAPI-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -60,7 +62,8 @@ class Engine extends EventEmitter {
     const samePlatform = saved.platform === this.settings.platform;
     this.lastRun = samePlatform ? saved.lastRunByBracket || { apex: saved.lastRun || 0 } : {};
     this.meta = this._read('meta.json', null);
-    if (this.meta && !this.meta.byBracket) this.meta = null; // format 1.0.x
+    // Format 1.0.x, ou méta d'avant la sélection de ligne (1.9.0) : recalculée au démarrage.
+    if (this.meta && (!this.meta.byBracket || this.meta.format !== META_FORMAT)) this.meta = null;
 
     this.status = {
       state: 'idle', // idle | running | error
@@ -411,7 +414,7 @@ class Engine extends EventEmitter {
     }
     // « Tous » : ensemble des tranches collectées.
     byBracket.all = aggregate(list, this.static, { set, patch });
-    this.meta = { computedAt: Date.now(), platform: this.settings.platform, patch, byBracket };
+    this.meta = { format: META_FORMAT, computedAt: Date.now(), platform: this.settings.platform, patch, byBracket };
     this._write('meta.json', this.meta);
     this.emit('meta', this.meta);
   }
