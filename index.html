@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HexaRise · Compagnon TFT, par Hexa Labs</title>
+<meta name="description" content="HexaRise, compagnon Teamfight Tactics gratuit en français : compos par rang, guides étape par étape, mode partie.">
+<link rel="icon" href="logo.svg">
+<style>
+  :root { --ink: #0B0F14; --mint: #2EE6A8; --grey: #8A94A3; --light: #C9D1DB; }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; background: var(--ink); color: #fff; font: 16px/1.6 "Space Grotesk", "Segoe UI", system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 16px; text-align: center; }
+  img.logo { width: 96px; height: 96px; }
+  h1 { margin: 16px 0 4px; font-size: 40px; letter-spacing: .02em; }
+  p.lede { margin: 0 0 28px; color: var(--light); max-width: 560px; }
+  a.btn { display: inline-block; padding: 12px 24px; border-radius: 22px; background: var(--mint); color: var(--ink); font-weight: 700; text-decoration: none; }
+  a.link { color: var(--light); }
+  ul { list-style: none; padding: 0; margin: 32px 0; color: var(--light); max-width: 560px; text-align: left; }
+  li { padding: 6px 0 6px 18px; position: relative; } li::before { content: ""; position: absolute; left: 0; top: 15px; width: 7px; height: 7px; border-radius: 50%; background: var(--mint); }
+  .sign { margin-top: 32px; display: inline-flex; align-items: center; gap: 8px; color: var(--grey); }
+  .sign img { width: 18px; height: 21px; }
+  small { display: block; margin-top: 28px; color: var(--grey); font-size: 12px; max-width: 640px; }
+</style>
+</head>
+<body>
+  <img class="logo" src="logo.svg" alt="HexaRise">
+  <h1>HexaRise</h1>
+  <p class="lede">Compagnon Teamfight Tactics gratuit, en français, pour monter de Bronze à Diamant.</p>
+  <a class="btn" href="https://github.com/HexaLabsFR/tft-stats/releases/latest">Télécharger pour Windows</a>
+  <ul>
+    <li>Compos de ton rang, classées à partir de vraies parties classées</li>
+    <li>Guide étape par étape : plan de niveaux, objets, placement conseillé</li>
+    <li>Sélection de ligne et fiches des guides de la communauté</li>
+    <li>Mode partie : uniquement des infos choisies avant la partie</li>
+  </ul>
+  <a class="link" href="https://github.com/HexaLabsFR/tft-stats">Code source et notes de version</a>
+  <div class="sign"><img src="hexalabs.svg" alt=""><span>par <b>Hexa Labs</b> · outils de performance gaming</span></div>
+  <small>HexaRise isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.</small>
+</body>
+</html>
