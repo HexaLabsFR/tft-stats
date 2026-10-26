@@ -39,6 +39,8 @@ const S = {
     exploreTab: stored('exploreTab', 'champions'),
     cost: 0,
     champTrait: '',
+    boardCost: 0,
+    boardTrait: '',
     learnTab: stored('learnTab', 'guides'),
     learnLevel: 'tous',
     expertSrc: 'all',
@@ -632,7 +634,7 @@ function viewExplore() {
   const tab = TABS.some(([k]) => k === S.f.exploreTab) ? S.f.exploreTab : 'champions';
   const extra = {
     champions: chips('cost', [[0, 'Tous'], [1, '1 PO'], [2, '2 PO'], [3, '3 PO'], [4, '4 PO'], [5, '5 PO']], S.f.cost) +
-      `<button class="chip menu-chip ${S.f.champTrait ? 'on' : ''}" data-menu-open="champ-trait">${S.f.champTrait ? `✓ ${esc(trait(S.f.champTrait).name)}` : 'Synergie : toutes'} ${ICON.down}</button>
+      `<button class="chip menu-chip ${S.f.champTrait ? 'on' : ''}" data-menu-open="champ-trait">${S.f.champTrait ? `✓ ${esc(trait(S.f.champTrait).name)}` : 'Famille : toutes'} ${ICON.down}</button>
       <div class="seg" role="group" aria-label="Affichage">${['list', 'grid'].map((v) => `<button data-champ-view="${v}" class="${S.f.champView === v ? 'on' : ''}" aria-label="${v === 'list' ? 'Liste' : 'Grille'}" title="${v === 'list' ? 'Liste' : 'Grille'}">${VIEW_ICON[v]}</button>`).join('')}</div>`,
     shop: '',
     items: chips('itemKind', [['complet', 'Complets'], ['artefact', 'Artefacts'], ['radieux', 'Radieux'], ['embleme', 'Emblèmes'], ['composant', 'Composants'], ['tous', 'Tous']], S.f.itemKind),
@@ -1124,6 +1126,18 @@ function lineWhy(x) {
 const selIcon = (id) => (S.static?.augments?.[id] ? augIcon(id) : itemIcon(id, true));
 const selName = (id) => (S.static?.augments?.[id] ? aug(id).name : item(id).name);
 
+/** Familles (synergies) jouables : hors synergies uniques à un seul champion. */
+const familyList = () => Object.values(S.static?.traits || {})
+  .filter((t) => (t.breakpoints || []).length > 1 || t.breakpoints?.[0]?.min > 1)
+  .sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+const familyItems = (current, units) => [
+  { value: '', label: 'Toutes les familles', checked: !current },
+  ...familyList().map((t) => {
+    const have = units ? units.filter(([id]) => champ(id).traits.includes(t.apiName)).length : 0;
+    return { value: t.apiName, label: t.name, checked: t.apiName === current, aside: `${have ? `${have} sur ton plateau · ` : ''}${(t.breakpoints || []).map((b) => b.min).join(' · ')}` };
+  })
+];
+
 /** Catalogue de la catégorie affichée, rangé en groupes. */
 function lineCatalog() {
   const q = query();
@@ -1131,6 +1145,8 @@ function lineCatalog() {
   if (cat === 'board') {
     const champs = Object.values(S.static?.champions || {})
       .filter((c) => !c.variantOf && c.cost >= 1 && c.cost <= 5 && (matches(c, q) || c.traits.some((t) => matches(trait(t), q))))
+      .filter((c) => !S.f.boardCost || c.cost === S.f.boardCost)
+      .filter((c) => !S.f.boardTrait || c.traits.includes(S.f.boardTrait))
       .sort((a, b) => a.name.localeCompare(b.name, 'fr'));
     return [1, 2, 3, 4, 5].map((cost) => [`c${cost}`, `${cost} PO`, champs.filter((c) => c.cost === cost)]);
   }
@@ -1209,6 +1225,20 @@ function lineBlock(id, n) {
   </article>`;
 }
 
+/** Filtres du plateau : prix et famille, avec les paliers de la famille choisie. */
+function boardFilters(units) {
+  const t = S.f.boardTrait ? trait(S.f.boardTrait) : null;
+  const have = t ? units.filter(([id]) => champ(id).traits.includes(S.f.boardTrait)).length : 0;
+  const bps = (t?.breakpoints || []).map((b) => b.min);
+  const next = bps.find((n) => n > have);
+  return `<div class="toolbar" style="padding:0 0 10px">
+    ${chips('boardCost', [[0, 'Tous les prix'], [1, '1 PO'], [2, '2 PO'], [3, '3 PO'], [4, '4 PO'], [5, '5 PO']], S.f.boardCost)}
+    <button class="chip menu-chip ${t ? 'on' : ''}" data-menu-open="board-trait">${t ? `${traitIcon(S.f.boardTrait)} ${esc(t.name)}` : 'Famille : toutes'} ${ICON.down}</button>
+    ${t ? `<button class="chip" data-board-trait-clear="1" aria-label="Retirer le filtre famille">✕</button>` : ''}
+  </div>
+  ${t ? `<p class="small" style="margin:-2px 0 12px">Paliers ${esc(bps.join(' · '))} · sur ton plateau : <b>${have}</b>${next ? ` (encore ${next - have} pour le palier ${next})` : bps.length ? ' (palier maximum atteint)' : ''}</p>` : ''}`;
+}
+
 function viewLine() {
   if (!S.static) return '<div class="card empty"><p class="lede">Chargement des données du set…</p></div>';
   if (gameLocked()) {
@@ -1242,9 +1272,10 @@ function viewLine() {
       <nav class="tabs">${LINE_CATS.map(([k, l]) => `<a data-line-cat="${k}" class="${k === cat ? 'on' : ''}">${l}</a>`).join('')}</nav>
       <div class="learn-body">
         ${cat === 'augments' ? `<div class="toolbar" style="padding:0 0 12px">${chips('lineTier', [['tous', 'Tous'], ['argent', 'Argent'], ['or', 'Or'], ['prismatique', 'Prismatique']], S.f.lineTier)}</div>` : ''}
+        ${cat === 'board' ? boardFilters(units) : ''}
         ${augNote}
         <p class="small" style="margin:0 0 12px">${cat === 'board' ? 'Clique sur un champion pour l’ajouter à ton plateau, puis encore pour lui donner une étoile de plus (jusqu’à 3★).' : 'Clique sur un élément pour l’ajouter (plusieurs fois si tu en as plusieurs). Survole-le pour voir toutes ses infos.'}</p>
-        ${groups || '<p class="small">Aucun élément ne correspond à ta recherche.</p>'}
+        ${groups || `<p class="small">${cat === 'board' && (S.f.boardCost || S.f.boardTrait) ? 'Aucun champion pour ces filtres.' : 'Aucun élément ne correspond à ta recherche.'}</p>`}
       </div>
     </div>
     <div class="ln-side">
@@ -1796,9 +1827,14 @@ document.addEventListener('click', async (e) => {
       });
     }
     if (kind === 'champ-trait') {
-      const list = Object.values(S.static?.traits || {}).filter((t) => (t.breakpoints || []).length > 1 || t.breakpoints?.[0]?.min > 1).sort((a, b) => a.name.localeCompare(b.name, 'fr'));
-      return openMenu(opener, [{ value: '', label: 'Toutes les synergies', checked: !S.f.champTrait }, ...list.map((t) => ({ value: t.apiName, label: t.name, checked: t.apiName === S.f.champTrait }))], (v) => {
+      return openMenu(opener, familyItems(S.f.champTrait), (v) => {
         S.f.champTrait = v;
+        render();
+      });
+    }
+    if (kind === 'board-trait') {
+      return openMenu(opener, familyItems(S.f.boardTrait, boardUnits()), (v) => {
+        S.f.boardTrait = v;
         render();
       });
     }
@@ -1869,6 +1905,10 @@ document.addEventListener('click', async (e) => {
     const [id, key] = sortTh.dataset.sort.split(':');
     const st = S.sort[id];
     S.sort[id] = st && st.key === key ? { key, dir: -st.dir } : { key, dir: key === 'name' || key === 'avg' ? 1 : -1 };
+    return render();
+  }
+  if (t.closest('[data-board-trait-clear]')) {
+    S.f.boardTrait = '';
     return render();
   }
   const bAdd = t.closest('[data-board-add]');

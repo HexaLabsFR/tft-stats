@@ -11,9 +11,9 @@ Télécharger `HexaRise-Setup-x.y.z.exe` dans les [Releases](https://github.com/
 | Écran | Contenu |
 |---|---|
 | Compos | Tier list S → D par rang (Bronze, Argent, Or, Platine, Émeraude, Diamant, Maître+), carry, plateau final, objets, moment clé du roll. Mode Simple ou Expert. |
-| Recos | Recommandation d'entraînement : saisis ton plateau (champions et étoiles) et tes objets, emblèmes ou augments ; HexaRise classe les compos de ton rang qui en tirent le meilleur parti et explique pourquoi. Se verrouille automatiquement pendant une partie TFT (règles Riot : pas de conseils basés sur la partie en cours). |
+| Recos | Recommandation d'entraînement : saisis ton plateau (champions et étoiles, filtrables par prix et par famille avec les paliers atteints) et tes objets, emblèmes ou augments ; HexaRise classe les compos de ton rang qui en tirent le meilleur parti et explique pourquoi. Se verrouille automatiquement pendant une partie TFT (règles Riot : pas de conseils basés sur la partie en cours). |
 | Guide complet | Plan de niveaux par manche selon ta série (victoires, mixte, défaites), étapes 1 à 5, objets et recettes, augments, placement conseillé sur un plateau hexagonal (inversable) |
-| Explorer | Champions (stats, sort, synergies, fiche détaillée, vue liste ou grille), synergies, objets, augments, chances en boutique |
+| Explorer | Champions (stats, sort, synergies, filtres prix et famille, fiche détaillée, vue liste ou grille), synergies, objets, augments, chances en boutique |
 | Apprendre | Fiches en français des guides BunnyMuffins et TFT Academy (résumés HexaRise, lien vers l'original), avis des experts par compo, ouvertures, conditions (objet → compos), par composant, glossaire en info-bulles |
 | Profil | Recherche `Pseudo#TAG`, rang, 20 dernières parties, partie en cours |
 | Mode partie | Petite fenêtre au-dessus du jeu. Onglet **Compos** façon Mobalytics : compos de ton rang (unités, étoiles visées, style, difficulté), « Quand la jouer » (début, composants, emblèmes et augments qui y mènent, conseil d'expert), recettes du carry, filtre ; « Suivre » affiche son plan. Puis Plan à cocher, Niveaux, Objets, Augments. S'ouvre seule au lancement d'une partie. Raccourci **Alt+G**. |
