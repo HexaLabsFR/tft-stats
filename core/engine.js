@@ -10,7 +10,7 @@ const { RiotClient, PLATFORMS } = require('./riot');
 const { StaticData } = require('./static-data');
 const { Reference } = require('./reference');
 
-const META_FORMAT = 2; // 2 : conditions avec niveaux Cœur / Bon / Correct (sélection de ligne)
+const META_FORMAT = 3; // 2 : niveaux Cœur / Bon / Correct · 3 : objets et augments en double fusionnés
 const { Content } = require('./content');
 
 const KEY_FORMAT = /^RGAPI-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

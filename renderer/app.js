@@ -871,18 +871,24 @@ S.f.lineLevel = 'all';
 S.f.lineTier = 'tous';
 const saveLineSel = () => remember('lineSel', JSON.stringify(S.lineSel));
 
-/** Rôle d'un objet complet d'après ses statistiques. */
+/**
+ * Rôle d'un objet complet d'après sa recette (les objets récents donnent souvent DA et puissance à la fois,
+ * les statistiques ne suffisent donc pas à les ranger).
+ */
+const COMP_ROLE = {
+  TFT_Item_BFSword: 'ad', TFT_Item_RecurveBow: 'ad', TFT_Item_SparringGloves: 'gants', TFT_Item_NeedlesslyLargeRod: 'ap',
+  TFT_Item_TearOfTheGoddess: 'mana', TFT_Item_ChainVest: 'tank', TFT_Item_NegatronCloak: 'tank', TFT_Item_GiantsBelt: 'tank'
+};
 function itemRole(it) {
-  const s = (it.stats || '').toLowerCase();
-  const has = (w) => s.includes(w);
-  const ad = has('dégâts d\'attaque') || has('coup critique');
-  const ap = has('puissance');
-  if (has('mana')) return 'mana';
-  if (has('omnivampirisme')) return 'omnivamp';
-  if (ad && ap) return 'hybride';
-  if (ap) return 'ap';
-  if (ad || has('vitesse d\'attaque')) return 'ad';
-  if (has('armure') || has('résistance magique') || has('pv')) return 'tank';
+  if (/omnivampirisme/i.test(it.stats || '')) return 'omnivamp';
+  const r = (it.composition || []).map((c) => COMP_ROLE[c] || 'autre');
+  const n = (k) => r.filter((x) => x === k).length;
+  if (n('tank') === 2) return 'tank';
+  if (n('mana')) return n('tank') ? 'tank' : 'mana';
+  if (n('tank')) return n('gants') ? 'utilitaire' : n('ap') ? 'ap' : 'ad';
+  if (n('ap') === 2) return 'ap';
+  if (n('ap')) return 'hybride';
+  if (n('ad') || n('gants')) return 'ad';
   return 'utilitaire';
 }
 
@@ -909,12 +915,17 @@ function linkedTrait(x) {
   return id;
 }
 
-/** Catégorie d'un augment : économie, objets, synergie ou autres. */
+/** Catégorie d'un augment : économie, objets, synergie ou autres (d'après son effet principal, la 1re phrase). */
+const AUG_ITEMS = /objet|composant|artefact|spatule|poêle|enclume|radieu|emblème|forge|suppresseur|duplicateur/i;
+const AUG_ECO = /\bPO\b|\bor\b|intérêt|expérience|\bXP\b|niveau|relance|boutique|butin/i;
 function augCategory(a) {
   if (linkedTrait(a)) return 'synergie';
-  const d = `${a.name || ''} ${a.desc || ''}`;
-  if (/\bPO\b|\bor\b|intérêt|expérience|\bXP\b|niveau|boutique|actualisation/i.test(d)) return 'eco';
-  if (/objet|composant|artefact|enclume|radieu|forge/i.test(d)) return 'objets';
+  const desc = String(a.desc || '');
+  const first = desc.split(/(?<=[.!])\s/)[0];
+  if (AUG_ITEMS.test(first)) return 'objets';
+  if (AUG_ECO.test(first)) return 'eco';
+  if (AUG_ITEMS.test(desc)) return 'objets';
+  if (AUG_ECO.test(`${a.name} ${desc}`)) return 'eco';
   return 'autres';
 }
 
@@ -1157,6 +1168,7 @@ function richTip(kind, id) {
     ${recipeText(id) ? `<div class="tt-sub">Recette : ${esc(recipeText(id))}</div>` : ''}
     ${it.stats ? `<div class="tt-sub">${esc(it.stats)}</div>` : ''}
     ${it.desc ? `<div class="d">${esc(it.desc).slice(0, 700)}</div>` : ''}
+    ${!it.desc && it.kind === 'embleme' && linkedTrait(it) ? `<div class="d">Le porteur gagne la synergie ${esc(trait(linkedTrait(it)).name)}.</div><div class="tt-sub">${traitIcon(linkedTrait(it))} ${esc(trait(linkedTrait(it)).name)}</div><div class="d">${esc(trait(linkedTrait(it)).desc || '').slice(0, 500)}</div>` : ''}
     ${st && st.games ? `<div class="tt-row"><span>Place moy. <b>${nf(st.avg)}</b></span><span>Top 4 <b>${pct(st.top4)}</b></span><span>Vu <b>${int(st.games)}</b> fois</span></div>` : ''}
     ${res.rows.length ? `<div class="tt-sub">Meilleures lignes</div>${bestOf(res)}` : ''}`;
 }

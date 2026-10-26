@@ -9,7 +9,7 @@ const path = require('path');
 const CDRAGON = 'https://raw.communitydragon.org/latest';
 const REFRESH_MS = 6 * 60 * 60 * 1000;
 // Incrémenté quand la structure change : force un nouveau téléchargement.
-const FORMAT = 2;
+const FORMAT = 3; // 3 : doublons fusionnés (versions DA_ et anciennes versions d'un même objet ou augment)
 
 const COMPONENTS = new Set([
   'TFT_Item_BFSword', 'TFT_Item_RecurveBow', 'TFT_Item_NeedlesslyLargeRod',
@@ -111,6 +111,8 @@ const isAugLike = (it) => /Augment/i.test(it.apiName);
 
 function itemKind(apiName) {
   if (COMPONENTS.has(apiName)) return 'composant';
+  // Jetons de mécanique (enclumes, Artefactification, objets aléatoires…) : pas des objets portés.
+  if (/Assist_|Artifactinate|Anvil|Reforger|Remover|Duplicator|Neutralizer|RandomOrnn|LesserDuplicator/i.test(apiName)) return 'consommable';
   if (/Radiant/i.test(apiName)) return 'radieux';
   if (/Artifact|Ornn/i.test(apiName)) return 'artefact';
   if (/Emblem/i.test(apiName)) return 'embleme';
@@ -154,6 +156,43 @@ function buildAliases(map) {
     if (loose && loose !== k && !(loose in out)) out[loose] = id;
   }
   return out;
+}
+
+/**
+ * Fusionne les entrées qui désignent le même objet ou augment (même nom affiché) :
+ * versions DA_ sans description, anciennes versions d'un set précédent, variantes techniques.
+ * Garde l'entrée la plus complète, complète ses champs vides avec les autres et
+ * renvoie { idSupprimé: idGardé } pour que les parties Riot comptent sur une seule ligne.
+ */
+function mergeDuplicates(map, keyOf) {
+  const quality = (e) =>
+    (/^DA_/i.test(e.apiName) ? 0 : 1000) +
+    (/^TFT_Item_[A-Za-z]+$/.test(e.apiName) ? 100 : 0) +
+    (e.desc ? 50 + Math.min(40, e.desc.length / 10) : 0) +
+    (e.outOfSet ? 0 : 20) +
+    (/_(HR|Plus|Upgrade)$/i.test(e.apiName) ? 0 : 5);
+  const groups = new Map();
+  for (const e of Object.values(map)) {
+    const k = keyOf(e);
+    if (!k) continue;
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(e);
+  }
+  const merged = {};
+  for (const list of groups.values()) {
+    if (list.length < 2) continue;
+    list.sort((a, b) => quality(b) - quality(a) || a.apiName.length - b.apiName.length);
+    const keep = list[0];
+    for (const other of list.slice(1)) {
+      for (const f of ['desc', 'en', 'icon', 'stats']) if (!keep[f] && other[f]) keep[f] = other[f];
+      if (keep.tier === 'inconnu' && other.tier && other.tier !== 'inconnu') keep.tier = other.tier;
+      if ((!keep.composition || !keep.composition.length) && other.composition?.length) keep.composition = other.composition;
+      if (keep.outOfSet && !other.outOfSet) delete keep.outOfSet;
+      merged[other.apiName] = keep.apiName;
+      delete map[other.apiName];
+    }
+  }
+  return merged;
 }
 
 /** Noms anglais par apiName, pour l'affichage « Français (English) ». */
@@ -258,6 +297,20 @@ function buildStatic(raw, version, rawEn) {
     }
   }
 
+  // Composants des recettes DA_ : on pointe vers les vrais composants.
+  const normName = (n) => String(n || '').trim().toLowerCase();
+  const mergedItems = mergeDuplicates(items, (it) => (it.kind === 'consommable' ? `c:${normName(it.name)}` : normName(it.name)));
+  const mergedAugs = mergeDuplicates(augments, (a) => normName(a.name));
+  for (const it of Object.values(items)) {
+    if (it.composition?.length) it.composition = it.composition.map((c) => mergedItems[c] || c);
+  }
+  // Un composant fusionné garde son type « composant ».
+  for (const id of COMPONENTS) if (items[id]) items[id].kind = 'composant';
+
+  const aliases = { champions: buildAliases(champions), traits: buildAliases(traits), items: buildAliases(items), augments: buildAliases(augments) };
+  for (const [from, to] of Object.entries(mergedItems)) aliases.items[idKey(from)] = to;
+  for (const [from, to] of Object.entries(mergedAugs)) aliases.augments[idKey(from)] = to;
+
   return {
     format: FORMAT,
     version,
@@ -271,7 +324,8 @@ function buildStatic(raw, version, rawEn) {
     items,
     augments,
     shopCounts,
-    aliases: { champions: buildAliases(champions), traits: buildAliases(traits), items: buildAliases(items), augments: buildAliases(augments) }
+    merged: { items: mergedItems, augments: mergedAugs },
+    aliases
   };
 }
 
@@ -348,6 +402,11 @@ class StaticData {
     }
     const key = `${kind}:${id}`;
     if (this._canon.has(key)) return this._canon.get(key);
+    const direct = this.data.merged?.[kind]?.[id];
+    if (direct) {
+      this._canon.set(key, direct);
+      return direct;
+    }
     const al = this.data.aliases?.[kind] || {};
     const k = idKey(id);
     const found = al[k] || al[k.replace(LOOSE, '')] || id;

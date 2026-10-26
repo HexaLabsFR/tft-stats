@@ -14,6 +14,27 @@ const { parseLimitHeader } = require('../core/riot');
   assert.ok(iconUrl('ASSETS/A/B.tex').endsWith('/game/assets/a/b.png'));
   assert.deepStrictEqual(parseLimitHeader('20:1,100:120'), [[20, 1000], [100, 120000]]);
 
+  // Doublons CommunityDragon (versions DA_, jetons de mécanique) : une seule entrée par objet
+  {
+    const { buildStatic, StaticData } = require('../core/static-data');
+    const it = (apiName, name, desc = '', composition = []) => ({ apiName, name, desc, effects: {}, icon: 'a.tex', composition });
+    const raw = {
+      items: [
+        it('TFT_Item_BFSword', 'Épée longue', 'x'), it('TFT_Item_SparringGloves', 'Gants d’entraînement', 'x'),
+        it('TFT_Item_InfinityEdge', 'Lame d’infini', 'Critiques', ['TFT_Item_BFSword', 'TFT_Item_SparringGloves']),
+        it('DA_InfinityEdge', 'Lame d’infini', '', ['DA_Component_BFSword', 'DA_Component_SparringGloves']),
+        it('TFT_Assist_RandomOrnnItem', 'Artefact', 'Artefact')
+      ],
+      setData: [{ number: 18, mutator: 'TFTSet18', name: 'Set18', champions: [{ apiName: 'TFT18_A', name: 'A', cost: 1, traits: [] }], traits: [], items: [], augments: [] }]
+    };
+    const built = buildStatic(raw, '1');
+    assert.ok(!built.items.DA_InfinityEdge && built.items.TFT_Item_InfinityEdge.desc === 'Critiques', 'doublon DA_ fusionné');
+    assert.strictEqual(built.items.TFT_Assist_RandomOrnnItem.kind, 'consommable');
+    const st = new StaticData({ dataDir: os.tmpdir() });
+    st.data = built;
+    assert.strictEqual(st.canon('items', 'DA_InfinityEdge'), 'TFT_Item_InfinityEdge', 'parties DA_ comptées sur l’objet gardé');
+  }
+
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tft-'));
   const fetchImpl = createMockFetch();
   const engine = new Engine({ dataDir: dir, keyStore: memoryKeyStore('RGAPI-test'), fetchImpl });
@@ -49,7 +70,7 @@ const { parseLimitHeader } = require('../core/riot');
   const condLines = [...Object.values(meta.conditions.items), ...Object.values(meta.conditions.augments)].flatMap((v) => v.lines);
   assert.ok(condLines.length > 0, 'lignes de sélection');
   assert.ok(condLines.every((r) => ['coeur', 'bon', 'correct'].includes(r.level) && r.use > 0 && r.use <= 100), 'niveaux et taux d’utilisation');
-  assert.strictEqual(engine.getMeta().format, 2, 'format de méta');
+  assert.strictEqual(engine.getMeta().format, 3, 'format de méta');
   const sg = meta.comps.find((c) => c.carry === 'TFT15_Ahri');
   assert.ok(sg, 'compo Gardienne des étoiles détectée');
   assert.strictEqual(sg.name, 'Gardienne des étoiles · Ahri');
