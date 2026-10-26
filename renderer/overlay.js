@@ -5,7 +5,7 @@ import { buildGuide, compType, levelPlan, placement, boardHtml } from './guide.j
 
 if (!isDesktop) document.body.classList.add('web');
 
-const S = { static: null, meta: null, app: null, ov: null, filter: '', comp: null, content: null };
+const S = { static: null, meta: null, app: null, ov: null, filter: '', comp: null, content: null, cfilter: '', open: null };
 const $ = (s) => document.querySelector(s);
 
 // ---------- Utilitaires (mêmes conventions que l'app principale) ----------
@@ -73,10 +73,84 @@ function renderPick() {
     <select class="input" id="ov-bracket">${brackets.map(([id, l]) => `<option value="${id}" ${id === (S.ov?.bracket || 'all') ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
 }
 
+// ---------- Compos méta : liste fixe des compos du rang, c'est toi qui choisis (règles Riot) ----------
+const DIFF = { lvl8: 'Facile', reroll: 'Moyen', fast9: 'Difficile' };
+let WHEN = null;
+/** Pour chaque compo : emblèmes, artefacts, radieux et augments qui y mènent le plus souvent (tier S ou A). */
+function whenIndex(data) {
+  if (WHEN && WHEN.data === data) return WHEN.map;
+  const map = new Map();
+  const add = (compId, kind, id) => map.set(compId, [...(map.get(compId) || []), { kind, id }]);
+  for (const [id, v] of Object.entries(data?.conditions?.items || {})) {
+    const kind = S.static?.items?.[id]?.kind;
+    const top = v.comps?.[0];
+    if (['embleme', 'artefact', 'radieux'].includes(kind) && top && ['S', 'A'].includes(top.tier) && top.games >= 4) add(top.comp, kind, id);
+  }
+  for (const [id, v] of Object.entries(data?.conditions?.augments || {})) {
+    const top = v.comps?.[0];
+    if (top && ['S', 'A'].includes(top.tier) && top.games >= 4) add(top.comp, 'augment', id);
+  }
+  WHEN = { data, map };
+  return map;
+}
+
+/** Avis d'expert le plus proche (même carry) : difficulté et conseil « quand la jouer ». */
+function expertFor(carryId) {
+  const byName = new Map();
+  for (const c of Object.values(S.static?.champions || {})) if (!c.variantOf) for (const n of [c.en, c.name]) if (n) byName.set(n.toLowerCase(), c.apiName);
+  return (S.content?.guides?.comps || []).find((x) => x.carries.some((n) => byName.get(n.toLowerCase()) === carryId)) || null;
+}
+
+function viewComps() {
+  const data = bracketData();
+  if (!data?.comps?.length) return '<div class="ov-empty">Statistiques en cours de chargement…</div>';
+  const q = S.cfilter.trim().toLowerCase();
+  const hit = (c) => !q || compName(c).toLowerCase().includes(q)
+    || c.units.some((u) => champ(u.id).name.toLowerCase().includes(q))
+    || c.traits.some((t) => trait(t.id).name.toLowerCase().includes(q));
+  const comps = [...data.comps].filter((c) => c.tier !== 'D' && hit(c)).sort((a, b) => a.score - b.score);
+  const when = whenIndex(data);
+  const row = (c) => {
+    const type = compType(c, champ(c.carry).cost || 4);
+    const ex = expertFor(c.carry);
+    const diff = ex?.ta?.difficulty || DIFF[type.id];
+    const open = S.open === c.id;
+    const units = c.units.slice(0, 8);
+    let details = '';
+    if (open) {
+      const g = buildGuide(c, S.static, label);
+      const conds = (when.get(c.id) || []).slice(0, 6);
+      const tip = [...(ex?.bm?.tips || []), ...(ex?.ta?.tips || [])].find((t) => /seulement|si tu|avec l|dès que|quand/i.test(t)) || ex?.bm?.tips?.[0] || ex?.ta?.tips?.[0] || '';
+      details = `<div class="ov-comp-more">
+        <h5>Quand la jouer</h5>
+        <div class="ov-line"><span>Début</span><div class="icons">${g.early.slice(0, 5).map((id) => champIcon(id)).join('')}</div></div>
+        <div class="ov-line"><span>Composants</span><div class="icons">${g.components.map((id) => itemIcon(id)).join('')}</div></div>
+        ${conds.length ? `<div class="ov-line"><span>Si tu as</span><div class="icons">${conds.map((x) => (x.kind === 'augment' ? augIcon(x.id) : itemIcon(x.id))).join('')}</div></div>` : ''}
+        ${tip ? `<p class="ov-note">${esc(tip)}</p>` : ''}
+        <h5>Objets du carry · ${esc(champ(c.carry).name)}</h5>
+        ${g.carryItems.map((id) => { const p = item(id).composition || []; return `<div class="ov-recipe">${itemIcon(id)}<span>${esc(item(id).name)}</span><span class="parts">${p.length === 2 ? `${itemIcon(p[0])}+${itemIcon(p[1])}` : ''}</span></div>`; }).join('')}
+        <button class="ov-follow" data-follow="${esc(c.id)}">${c.id === S.ov?.compId ? '✓ Compo suivie · voir le plan' : 'Suivre cette compo'}</button>
+      </div>`;
+    }
+    return `<div class="ov-comp ${open ? 'open' : ''} ${c.id === S.ov?.compId ? 'on' : ''}">
+      <button class="ov-comp-head" data-comp-row="${esc(c.id)}">
+        <span class="tier ${c.tier}">${c.tier}</span>
+        <span class="grow"><b>${esc(label(trait(c.main)))} · ${esc(champ(c.carry).name)}</b><span class="sub">${esc(type.label)} · ${esc(diff)} · ${nf(c.top4, 0)} % top 4</span></span>
+        <span class="chev">${open ? '▾' : '▸'}</span>
+      </button>
+      <div class="ov-comp-units">${units.map((u) => `<span class="ov-u">${champIcon(u.id)}${Math.round(u.star || 1) > 1 ? `<i>${'★'.repeat(Math.round(u.star))}</i>` : ''}</span>`).join('')}</div>
+      ${details}
+    </div>`;
+  };
+  return `<input class="input" id="ov-cfilter" placeholder="Filtrer : champion, synergie…" value="${esc(S.cfilter)}" style="width:100%;margin-bottom:8px">
+    <p class="ov-note" style="margin-top:0">Compos de ton rang, de la meilleure à la moins bonne. Touche une compo pour voir quand la jouer, puis « Suivre » pour afficher son plan.</p>
+    ${comps.map(row).join('') || '<div class="ov-empty">Aucune compo ne correspond.</div>'}`;
+}
+
 // ---------- Onglets ----------
 function viewGuide() {
   const c = S.comp;
-  if (!c) return '<div class="ov-empty">Choisis ta compo avant la partie.<br>Le guide reste affiché pendant toute la partie.</div>';
+  if (!c) return '<div class="ov-empty">Aucune compo suivie.<br>Choisis-en une dans l’onglet Compos : son plan s’affiche ici pendant toute la partie.</div>';
   const g = buildGuide(c, S.static, label);
   const checks = S.ov.checks || {};
   let total = 0;
@@ -156,40 +230,26 @@ function viewAugs() {
     ${list.map((a) => `<div class="ov-recipe" style="grid-template-columns:26px 1fr">${augIcon(a.apiName)}<span>${esc(label(a))}</span></div>`).join('')}`;
 }
 
-// Version Overwolf privée : compos recommandées d'après ton plateau (calculées par la fenêtre principale).
-function viewReco() {
-  const r = S.reco;
-  if (!r || !r.comps?.length) {
-    return `<div class="ov-empty">${S.live?.inGame ? 'En attente de ton plateau…<br>Les compos recommandées apparaissent dès que tu as quelques unités ou objets.' : 'Les recommandations apparaissent pendant la partie, d’après ton plateau et tes objets.'}</div>`;
-  }
-  return `${r.stage ? `<p class="ov-note">Manche ${esc(r.stage)} · d’après ton plateau, ton banc et tes objets</p>` : ''}
-    ${r.comps.map((c, i) => `<div class="ov-reco ${c.id === S.ov?.compId ? 'on' : ''}">
-      <div class="ov-reco-head"><span class="tier ${esc(c.tier)}">${esc(c.tier)}</span><div class="grow"><b>${i + 1}. ${esc(c.title)} · ${esc(c.carry)}</b><div class="sub">${String(c.top4).replace('.', ',')} % top 4 · ${String(c.pts).replace('.', ',')} pts</div></div></div>
-      ${c.why ? `<p class="ov-note">${esc(c.why)}</p>` : ''}
-      <button class="ov-follow" data-follow="${esc(c.id)}">${c.id === S.ov?.compId ? '✓ Compo suivie' : 'Suivre cette compo'}</button>
-    </div>`).join('')}`;
-}
-
-const VIEWS = { reco: viewReco, guide: viewGuide, levels: viewLevels, items: viewItems, augs: viewAugs };
+const VIEWS = { comps: viewComps, guide: viewGuide, levels: viewLevels, items: viewItems, augs: viewAugs };
 
 function render() {
   const data = bracketData();
   S.comp = data?.comps.find((c) => c.id === S.ov?.compId) || S.meta?.byBracket?.all?.comps.find((c) => c.id === S.ov?.compId) || null;
-  const tab = VIEWS[S.ov?.tab] ? S.ov.tab : 'guide';
+  const tab = VIEWS[S.ov?.tab] ? (S.ov.tab === 'guide' && !S.comp ? 'comps' : S.ov.tab) : S.comp ? 'guide' : 'comps';
   document.querySelectorAll('#ov-tabs a').forEach((a) => a.classList.toggle('on', a.dataset.tab === tab));
   const body = $('#ov-body');
   const scroll = body.scrollTop;
   const focused = document.activeElement?.id;
   body.innerHTML = VIEWS[tab]();
   body.scrollTop = scroll;
-  if (focused === 'ov-search') {
-    const el = $('#ov-search');
-    el.focus();
-    el.setSelectionRange(el.value.length, el.value.length);
+  if (focused === 'ov-search' || focused === 'ov-cfilter') {
+    const el = $(`#${focused}`);
+    el?.focus();
+    el?.setSelectionRange(el.value.length, el.value.length);
   }
   $('#ov-dot').classList.toggle('on', Boolean(S.ov?.inGame));
   $('#ov-title').textContent = S.ov?.inGame ? 'En partie · Mode partie' : 'Mode partie';
-  $('#ov-foot').textContent = `${S.ov?.shortcut ? `${S.ov.shortcut} pour afficher / masquer · ` : ''}${S.live?.available ? 'Version Overwolf privée · plateau lu en direct' : 'Données statiques uniquement (règles Riot)'}`;
+  $('#ov-foot').textContent = `${S.ov?.shortcut ? `${S.ov.shortcut} pour afficher / masquer · ` : ''}Données statiques uniquement (règles Riot)`;
 }
 
 async function save(patch) {
@@ -212,7 +272,12 @@ $('#ov-tabs').addEventListener('click', (e) => {
 });
 $('#ov-body').addEventListener('click', (e) => {
   const f = e.target.closest('[data-follow]');
-  if (f) save({ compId: f.dataset.follow, tab: 'guide' });
+  if (f) return save({ compId: f.dataset.follow, tab: 'guide' });
+  const r = e.target.closest('[data-comp-row]');
+  if (r) {
+    S.open = S.open === r.dataset.compRow ? null : r.dataset.compRow;
+    render();
+  }
 });
 $('#ov-body').addEventListener('change', (e) => {
   const key = e.target.dataset.check;
@@ -221,6 +286,10 @@ $('#ov-body').addEventListener('change', (e) => {
 $('#ov-body').addEventListener('input', (e) => {
   if (e.target.id === 'ov-search') {
     S.filter = e.target.value;
+    render();
+  }
+  if (e.target.id === 'ov-cfilter') {
+    S.cfilter = e.target.value;
     render();
   }
 });
@@ -243,16 +312,6 @@ api.on('meta', (m) => {
   renderPick();
   render();
 });
-api.on('reco', (r) => {
-  S.reco = r;
-  if (S.ov?.tab === 'reco') render();
-});
-api.on('board', (b) => {
-  const was = Boolean(S.live?.available);
-  S.live = b;
-  if (!was && b?.available) document.getElementById('ov-reco-tab')?.classList.remove('hidden');
-  if (S.ov?.tab === 'reco') render();
-});
 api.on('static', (d) => {
   S.static = d;
   render();
@@ -263,15 +322,6 @@ api.on('content', (d) => {
 });
 // Version web : synchronisation avec l'onglet principal.
 window.addEventListener('storage', async (e) => {
-  if (e.key === 'reco') {
-    try {
-      S.reco = JSON.parse(e.newValue || 'null');
-    } catch {
-      S.reco = null;
-    }
-    if (S.ov?.tab === 'reco') render();
-    return;
-  }
   if (e.key !== 'overlay') return;
   S.ov = { ...S.ov, ...(await api.overlayGet()) };
   renderPick();
@@ -280,11 +330,6 @@ window.addEventListener('storage', async (e) => {
 
 (async function boot() {
   [S.static, S.meta, S.app, S.ov, S.content] = await Promise.all([api.static(), api.meta(), api.state(), api.overlayGet(), api.content().catch(() => null)]);
-  S.live = await api.liveBoard().catch(() => null);
-  if (S.live?.available) document.getElementById('ov-reco-tab')?.classList.remove('hidden');
-  try {
-    S.reco = isDesktop ? null : JSON.parse(localStorage.getItem('reco') || 'null');
-  } catch { /* stockage indisponible */ }
   renderPick();
   render();
 })();

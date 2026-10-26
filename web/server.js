@@ -10,7 +10,6 @@ const fs = require('fs');
 const path = require('path');
 const { Engine, fileKeyStore, memoryKeyStore } = require('../core/engine');
 const { watchGame } = require('../core/live-client');
-const { LiveBoard } = require('../core/live-board');
 
 const DEMO = process.argv.includes('--demo');
 const PORT = Number(process.env.PORT) || 3210;
@@ -41,9 +40,6 @@ const broadcast = (event, data) => {
   for (const res of clients) res.write(payload);
 };
 const game = watchGame((inGame) => broadcast('overlay', { inGame }));
-// Plateau en direct : pas d'Overwolf dans la version web ; simulation possible avec --demo-board.
-const liveBoard = new LiveBoard({ send: broadcast });
-if (process.argv.includes('--demo-board')) liveBoard.simulate(() => engine.getStatic(), () => engine.getMeta());
 
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.png': 'image/png', '.svg': 'image/svg+xml', '.ico': 'image/x-icon' };
 
@@ -75,7 +71,6 @@ const routes = {
   'GET /api/meta': () => engine.getMeta(),
   'GET /api/content': () => engine.getContent(),
   'GET /api/game': () => ({ inGame: game.inGame }),
-  'GET /api/board': () => liveBoard.get(),
   'POST /api/settings': (q, body) => engine.setSettings(body),
   'POST /api/key': (q, body) => engine.setApiKey(body.key),
   'POST /api/key/test': () => engine.testKey(),

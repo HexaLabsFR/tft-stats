@@ -16,7 +16,7 @@ Télécharger `HexaRise-Setup-x.y.z.exe` dans les [Releases](https://github.com/
 | Explorer | Champions (stats, sort, synergies, fiche détaillée, vue liste ou grille), synergies, objets, augments, chances en boutique |
 | Apprendre | Fiches en français des guides BunnyMuffins et TFT Academy (résumés HexaRise, lien vers l'original), avis des experts par compo, ouvertures, conditions (objet → compos), par composant, glossaire en info-bulles |
 | Profil | Recherche `Pseudo#TAG`, rang, 20 dernières parties, partie en cours |
-| Mode partie | Petite fenêtre au-dessus du jeu : plan à cocher, placement conseillé, niveaux, recettes, augments. S'ouvre seule au lancement d'une partie. Raccourci **Alt+G**. |
+| Mode partie | Petite fenêtre au-dessus du jeu. Onglet **Compos** façon Mobalytics : compos de ton rang (unités, étoiles visées, style, difficulté), « Quand la jouer » (début, composants, emblèmes et augments qui y mènent, conseil d'expert), recettes du carry, filtre ; « Suivre » affiche son plan. Puis Plan à cocher, Niveaux, Objets, Augments. S'ouvre seule au lancement d'une partie. Raccourci **Alt+G**. |
 | Réglages | Clé API, serveur, rangs analysés, fréquence, journal, mises à jour |
 
 ## Mode partie et règles Riot
@@ -24,20 +24,6 @@ Télécharger `HexaRise-Setup-x.y.z.exe` dans les [Releases](https://github.com/
 La recommandation (Recos) se verrouille dès qu'une partie TFT est détectée, dans l'app desktop comme dans la version web, et revient à la fin de la partie.
 
 Le mode partie n'affiche que des informations choisies avant la partie (guide, plan de niveaux, recettes, stats d'augments), ce que la politique développeur Riot pour TFT autorise. Il ne lit ni ta boutique, ni ton plateau, ni ton or, ni ta série, ni les adversaires : la seule information lue est « une partie TFT est en cours », via l'API officielle du client de jeu. Le plan de niveaux affiche donc les trois séries côte à côte. Pour que la fenêtre reste visible, règle TFT en **Plein écran fenêtré** (ou Fenêtré).
-
-## Version Overwolf privée (usage personnel)
-
-Lit ton plateau, ton banc, tes objets, ton or et ton niveau pendant la partie grâce à Overwolf (Game Events), et affiche les compos recommandées dans Recos et dans l'onglet **Reco** du mode partie (bouton « Suivre cette compo »). Jamais les augments (interdit par Overwolf), jamais les adversaires.
-
-| Étape | Détail |
-|---|---|
-| 1 | Compte développeur Overwolf approuvé (proposition d'app « Private » sur https://dev.overwolf.com/app-idea-form) |
-| 2 | Developer Key générée dans le profil dev.overwolf.com |
-| 3 | `git clone https://github.com/HexaLabsFR/tft-stats`, puis double-clic sur `lancer-overwolf.bat` (demande la clé la première fois, la garde dans `overwolf-key.txt`, jamais envoyé sur GitHub) |
-
-Le mode développeur Overwolf ne fonctionne qu'en lançant l'app depuis le code (pas depuis l'installeur) : le lanceur récupère la dernière version à chaque démarrage. Les deux versions partagent les mêmes données (clé Riot, parties, réglages). Pour tester l'interface sans Overwolf : `npm run start:demo-board` ou `npm run web:demo-board` (plateau simulé).
-
-La version normale d'HexaRise ne lit pas la partie et verrouille Recos pendant une partie (règles Riot).
 
 ## Ce qui se met à jour tout seul
 

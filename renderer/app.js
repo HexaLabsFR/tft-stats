@@ -907,25 +907,8 @@ S.boardSel = (() => {
 })();
 const saveBoardSel = () => remember('boardSel', JSON.stringify(S.boardSel));
 const boardUnits = () => Object.entries(S.boardSel).filter(([id, st]) => st > 0 && S.static?.champions?.[id]);
-// Version Overwolf privée : plateau lu en direct (unités, étoiles, objets, or, niveau).
-S.live = null;
-const liveActive = () => Boolean(S.live?.inGame && (S.live.units?.length || S.live.bench?.length || S.live.benchItems?.length));
-/** Plateau et objets en direct au format de la sélection manuelle. */
-function liveSelection() {
-  const units = [...(S.live?.units || []), ...(S.live?.bench || [])]
-    .filter((u) => S.static?.champions?.[u.id])
-    .reduce((acc, u) => (acc.some(([id]) => id === u.id) ? acc : [...acc, [u.id, u.star]]), []);
-  const counts = new Map();
-  for (const it of [...(S.live?.units || []), ...(S.live?.bench || [])].flatMap((u) => u.items || []).concat(S.live?.benchItems || [])) {
-    if (S.static?.items?.[it]) counts.set(it, (counts.get(it) || 0) + 1);
-  }
-  return { units, sel: [...counts.entries()] };
-}
-/**
- * Verrou : sans la version Overwolf privée, la recommandation n'est pas disponible pendant une partie
- * (règles Riot). Avec Overwolf, elle utilise le plateau lu en direct.
- */
-const gameLocked = () => S.inGame === true && !S.live?.available;
+/** Verrou : la recommandation n'est jamais disponible pendant une partie TFT (règles Riot). */
+const gameLocked = () => S.inGame === true;
 S.f.lineLevel = 'all';
 S.f.lineTier = 'tous';
 const saveLineSel = () => remember('lineSel', JSON.stringify(S.lineSel));
@@ -1236,7 +1219,6 @@ function viewLine() {
       <p class="small">Pendant la partie, le mode partie (Alt+G) affiche le plan de la compo choisie avant de jouer.</p>
     </div>`;
   }
-  if (S.live?.available && (S.live.inGame || S.inGame)) return viewLiveReco();
   const cat = LINE_CATS.some(([k]) => k === S.f.lineCat) ? S.f.lineCat : 'board';
   const sel = Object.entries(S.lineSel).filter(([id, n]) => n > 0 && (S.static.items?.[id] || S.static.augments?.[id]));
   const units = boardUnits();
@@ -1288,64 +1270,6 @@ function viewLine() {
       <p class="small" style="margin:4px 8px">Outil d’entraînement à utiliser <strong>avant ou après</strong> tes parties : il se verrouille pendant une partie et n’existe pas dans le mode partie (règles Riot). Classements calculés par HexaRise sur ${m ? int(m.boards) : 0} parties de ton rang.</p>
     </div>
   </div>`;
-}
-
-// ---------- Plateau en direct (version Overwolf privée) ----------
-function recoRows(sel, units) {
-  return combinedLines(sel, units);
-}
-
-function viewLiveReco() {
-  const m = M();
-  const { units, sel } = liveSelection();
-  const best = units.length || sel.length ? recoRows(sel, units) : [];
-  const L = S.live || {};
-  const unitList = [...(L.units || []).map((u) => ({ ...u, where: 'plateau' })), ...(L.bench || []).map((u) => ({ ...u, where: 'banc' }))];
-  return `<div class="card reco-head">
-    <div class="fiche-head"><div><h1 class="h2" style="margin:0">Recommandation en direct</h1>
-      <p class="small" style="margin:6px 0 0">Version Overwolf privée : ton plateau, ton banc et tes objets sont lus pendant la partie${L.status === 'simulation' ? ' (simulation)' : ''}.</p></div>
-      <div class="badges">${L.stage ? `<span class="pill">Manche ${esc(L.stage)}</span>` : ''}${L.level ? `<span class="pill">Niveau ${L.level}</span>` : ''}${L.gold !== null && L.gold !== undefined ? `<span class="pill">${L.gold} PO</span>` : ''}${L.health ? `<span class="pill">${L.health} PV</span>` : ''}</div></div>
-  </div>
-  <div class="ln-layout">
-    <div class="card">
-      <h2 class="title" style="margin:0 0 10px">Ton plateau</h2>
-      ${unitList.length ? `<div class="board">${unitList.map((u) => unitEl(u.id, { star: u.star, items: u.items || [], size: '' }) + (u.where === 'banc' ? '' : '')).join('')}</div>` : '<p class="small">En attente des données de la partie…</p>'}
-      ${L.benchItems?.length ? `<p class="label-sm" style="margin:14px 0 6px">Objets en attente</p><div class="icons wrap">${L.benchItems.map((id) => itemIcon(id, true)).join('')}</div>` : ''}
-      ${L.status === 'admin' ? '<div class="notice" style="margin-top:12px">TFT tourne en administrateur : lance aussi HexaRise en administrateur pour lire la partie.</div>' : ''}
-    </div>
-    <div class="ln-side">
-      <div class="card">
-        <h2 class="title" style="margin:0 0 4px">Compos recommandées</h2>
-        <p class="small" style="margin:0 0 12px">Mises à jour à chaque changement de ton plateau. ${esc(bracketLabel(S.f.bracket))}${m ? ` · ${int(m.boards)} parties` : ''}.</p>
-        ${best.length ? `<div class="ln-best">${best.map((x, i) => `<button class="ln-best-row" data-play="${esc(x.c.id)}">
-          <span class="ln-rank">${i + 1}</span><span class="tier sm ${x.c.tier}">${x.c.tier}</span>
-          <span class="grow"><strong>${esc(compTitle(x.c))}</strong> · ${esc(champ(x.c.carry).name)}<span class="small"> · ${pct(x.c.top4)} top 4</span>
-            ${lineWhy(x) ? `<span class="ln-why">${esc(lineWhy(x))}</span>` : ''}</span>
-          <span class="ln-pts">${x.pts} pts</span>${ICON.play}</button>`).join('')}</div>
-          <p class="small" style="margin:10px 0 0">Clique sur une compo pour l’envoyer au mode partie.</p>` : `<p class="small" style="margin:0">${m ? 'Pas encore assez d’unités ou d’objets pour proposer une compo.' : 'Statistiques en cours de chargement.'}</p>`}
-      </div>
-    </div>
-  </div>`;
-}
-
-/** Compos recommandées envoyées au mode partie (version Overwolf privée). */
-let lastReco = '';
-function pushReco() {
-  if (!S.live?.available) return;
-  let payload = null;
-  if (liveActive() && S.static && M()) {
-    const { units, sel } = liveSelection();
-    payload = {
-      stage: S.live.stage || '',
-      comps: recoRows(sel, units).slice(0, 3).map((x) => ({
-        id: x.c.id, tier: x.c.tier, title: compTitle(x.c), carry: champ(x.c.carry).name, top4: x.c.top4, pts: x.pts, why: lineWhy(x)
-      }))
-    };
-  }
-  const key = JSON.stringify(payload);
-  if (key === lastReco) return;
-  lastReco = key;
-  api.setReco(payload).catch(() => {});
 }
 
 // ---------- Infobulles enrichies (augments et objets) ----------
@@ -2155,7 +2079,6 @@ api.on('status', (st) => {
 });
 api.on('meta', async (meta) => {
   S.meta = meta;
-  setTimeout(pushReco, 0);
   if (!S.static) {
     try {
       S.static = await api.static();
@@ -2196,11 +2119,6 @@ api.on('overlay', (ov) => {
   if (S.route === 'game') render();
 });
 api.on('navigate', (route) => go(route));
-api.on('board', (b) => {
-  S.live = b;
-  pushReco();
-  if (S.route === 'line') render();
-});
 api.on('content', (c) => {
   S.content = c;
   softRender();
@@ -2227,8 +2145,6 @@ function hideBoot() {
   try {
     [S.app, S.static, S.meta, S.appInfo, S.overlay, S.content] = await Promise.all([api.state(), api.static(), api.meta(), api.appInfo(), api.overlayGet(), api.content().catch(() => null)]);
     S.inGame = Boolean(S.overlay?.inGame);
-    S.live = await api.liveBoard().catch(() => null);
-    setTimeout(pushReco, 0);
   } catch (err) {
     view.innerHTML = `<div class="card empty"><p class="h2">Erreur</p><p class="lede">${esc(err.message)}</p></div>`;
     hideBoot();

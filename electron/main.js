@@ -10,7 +10,6 @@ const fs = require('fs');
 const { app, BrowserWindow, ipcMain, safeStorage, shell, Tray, Menu, nativeImage, globalShortcut } = require('electron');
 const { Engine } = require('../core/engine');
 const { Overlay } = require('./overlay');
-const { LiveBoard } = require('../core/live-board');
 
 const OVERLAY_SHORTCUT = 'Alt+G';
 
@@ -23,7 +22,6 @@ let win = null;
 let tray = null;
 let engine = null;
 let overlay = null;
-let liveBoard = null; // version Overwolf privée : plateau lu en direct
 let quitting = false;
 let updateState = { state: 'idle', message: '' };
 
@@ -206,12 +204,6 @@ function registerIpc(checkUpdate) {
     },
     checkUpdate: () => checkUpdate(),
     overlayGet: () => ({ ...overlay.get(), shortcut: OVERLAY_SHORTCUT }),
-    liveBoard: () => liveBoard?.get() || null,
-    // Compos recommandées calculées par la fenêtre principale, affichées dans le mode partie.
-    setReco: (r) => {
-      overlay?.send('reco', r);
-      return true;
-    },
     overlaySet: (patch) => overlay.set(patch),
     overlayToggle: (force) => overlay.toggle(force),
     openMain: (route) => {
@@ -254,10 +246,6 @@ app.whenReady().then(() => {
   });
   globalShortcut.register(OVERLAY_SHORTCUT, () => overlay.toggle());
   overlay.startWatching();
-  // Version Overwolf privée (ow-electron + clé développeur) : lecture du plateau en direct.
-  liveBoard = new LiveBoard({ app, send, log: (m) => engine.log(m) });
-  if (liveBoard.start()) engine.log('Overwolf détecté : lecture du plateau en partie activée.');
-  else if (!app.isPackaged && process.argv.includes('--demo-board')) liveBoard.simulate(() => engine.getStatic(), () => engine.getMeta());
   createTray();
   const checkUpdate = setupUpdater();
   registerIpc(checkUpdate);
@@ -274,7 +262,6 @@ app.on('before-quit', () => {
   quitting = true;
   engine?.stop();
   overlay?.destroy();
-  liveBoard?.stop();
 });
 app.on('will-quit', () => globalShortcut.unregisterAll());
 app.on('window-all-closed', () => {

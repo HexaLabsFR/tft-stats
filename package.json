@@ -1,7 +1,7 @@
 {
   "name": "tft-stats",
   "productName": "HexaRise",
-  "version": "1.14.0",
+  "version": "1.15.0",
   "description": "HexaRise, compagnon TFT : méta par rang, guides étape par étape et mode partie, en français.",
   "author": "Hexa Labs",
   "license": "UNLICENSED",
@@ -11,11 +11,6 @@
   },
   "private": true,
   "main": "electron/main.js",
-  "overwolf": {
-    "packages": [
-      "gep"
-    ]
-  },
   "scripts": {
     "start": "electron .",
     "start:demo": "electron . --demo",
@@ -23,10 +18,7 @@
     "web:demo": "node web/server.js --demo",
     "test": "node test/engine.test.js",
     "dist": "electron-builder --win nsis",
-    "release": "electron-builder --win nsis --publish always",
-    "start:overwolf": "npx --yes -p @overwolf/ow-electron@44.9.0 ow-electron .",
-    "start:demo-board": "electron . --demo --demo-board",
-    "web:demo-board": "node web/server.js --demo --demo-board"
+    "release": "electron-builder --win nsis --publish always"
   },
   "dependencies": {
     "electron-updater": "^6.8.11"

@@ -28,8 +28,6 @@ export const api = desktop
       static: () => desktop.invoke('static'),
       meta: () => desktop.invoke('meta'),
       content: () => desktop.invoke('content'),
-      liveBoard: () => desktop.invoke('liveBoard'),
-      setReco: (r) => desktop.invoke('setReco', r),
       setSettings: (s) => desktop.invoke('setSettings', s),
       setApiKey: (k) => desktop.invoke('setApiKey', k),
       testKey: () => desktop.invoke('testKey'),
@@ -51,12 +49,6 @@ export const api = desktop
       static: () => http('GET', '/api/static'),
       meta: () => http('GET', '/api/meta'),
       content: () => http('GET', '/api/content'),
-      liveBoard: () => http('GET', '/api/board'),
-      setReco: async (r) => {
-        try {
-          localStorage.setItem('reco', JSON.stringify(r));
-        } catch { /* stockage indisponible */ }
-      },
       setSettings: (s) => http('POST', '/api/settings', s),
       setApiKey: (k) => http('POST', '/api/key', { key: k }),
       testKey: () => http('POST', '/api/key/test'),
