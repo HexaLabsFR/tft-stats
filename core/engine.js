@@ -12,6 +12,8 @@ const { Reference } = require('./reference');
 
 const META_FORMAT = 3; // 2 : niveaux Cœur / Bon / Correct · 3 : objets et augments en double fusionnés
 const { Content } = require('./content');
+const { parseRiotId, fetchPlayer, fetchLive, summarize } = require('./player');
+const API_CONFIG = 'https://hexalabsfr.github.io/tft-stats/api.json';
 
 const KEY_FORMAT = /^RGAPI-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const { aggregate, canonPlayer, compactMatch, latestPatch, RANKED_QUEUE } = require('./aggregate');
@@ -499,58 +501,90 @@ class Engine extends EventEmitter {
   // ---------------- Joueur ----------------
   async lookupPlayer({ riotId, platform }) {
     platform = PLATFORMS[platform] ? platform : this.settings.platform;
-    const [gameName, tagLine] = String(riotId || '').split('#').map((s) => s?.trim());
-    if (!gameName || !tagLine) throw new Error('Format attendu : Pseudo#TAG');
-
-    const account = await this.riot.accountByRiotId(platform, gameName, tagLine);
-    if (!account) throw new Error(`Joueur « ${riotId} » introuvable.`);
-    const [summoner, leagues, ids] = await Promise.all([
-      this.riot.summonerByPuuid(platform, account.puuid),
-      this.riot.leagueByPuuid(platform, account.puuid).catch(() => []),
-      this.riot.matchIds(platform, account.puuid, { count: 20 })
-    ]);
-
-    const games = [];
-    for (const id of ids || []) {
-      let m = this.matches.get(id);
-      if (!m) {
-        m = compactMatch(await this.riot.match(platform, id));
-        if (m && m.queue === RANKED_QUEUE && m.set === this.static.data?.setNumber) this.matches.set(m.id, m);
-      }
-      if (!m) continue;
-      const me = m.players.find((p) => p.puuid === account.puuid);
-      if (me) games.push({ id: m.id, ts: m.ts, queue: m.queue, patch: m.patch, ...canonPlayer(this.static, me), puuid: undefined });
-    }
+    parseRiotId(riotId);
+    const raw = await this._playerSource(
+      () => this._remote('/v1/player', { riotId, platform }),
+      () => fetchPlayer(this.riot, {
+        platform,
+        riotId,
+        getMatch: async (id) => {
+          let m = this.matches.get(id);
+          if (!m) {
+            m = compactMatch(await this.riot.match(platform, id));
+            // Les parties classées du set en cours enrichissent aussi les statistiques.
+            if (m && m.queue === RANKED_QUEUE && m.set === this.static.data?.setNumber) this.matches.set(m.id, m);
+          }
+          return m;
+        }
+      })
+    );
     this._saveMatches();
-
-    const ranked = (leagues || []).find((l) => l.queueType === 'RANKED_TFT') || null;
-    const places = games.map((g) => g.p);
-    return {
-      account: { gameName: account.gameName, tagLine: account.tagLine, puuid: account.puuid },
-      platform,
-      summoner: summoner ? { level: summoner.summonerLevel, icon: summoner.profileIconId } : null,
-      ranked,
-      summary: {
-        games: places.length,
-        avg: places.length ? Math.round((places.reduce((a, b) => a + b, 0) / places.length) * 100) / 100 : null,
-        top4: places.filter((p) => p <= 4).length,
-        wins: places.filter((p) => p === 1).length
-      },
-      games
-    };
+    const games = raw.games.map((g) => ({ id: g.id, ts: g.ts, queue: g.queue, patch: g.patch, ...canonPlayer(this.static, g), puuid: undefined, set: undefined }));
+    return { account: raw.account, platform: raw.platform, summoner: raw.summoner, ranked: raw.ranked, summary: summarize(games), games, via: raw.via || 'perso' };
   }
 
   async liveGame({ puuid, platform }) {
     platform = PLATFORMS[platform] ? platform : this.settings.platform;
-    const game = await this.riot.activeGame(platform, puuid);
-    if (!game) return { inGame: false };
-    return {
-      inGame: true,
-      startedAt: game.gameStartTime,
-      length: game.gameLength,
-      queue: game.gameQueueConfigId
-      // Pas de liste des joueurs du lobby : les règles Riot pour TFT interdisent le suivi des adversaires en partie.
-    };
+    // Pas de liste des joueurs du lobby : les règles Riot pour TFT interdisent le suivi des adversaires en partie.
+    return this._playerSource(() => this._remote('/v1/live', { puuid, platform }), () => fetchLive(this.riot, { platform, puuid }));
+  }
+
+  /**
+   * Recherche de joueur : serveur HexaRise API (clé de production côté serveur) quand le joueur n'a pas
+   * de clé ou a choisi les données Hexa Labs, sinon sa propre clé. Repli sur sa clé si le serveur est injoignable.
+   */
+  async _playerSource(remote, local) {
+    const hasKey = Boolean(await this.keyStore.get());
+    const wantRemote = this.settings.dataSource === 'hexalabs' || (this.settings.dataSource !== 'perso' && !hasKey);
+    if (wantRemote) {
+      try {
+        return await remote();
+      } catch (err) {
+        if (err.code !== 'API_DOWN' || !hasKey) throw err;
+        this.log(`HexaRise API injoignable, recherche avec ta clé : ${err.message}`);
+      }
+    }
+    return local();
+  }
+
+  /** Adresse du serveur HexaRise API, publiée sur le site (modifiable sans nouvelle version de l'app). */
+  async _apiBase() {
+    if (this._api && Date.now() - this._api.at < 6 * 3600 * 1000) return this._api.base;
+    let base = null;
+    try {
+      const res = await this.static.fetch(API_CONFIG, { cache: 'no-store' });
+      if (res.ok) base = (await res.json())?.profile || null;
+    } catch { /* hors ligne */ }
+    this._api = { at: Date.now(), base };
+    return base;
+  }
+
+  async _remote(pathname, params) {
+    const base = await this._apiBase();
+    if (!base) {
+      const err = new Error('La recherche de profil sans clé arrive bientôt (serveur Hexa Labs en préparation). En attendant, ajoute ta clé Riot dans Réglages.');
+      err.code = 'NO_KEY';
+      throw err;
+    }
+    const url = `${base.replace(/\/$/, '')}${pathname}?${new URLSearchParams(params)}`;
+    let res;
+    try {
+      res = await this.static.fetch(url, { headers: { Accept: 'application/json', 'X-Client': 'HexaRise' } });
+    } catch (e) {
+      const err = new Error(e.message);
+      err.code = 'API_DOWN';
+      throw err;
+    }
+    let body = null;
+    try {
+      body = await res.json();
+    } catch { /* corps vide */ }
+    if (!res.ok) {
+      const err = new Error(body?.error || `Serveur Hexa Labs indisponible (${res.status}).`);
+      err.code = body?.code || (res.status >= 500 ? 'API_DOWN' : 'HTTP');
+      throw err;
+    }
+    return { ...body, via: 'hexalabs' };
   }
 }
 

@@ -1,0 +1,6 @@
+# HexaRise API (Hexa Labs) : recherche de profil avec la clé Riot de production, côté serveur.
+# La clé n'est jamais dans ce fichier : secret Cloudflare RIOT_API_KEY, envoyé par l'action GitHub.
+name = "hexarise-api"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+workers_dev = true

@@ -1,0 +1,75 @@
+name: Déployer HexaRise API
+
+# Déploie le serveur de recherche de profil (Cloudflare Workers) puis publie son adresse
+# dans api.json sur le site (branche site) : l'app la lit, sans nouvelle version.
+# Secrets GitHub nécessaires : CLOUDFLARE_API_TOKEN et CLOUDFLARE_ACCOUNT_ID.
+# RIOT_API_KEY (clé de PRODUCTION uniquement) est envoyée au serveur si elle existe.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['worker/**', 'core/riot.js', 'core/player.js', 'core/aggregate.js', '.github/workflows/deploy-api.yml']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: deploy-api
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      HAS_CF: ${{ secrets.CLOUDFLARE_API_TOKEN != '' && secrets.CLOUDFLARE_ACCOUNT_ID != '' }}
+      HAS_RIOT: ${{ secrets.RIOT_API_KEY != '' }}
+    steps:
+      - name: Secrets Cloudflare présents ?
+        if: env.HAS_CF != 'true'
+        run: echo "::notice::Ajoute les secrets CLOUDFLARE_API_TOKEN et CLOUDFLARE_ACCOUNT_ID pour déployer HexaRise API."
+
+      - uses: actions/checkout@v4
+        if: env.HAS_CF == 'true'
+
+      - name: Déployer sur Cloudflare Workers
+        id: deploy
+        if: env.HAS_CF == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: worker
+          command: deploy
+
+      - name: Envoyer la clé Riot de production au serveur
+        if: env.HAS_CF == 'true' && env.HAS_RIOT == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: worker
+          # wrangler-action envoie les secrets listés puis relance le déploiement
+          command: deploy
+          secrets: RIOT_API_KEY
+        env:
+          RIOT_API_KEY: ${{ secrets.RIOT_API_KEY }}
+
+      - name: Publier l'adresse du serveur pour l'app (api.json sur le site)
+        if: env.HAS_CF == 'true' && steps.deploy.outputs.deployment-url != ''
+        shell: bash
+        run: |
+          URL="${{ steps.deploy.outputs.deployment-url }}"
+          echo "Serveur : $URL"
+          curl -fsS "$URL/health" || true
+          git fetch -q origin site
+          git checkout -q -B site FETCH_HEAD
+          printf '{\n  "profile": "%s"\n}\n' "$URL" > api.json
+          if git diff --quiet -- api.json 2>/dev/null && git ls-files --error-unmatch api.json >/dev/null 2>&1; then echo "Adresse inchangée."; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add api.json
+          git commit -q -m "Adresse de HexaRise API"
+          git push -q origin site
+          echo "api.json publié sur le site."

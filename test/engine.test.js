@@ -135,6 +135,44 @@ const { parseLimitHeader } = require('../core/riot');
     assert.strictEqual((await e4.getState()).status.code, 'NO_KEY');
   }
 
+  // Serveur HexaRise API (Cloudflare Worker) : profil sans les autres joueurs, partie en cours sans lobby
+  {
+    const realFetch = globalThis.fetch;
+    globalThis.fetch = createMockFetch();
+    try {
+      const { default: api } = await import('../worker/src/index.js');
+      const env = { RIOT_API_KEY: 'RGAPI-test' };
+      const get = async (q) => { const r = await api.fetch(new Request(`https://api.test${q}`, { headers: { 'cf-connecting-ip': '1.2.3.4' } }), env); return { status: r.status, body: await r.json() }; };
+      const health = await get('/health');
+      assert.strictEqual(health.body.ready, true);
+      const pl = await get('/v1/player?riotId=' + encodeURIComponent('Mika#EUW') + '&platform=euw1');
+      assert.strictEqual(pl.status, 200, JSON.stringify(pl.body));
+      assert.ok(pl.body.games.length > 0 && pl.body.games.every((g) => g.puuid === pl.body.account.puuid), 'seulement le joueur cherché');
+      assert.ok(!JSON.stringify(pl.body).includes('"players"'), 'pas les autres joueurs des parties');
+      assert.strictEqual((await get('/v1/player?riotId=Inconnu%23EUW')).status, 404);
+      assert.strictEqual((await get('/v1/player?riotId=SansTag')).status, 400);
+      const lv = await get('/v1/live?puuid=puuid-0000000000000000000000&platform=euw1');
+      assert.strictEqual(lv.status, 200);
+      assert.ok(!('players' in lv.body));
+      const noKey = await api.fetch(new Request('https://api.test/v1/player?riotId=Mika%23EUW'), {});
+      assert.strictEqual(noKey.status, 503);
+
+      // L'app sans clé passe par ce serveur
+      const appFetch = createMockFetch();
+      const viaApi = async (url, opts) => {
+        if (String(url).endsWith('/tft-stats/api.json')) return { ok: true, status: 200, json: async () => ({ profile: 'https://api.test' }) };
+        if (String(url).startsWith('https://api.test/')) return api.fetch(new Request(url, opts), env);
+        return appFetch(url, opts);
+      };
+      const e5 = new Engine({ dataDir: fs.mkdtempSync(path.join(os.tmpdir(), 'tft-')), keyStore: memoryKeyStore(''), fetchImpl: viaApi });
+      const p5 = await e5.lookupPlayer({ riotId: 'Mika#EUW', platform: 'euw1' });
+      assert.strictEqual(p5.via, 'hexalabs');
+      assert.ok(p5.games.length > 0 && p5.summary.games === p5.games.length);
+    } finally {
+      globalThis.fetch = realFetch;
+    }
+  }
+
   // Clé absente
   const e2 = new Engine({ dataDir: fs.mkdtempSync(path.join(os.tmpdir(), 'tft-')), keyStore: memoryKeyStore(''), fetchImpl });
   const t = await e2.testKey();

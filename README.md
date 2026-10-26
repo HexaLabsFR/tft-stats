@@ -86,3 +86,11 @@ avec la clé de **production** enregistrée dans le secret `RIOT_API_KEY`, et pu
 L'app la télécharge (Réglages › Source des données : Automatique, Données Hexa Labs ou Ma clé Riot).
 Sans le secret, l'action ne publie rien et l'app continue avec la clé du joueur.
 Ne jamais mettre une clé de développement ou personnelle dans ce secret : Riot les interdit pour un produit public.
+
+## HexaRise API (recherche de profil sans clé)
+
+Petit serveur Cloudflare Workers (`worker/`, code partagé `core/player.js`) qui fait la recherche de profil avec la clé de production,
+côté serveur. Il ne renvoie que les données du joueur cherché, et pour une partie en cours uniquement « en partie ou non ».
+Déploiement : action **Déployer HexaRise API** (`.github/workflows/deploy-api.yml`) avec les secrets GitHub
+`CLOUDFLARE_API_TOKEN` et `CLOUDFLARE_ACCOUNT_ID` ; la clé `RIOT_API_KEY` est transmise au serveur si elle existe.
+L'adresse du serveur est publiée dans `api.json` sur le site (branche `site`) : l'app la lit sans nouvelle version.
