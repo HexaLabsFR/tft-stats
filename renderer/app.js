@@ -169,6 +169,7 @@ function unitEl(id, { star = 0, items = [], core = false, name = true, size = 'l
 const recipeText = (id) => (item(id).composition || []).map((c) => item(c).name).join(' + ');
 
 const ICON = {
+  lock: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
   chevron: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>',
   down: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>',
   back: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>',
@@ -880,7 +881,7 @@ function expertTipsCard(c) {
 const LEVELS = [['coeur', 'Cœur', 'La compo s’appuie dessus et réussit avec'], ['bon', 'Bon', 'Réussit bien avec'], ['correct', 'Correct', 'Jouable, sans plus']];
 const LEVEL_NAME = Object.fromEntries(LEVELS.map(([k, l]) => [k, l]));
 const LEVEL_W = { coeur: 3, bon: 2, correct: 1 };
-const LINE_CATS = [['crafted', 'Objets fabriqués'], ['special', 'Objets spéciaux'], ['augments', 'Augments']];
+const LINE_CATS = [['board', 'Plateau'], ['crafted', 'Objets fabriqués'], ['special', 'Objets spéciaux'], ['augments', 'Augments']];
 const ROLE_GROUPS = [['tank', 'Tank'], ['ad', 'Dégâts d’attaque'], ['ap', 'Puissance'], ['hybride', 'Hybride'], ['mana', 'Mana'], ['omnivamp', 'Soins et omnivampirisme'], ['utilitaire', 'Utilitaire']];
 const SPECIAL_GROUPS = [['embleme', 'Emblèmes'], ['artefact', 'Artefacts'], ['radieux', 'Radieux'], ['special', 'Autres objets spéciaux']];
 const AUG_GROUPS = [['eco', 'Économie'], ['objets', 'Objets'], ['synergie', 'Synergie'], ['autres', 'Autres']];
@@ -894,7 +895,20 @@ S.lineSel = (() => {
     return {};
   }
 })();
-S.f.lineCat = stored('lineCat', 'crafted');
+S.f.lineCat = stored('lineCat', 'board');
+// Plateau saisi à la main : { apiName du champion: étoiles (1 à 3) }
+S.boardSel = (() => {
+  try {
+    const v = JSON.parse(stored('boardSel', '{}'));
+    return v && typeof v === 'object' ? v : {};
+  } catch {
+    return {};
+  }
+})();
+const saveBoardSel = () => remember('boardSel', JSON.stringify(S.boardSel));
+const boardUnits = () => Object.entries(S.boardSel).filter(([id, st]) => st > 0 && S.static?.champions?.[id]);
+/** Verrou : la recommandation n'est jamais disponible pendant une partie TFT (règles Riot). */
+const gameLocked = () => S.inGame === true;
 S.f.lineLevel = 'all';
 S.f.lineTier = 'tous';
 const saveLineSel = () => remember('lineSel', JSON.stringify(S.lineSel));
@@ -1035,18 +1049,76 @@ function linesFor(id) {
   return { rows, basis: 'stats' };
 }
 
-/** Classement cumulé : chaque élément vaut 3 (Cœur), 2 (Bon) ou 1 (Correct) point par exemplaire. */
-function combinedLines(sel) {
+/**
+ * Points d'un plateau pour une compo : carry trouvé 3 pts, unité du cœur 1,5, unité fréquente 1,
+ * autre unité de la compo 0,5, synergie en commun 0,25 (max 0,5) ; +30 % par étoile au-dessus de 1.
+ */
+function boardFit(c, units) {
+  const rate = new Map(c.units.map((u) => [u.id, u.rate]));
+  const core = new Set(c.traits.filter((t) => t.rate >= 60).map((t) => t.id));
+  let pts = 0;
+  const why = [];
+  for (const [id, star] of units) {
+    const mult = 1 + 0.3 * (Math.min(3, star) - 1);
+    let p = 0;
+    let role = '';
+    if (id === c.carry) {
+      p = 3;
+      role = 'carry';
+    } else if (rate.has(id)) {
+      const r = rate.get(id);
+      p = r >= 60 ? 1.5 : r >= 35 ? 1 : 0.5;
+      role = r >= 60 ? 'cœur' : 'compo';
+    } else {
+      p = Math.min(0.5, 0.25 * champ(id).traits.filter((t) => core.has(t)).length);
+      role = p ? 'synergie' : '';
+    }
+    if (p) {
+      pts += p * mult;
+      why.push({ id, star, role });
+    }
+  }
+  return { pts: Math.round(pts * 10) / 10, why };
+}
+
+/** Classement cumulé : objets et augments (Cœur 3, Bon 2, Correct 1 par exemplaire) + plateau. */
+function combinedLines(sel, units = []) {
   const by = new Map();
   for (const [id, n] of sel) {
     for (const r of linesFor(id).rows) {
-      const x = by.get(r.comp) || { c: r.c, pts: 0, from: [] };
+      const x = by.get(r.comp) || { c: r.c, pts: 0, from: [], units: [] };
       x.pts += LEVEL_W[r.level] * n;
       x.from.push({ id, level: r.level });
       by.set(r.comp, x);
     }
   }
+  if (units.length) {
+    for (const c of M()?.comps || []) {
+      if (c.tier === 'D') continue;
+      const fit = boardFit(c, units);
+      if (!fit.pts) continue;
+      const x = by.get(c.id) || { c, pts: 0, from: [], units: [] };
+      x.pts = Math.round((x.pts + fit.pts) * 10) / 10;
+      x.units = fit.why;
+      by.set(c.id, x);
+    }
+  }
   return [...by.values()].sort((a, b) => b.pts - a.pts || a.c.score - b.c.score).slice(0, 6);
+}
+
+/** Pourquoi cette compo : phrase courte à partir du plateau et des objets. */
+function lineWhy(x) {
+  const parts = [];
+  const carry = x.units.find((u) => u.role === 'carry');
+  if (carry) parts.push(`${champ(carry.id).name}${carry.star > 1 ? ` ${carry.star}★` : ''} en est le carry`);
+  const inComp = x.units.filter((u) => u.role === 'cœur' || u.role === 'compo').map((u) => champ(u.id).name);
+  if (inComp.length) parts.push(`${inComp.slice(0, 3).join(', ')}${inComp.length > 3 ? '…' : ''} ${inComp.length > 1 ? 'en font partie' : 'en fait partie'}`);
+  const syn = x.units.filter((u) => u.role === 'synergie').map((u) => champ(u.id).name);
+  if (!inComp.length && syn.length) parts.push(`${syn.slice(0, 2).join(' et ')} ${syn.length > 1 ? 'partagent' : 'partage'} ses synergies`);
+  const coeur = x.from.filter((f) => f.level === 'coeur').map((f) => selName(f.id));
+  if (coeur.length) parts.push(`${coeur.slice(0, 2).join(' et ')} : ${coeur.length > 1 ? 'objets clés' : 'objet clé'} de la compo`);
+  else if (x.from.length) parts.push(x.from.length > 1 ? `${x.from.length} de tes objets ou augments lui conviennent` : `${selName(x.from[0].id)} lui convient`);
+  return parts.join(' · ');
 }
 
 const selIcon = (id) => (S.static?.augments?.[id] ? augIcon(id) : itemIcon(id, true));
@@ -1055,7 +1127,13 @@ const selName = (id) => (S.static?.augments?.[id] ? aug(id).name : item(id).name
 /** Catalogue de la catégorie affichée, rangé en groupes. */
 function lineCatalog() {
   const q = query();
-  const cat = LINE_CATS.some(([k]) => k === S.f.lineCat) ? S.f.lineCat : 'crafted';
+  const cat = LINE_CATS.some(([k]) => k === S.f.lineCat) ? S.f.lineCat : 'board';
+  if (cat === 'board') {
+    const champs = Object.values(S.static?.champions || {})
+      .filter((c) => !c.variantOf && c.cost >= 1 && c.cost <= 5 && (matches(c, q) || c.traits.some((t) => matches(trait(t), q))))
+      .sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+    return [1, 2, 3, 4, 5].map((cost) => [`c${cost}`, `${cost} PO`, champs.filter((c) => c.cost === cost)]);
+  }
   const items = Object.values(S.static?.items || {}).filter((it) => !it.outOfSet && matches(it, q));
   const byName = (a, b) => a.name.localeCompare(b.name, 'fr');
   if (cat === 'crafted') {
@@ -1071,7 +1149,18 @@ function lineCatalog() {
   return AUG_GROUPS.map(([k, l]) => [k, l, augs.filter((a) => augCategory(a) === k)]);
 }
 
+function boardTile(c) {
+  const id = c.apiName;
+  const st = S.boardSel[id] || 0;
+  return `<div class="ln-tile ${st ? 'on' : ''}">
+    <button class="ln-pick" data-board-add="${esc(id)}" aria-label="${st ? 'Ajouter une étoile à' : 'Ajouter'} ${esc(c.name)}">${champIcon(id, 'lg')}${st ? `<span class="ln-badge">${'★'.repeat(st)}</span>` : ''}</button>
+    <span class="ln-name">${esc(c.name)}</span>
+    ${st ? `<span class="ln-count"><button data-board-dec="${esc(id)}" aria-label="Retirer une étoile à ${esc(c.name)}">−</button><b>${st}★</b><button data-board-add="${esc(id)}" aria-label="Ajouter une étoile à ${esc(c.name)}">+</button></span>` : ''}
+  </div>`;
+}
+
 function lineTile(x) {
+  if (S.static?.champions?.[x.apiName]) return boardTile(x);
   const id = x.apiName;
   const n = S.lineSel[id] || 0;
   const isAug = Boolean(S.static?.augments?.[id]);
@@ -1122,48 +1211,63 @@ function lineBlock(id, n) {
 
 function viewLine() {
   if (!S.static) return '<div class="card empty"><p class="lede">Chargement des données du set…</p></div>';
-  const cat = LINE_CATS.some(([k]) => k === S.f.lineCat) ? S.f.lineCat : 'crafted';
+  if (gameLocked()) {
+    return `<div class="card empty lock">
+      <span class="lock-ico">${ICON.lock}</span>
+      <p class="h2">Partie TFT en cours</p>
+      <p class="lede">La recommandation est désactivée pendant les parties : les règles Riot interdisent les conseils basés sur ta partie en cours. Elle revient toute seule à la fin de la partie.</p>
+      <p class="small">Pendant la partie, le mode partie (Alt+G) affiche le plan de la compo choisie avant de jouer.</p>
+    </div>`;
+  }
+  const cat = LINE_CATS.some(([k]) => k === S.f.lineCat) ? S.f.lineCat : 'board';
   const sel = Object.entries(S.lineSel).filter(([id, n]) => n > 0 && (S.static.items?.[id] || S.static.augments?.[id]));
+  const units = boardUnits();
   const m = M();
   const extra = `${chips('lineLevel', [['all', 'Tous les niveaux'], ...LEVELS.map(([k, l]) => [k, l])], S.f.lineLevel)}`;
   const groups = lineCatalog()
     .filter(([, , list]) => list.length)
     .map(([k, l, list]) => `<section class="ln-group"><h3 class="label-sm">${esc(l)} <span class="small">${list.length}</span></h3><div class="ln-grid">${list.map(lineTile).join('')}</div></section>`)
     .join('');
-  const combined = sel.length ? combinedLines(sel).filter((x) => S.f.lineLevel === 'all' || x.from.some((f) => f.level === S.f.lineLevel)) : [];
+  const combined = sel.length || units.length ? combinedLines(sel, units).filter((x) => S.f.lineLevel === 'all' || x.units.length || x.from.some((f) => f.level === S.f.lineLevel)) : [];
   const augNote = cat === 'augments' && m && !m.hasAugments
     ? '<div class="notice" style="margin-bottom:12px">Riot ne fournit pas les augments choisis pour ce set : les augments de synergie sont reliés aux compos par leur synergie, les autres ne mènent pas à une compo précise.</div>'
     : '';
   return `${toolbar(extra)}
+  <div class="card reco-head">
+    <div><h1 class="h2" style="margin:0">Recommandation</h1>
+      <p class="small" style="margin:6px 0 0">Mets ton plateau (champions et étoiles) et tes objets : HexaRise te propose les compos qui en tirent le meilleur parti dans ton rang. Pour t’entraîner avant ou après tes parties : la page se verrouille pendant une partie (règles Riot).</p></div>
+  </div>
   <div class="ln-layout">
     <div class="card" style="padding:8px 8px 16px">
       <nav class="tabs">${LINE_CATS.map(([k, l]) => `<a data-line-cat="${k}" class="${k === cat ? 'on' : ''}">${l}</a>`).join('')}</nav>
       <div class="learn-body">
         ${cat === 'augments' ? `<div class="toolbar" style="padding:0 0 12px">${chips('lineTier', [['tous', 'Tous'], ['argent', 'Argent'], ['or', 'Or'], ['prismatique', 'Prismatique']], S.f.lineTier)}</div>` : ''}
         ${augNote}
-        <p class="small" style="margin:0 0 12px">Clique sur un élément pour l’ajouter (plusieurs fois si tu en as plusieurs). Survole-le pour voir toutes ses infos.</p>
+        <p class="small" style="margin:0 0 12px">${cat === 'board' ? 'Clique sur un champion pour l’ajouter à ton plateau, puis encore pour lui donner une étoile de plus (jusqu’à 3★).' : 'Clique sur un élément pour l’ajouter (plusieurs fois si tu en as plusieurs). Survole-le pour voir toutes ses infos.'}</p>
         ${groups || '<p class="small">Aucun élément ne correspond à ta recherche.</p>'}
       </div>
     </div>
     <div class="ln-side">
       <div class="card">
-        <div class="fiche-head" style="margin-bottom:10px"><h2 class="title" style="margin:0">Ta sélection</h2>${sel.length ? '<button class="btn text sm" data-line-clear="1">Tout effacer</button>' : ''}</div>
+        <div class="fiche-head" style="margin-bottom:10px"><h2 class="title" style="margin:0">Ta sélection</h2>${sel.length || units.length ? '<button class="btn text sm" data-line-clear="1">Tout effacer</button>' : ''}</div>
+        ${units.length ? `<p class="label-sm" style="margin:0 0 6px">Plateau · ${units.length} champion${units.length > 1 ? 's' : ''}</p><div class="ln-sel" style="margin-bottom:10px">${units.map(([id, st]) => `<span class="tag ln-chip">${champIcon(id, 'sm')}${esc(champ(id).name)}${st > 1 ? ` ${st}★` : ''}<button data-board-remove="${esc(id)}" aria-label="Retirer">✕</button></span>`).join('')}</div>` : ''}
         ${sel.length
-          ? `<div class="ln-sel">${sel.map(([id, n]) => `<span class="tag ln-chip">${selIcon(id)}${esc(selName(id))}${n > 1 ? ` ×${n}` : ''}<button data-line-dec="${esc(id)}" aria-label="Retirer">✕</button></span>`).join('')}</div>`
-          : '<p class="small" style="margin:0">Rien de sélectionné. Ajoute tes composants, objets, emblèmes ou augments à gauche.</p>'}
+          ? `${units.length ? '<p class="label-sm" style="margin:0 0 6px">Objets et augments</p>' : ''}<div class="ln-sel">${sel.map(([id, n]) => `<span class="tag ln-chip">${selIcon(id)}${esc(selName(id))}${n > 1 ? ` ×${n}` : ''}<button data-line-dec="${esc(id)}" aria-label="Retirer">✕</button></span>`).join('')}</div>`
+          : units.length ? '' : '<p class="small" style="margin:0">Rien de sélectionné. Ajoute ton plateau, puis tes composants, objets, emblèmes ou augments à gauche.</p>'}
         ${!m ? noData() : ''}
       </div>
       ${combined.length ? `<div class="card">
-        <h2 class="title" style="margin:0 0 4px">Meilleures lignes pour ta sélection</h2>
-        <p class="small" style="margin:0 0 12px">Cumul sur tout ce que tu as choisi (Cœur 3 points, Bon 2, Correct 1, par exemplaire). ${esc(bracketLabel(S.f.bracket))}.</p>
+        <h2 class="title" style="margin:0 0 4px">Compos recommandées</h2>
+        <p class="small" style="margin:0 0 12px">Classées selon ton plateau (carry trouvé 3 points, unité clé 1,5, étoiles en bonus) et tes objets (Cœur 3 points, Bon 2, Correct 1). ${esc(bracketLabel(S.f.bracket))}.</p>
         <div class="ln-best">${combined.map((x, i) => `<button class="ln-best-row" data-guide="${esc(x.c.id)}">
           <span class="ln-rank">${i + 1}</span><span class="tier sm ${x.c.tier}">${x.c.tier}</span>
-          <span class="grow"><strong>${esc(compTitle(x.c))}</strong> · ${esc(champ(x.c.carry).name)}<span class="small"> · ${pct(x.c.top4)} top 4</span></span>
-          <span class="icons">${x.from.slice(0, 6).map((f) => `<span class="ln-from ${f.level}">${selIcon(f.id)}</span>`).join('')}</span>
+          <span class="grow"><strong>${esc(compTitle(x.c))}</strong> · ${esc(champ(x.c.carry).name)}<span class="small"> · ${pct(x.c.top4)} top 4</span>
+            ${lineWhy(x) ? `<span class="ln-why">${esc(lineWhy(x))}</span>` : ''}
+            <span class="icons ln-icons">${x.units.slice(0, 6).map((u) => champIcon(u.id, 'sm')).join('')}${x.from.slice(0, 6).map((f) => `<span class="ln-from ${f.level}">${selIcon(f.id)}</span>`).join('')}</span></span>
           <span class="ln-pts">${x.pts} pts</span>${ICON.chevron}</button>`).join('')}</div>
       </div>` : ''}
       ${sel.length && m ? `<div class="card"><h2 class="title" style="margin:0 0 12px">Détail par élément</h2><div class="stack">${sel.map(([id, n]) => lineBlock(id, n)).join('')}</div></div>` : ''}
-      <p class="small" style="margin:4px 8px">Référence à consulter <strong>avant</strong> la partie : cette page n’existe pas dans le mode partie (règles Riot). Inspiré de l’outil Line Selection de tftflow.com ; les classements sont calculés par HexaRise sur ${m ? int(m.boards) : 0} parties de ton rang.</p>
+      <p class="small" style="margin:4px 8px">Outil d’entraînement à utiliser <strong>avant ou après</strong> tes parties : il se verrouille pendant une partie et n’existe pas dans le mode partie (règles Riot). Classements calculés par HexaRise sur ${m ? int(m.boards) : 0} parties de ton rang.</p>
     </div>
   </div>`;
 }
@@ -1767,6 +1871,27 @@ document.addEventListener('click', async (e) => {
     S.sort[id] = st && st.key === key ? { key, dir: -st.dir } : { key, dir: key === 'name' || key === 'avg' ? 1 : -1 };
     return render();
   }
+  const bAdd = t.closest('[data-board-add]');
+  if (bAdd) {
+    const id = bAdd.dataset.boardAdd;
+    S.boardSel[id] = Math.min(3, (S.boardSel[id] || 0) + 1);
+    saveBoardSel();
+    return render();
+  }
+  const bDec = t.closest('[data-board-dec]');
+  if (bDec) {
+    const id = bDec.dataset.boardDec;
+    S.boardSel[id] = (S.boardSel[id] || 0) - 1;
+    if (S.boardSel[id] <= 0) delete S.boardSel[id];
+    saveBoardSel();
+    return render();
+  }
+  const bRem = t.closest('[data-board-remove]');
+  if (bRem) {
+    delete S.boardSel[bRem.dataset.boardRemove];
+    saveBoardSel();
+    return render();
+  }
   const lnAdd = t.closest('[data-line-add]');
   if (lnAdd) {
     const id = lnAdd.dataset.lineAdd;
@@ -1790,7 +1915,9 @@ document.addEventListener('click', async (e) => {
   }
   if (t.closest('[data-line-clear]')) {
     S.lineSel = {};
+    S.boardSel = {};
     saveLineSel();
+    saveBoardSel();
     return render();
   }
   const lnCat = t.closest('[data-line-cat]');
@@ -1983,6 +2110,11 @@ api.on('update', (u) => {
   if (S.route === 'settings') render();
 });
 api.on('overlay', (ov) => {
+  if ('inGame' in ov) {
+    const was = S.inGame;
+    S.inGame = Boolean(ov.inGame);
+    if (was !== S.inGame && S.route === 'line') render();
+  }
   S.overlay = { ...S.overlay, ...ov };
   if (S.route === 'game') render();
 });
@@ -2012,6 +2144,7 @@ function hideBoot() {
 (async function boot() {
   try {
     [S.app, S.static, S.meta, S.appInfo, S.overlay, S.content] = await Promise.all([api.state(), api.static(), api.meta(), api.appInfo(), api.overlayGet(), api.content().catch(() => null)]);
+    S.inGame = Boolean(S.overlay?.inGame);
   } catch (err) {
     view.innerHTML = `<div class="card empty"><p class="h2">Erreur</p><p class="lede">${esc(err.message)}</p></div>`;
     hideBoot();

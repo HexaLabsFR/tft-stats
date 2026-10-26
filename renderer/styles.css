@@ -559,3 +559,13 @@ body.no-motion *, body.no-motion *::before, body.no-motion *::after { animation-
 .ctag.easy { border-color: #579E56; background: rgba(87, 158, 86, .12); color: #7CC47A; }
 .ctag.medium { border-color: #B9623C; background: rgba(153, 80, 49, .12); color: #DB8358; }
 .ctag.hard { border-color: #B5595C; background: rgba(181, 89, 92, .12); color: #E07C80; }
+
+/* ---------- Recommandation (plateau + objets) ---------- */
+.reco-head { margin-bottom: 16px; padding: 18px 22px; }
+.ln-why { display: block; margin-top: 3px; font-size: 12px; color: var(--muted); line-height: 1.4; }
+.ln-best-row .grow { min-width: 0; }
+.ln-tile .ln-badge { letter-spacing: -1px; }
+.empty.lock .lock-ico { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: var(--surface-3); color: var(--primary); }
+.empty.lock .lock-ico svg { width: 28px; height: 28px; }
+.ln-best-row .ln-icons { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.ln-best-row .ln-icons .ic.champ.sm { width: 26px; height: 26px; }

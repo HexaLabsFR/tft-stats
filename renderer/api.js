@@ -60,7 +60,7 @@ export const api = desktop
       installUpdate: async () => {},
       checkUpdate: async () => {},
       // Version web : réglages du mode partie dans le navigateur, fenêtre pop-up.
-      overlayGet: async () => ({ ...webOverlay(), shortcut: null, inGame: false }),
+      overlayGet: async () => ({ ...webOverlay(), shortcut: null, inGame: Boolean((await http('GET', '/api/game').catch(() => ({}))).inGame) }),
       overlaySet: async (p) => {
         const next = { ...webOverlay(), ...p };
         if ('compId' in p) next.checks = {};

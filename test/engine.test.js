@@ -118,6 +118,10 @@ const { parseLimitHeader } = require('../core/riot');
   const t = await e2.testKey();
   assert.ok(!t.ok && /clé API/i.test(t.message));
 
+  // Détection de partie : sans client de jeu, aucune partie en cours
+  const { gameMode } = require('../core/live-client');
+  assert.strictEqual(await gameMode(), null);
+
   // Contenu éditorial et conditions
   const ct = engine.getContent();
   assert.ok(ct.guides.comps.length >= 30 && ct.guides.guides.length >= 8 && ct.glossary.terms.length >= 40, 'guides et glossaire');

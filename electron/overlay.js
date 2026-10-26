@@ -10,8 +10,8 @@
  */
 const path = require('path');
 const fs = require('fs');
-const https = require('https');
 const { BrowserWindow, screen, shell } = require('electron');
+const { gameMode } = require('../core/live-client');
 
 const DEFAULTS = { compId: null, bracket: 'all', autoOpen: true, opacity: 0.95, bounds: null, checks: {}, tab: 'guide' };
 const POLL_MS = 5000;
@@ -150,34 +150,6 @@ class Overlay {
     this.quitting = true;
     if (this.win && !this.win.isDestroyed()) this.win.destroy();
   }
-}
-
-/** API officielle du client de jeu (certificat Riot auto-signé, uniquement en local). */
-function gameMode() {
-  return new Promise((resolve) => {
-    const req = https.get(
-      {
-        host: '127.0.0.1',
-        port: 2999,
-        path: '/liveclientdata/gamestats',
-        rejectUnauthorized: false,
-        timeout: 1500
-      },
-      (res) => {
-        let raw = '';
-        res.on('data', (c) => (raw += c));
-        res.on('end', () => {
-          try {
-            resolve(JSON.parse(raw).gameMode || null);
-          } catch {
-            resolve(null);
-          }
-        });
-      }
-    );
-    req.on('timeout', () => req.destroy());
-    req.on('error', () => resolve(null));
-  });
 }
 
 module.exports = { Overlay };

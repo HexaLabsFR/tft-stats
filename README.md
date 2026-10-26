@@ -11,7 +11,7 @@ Télécharger `HexaRise-Setup-x.y.z.exe` dans les [Releases](https://github.com/
 | Écran | Contenu |
 |---|---|
 | Compos | Tier list S → D par rang (Bronze, Argent, Or, Platine, Émeraude, Diamant, Maître+), carry, plateau final, objets, moment clé du roll. Mode Simple ou Expert. |
-| Ligne | Sélection de ligne façon tftflow, en français : clique tes composants, objets, emblèmes et augments (avec quantités), HexaRise classe les compos de ton rang en Cœur, Bon et Correct, avec un classement cumulé. Infobulle complète au survol (description, stats, place moyenne par étape, meilleures lignes). |
+| Recos | Recommandation d'entraînement : saisis ton plateau (champions et étoiles) et tes objets, emblèmes ou augments ; HexaRise classe les compos de ton rang qui en tirent le meilleur parti et explique pourquoi. Se verrouille automatiquement pendant une partie TFT (règles Riot : pas de conseils basés sur la partie en cours). |
 | Guide complet | Plan de niveaux par manche selon ta série (victoires, mixte, défaites), étapes 1 à 5, objets et recettes, augments, placement conseillé sur un plateau hexagonal (inversable) |
 | Explorer | Champions (stats, sort, synergies, fiche détaillée, vue liste ou grille), synergies, objets, augments, chances en boutique |
 | Apprendre | Fiches en français des guides BunnyMuffins et TFT Academy (résumés HexaRise, lien vers l'original), avis des experts par compo, ouvertures, conditions (objet → compos), par composant, glossaire en info-bulles |
@@ -20,6 +20,8 @@ Télécharger `HexaRise-Setup-x.y.z.exe` dans les [Releases](https://github.com/
 | Réglages | Clé API, serveur, rangs analysés, fréquence, journal, mises à jour |
 
 ## Mode partie et règles Riot
+
+La recommandation (Recos) se verrouille dès qu'une partie TFT est détectée, dans l'app desktop comme dans la version web, et revient à la fin de la partie.
 
 Le mode partie n'affiche que des informations choisies avant la partie (guide, plan de niveaux, recettes, stats d'augments), ce que la politique développeur Riot pour TFT autorise. Il ne lit ni ta boutique, ni ton plateau, ni ton or, ni ta série, ni les adversaires : la seule information lue est « une partie TFT est en cours », via l'API officielle du client de jeu. Le plan de niveaux affiche donc les trois séries côte à côte. Pour que la fenêtre reste visible, règle TFT en **Plein écran fenêtré** (ou Fenêtré).
 

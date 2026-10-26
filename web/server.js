@@ -9,6 +9,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { Engine, fileKeyStore, memoryKeyStore } = require('../core/engine');
+const { watchGame } = require('../core/live-client');
 
 const DEMO = process.argv.includes('--demo');
 const PORT = Number(process.env.PORT) || 3210;
@@ -32,6 +33,13 @@ for (const event of ['status', 'meta', 'static', 'log', 'content']) {
     for (const res of clients) res.write(payload);
   });
 }
+
+// Détection de partie : la recommandation se verrouille pendant une partie TFT (règles Riot).
+const broadcast = (event, data) => {
+  const payload = `data: ${JSON.stringify({ event, data })}\n\n`;
+  for (const res of clients) res.write(payload);
+};
+const game = watchGame((inGame) => broadcast('overlay', { inGame }));
 
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.png': 'image/png', '.svg': 'image/svg+xml', '.ico': 'image/x-icon' };
 
@@ -62,6 +70,7 @@ const routes = {
   'GET /api/static': () => engine.getStatic(),
   'GET /api/meta': () => engine.getMeta(),
   'GET /api/content': () => engine.getContent(),
+  'GET /api/game': () => ({ inGame: game.inGame }),
   'POST /api/settings': (q, body) => engine.setSettings(body),
   'POST /api/key': (q, body) => engine.setApiKey(body.key),
   'POST /api/key/test': () => engine.testKey(),
