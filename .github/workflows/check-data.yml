@@ -1,6 +1,7 @@
 # Vérifie que HexaRise lit correctement les données CommunityDragon du set en cours
 # (champions, sorts, icônes). Se lance à la main, quand ce fichier ou le script change,
-# et chaque lundi pour repérer un nouveau set.
+# et chaque lundi pour repérer un nouveau set. Le rapport et un extrait réel des données
+# sont déposés sur la branche « data-check » (utilisés par les tests).
 name: Vérifier les données du set
 
 on:
@@ -11,6 +12,13 @@ on:
   schedule:
     - cron: '17 6 * * 1'
 
+permissions:
+  contents: write
+
+concurrency:
+  group: data-check
+  cancel-in-progress: true
+
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -20,9 +28,22 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: node tools/check-data.js
-      - uses: actions/upload-artifact@v4
-        with:
-          name: cdragon-sample
-          path: check/cdragon-sample.json
-          retention-days: 7
+      - name: Lire les données du set
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p check
+          node tools/check-data.js | tee check/report.txt
+      - name: Déposer le rapport sur la branche data-check
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          cp -r check /tmp/check
+          git checkout --orphan data-check
+          git rm -rf --quiet --cached .
+          rm -rf -- * .github .gitignore
+          cp -r /tmp/check/. .
+          git add -f report.txt cdragon-sample.json
+          git commit -q -m "Vérification des données (run ${{ github.run_id }})"
+          git push -f origin data-check
