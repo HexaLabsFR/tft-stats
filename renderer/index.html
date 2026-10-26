@@ -10,44 +10,43 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="app">
-    <aside class="sidebar">
-      <div class="brand">
+  <div class="shell">
+    <header class="top">
+      <a class="brand" data-route="meta" href="#meta" aria-label="HexaRise, accueil">
         <img class="brand-logo" src="logo.svg" alt="">
-        <div>
-          <div class="brand-name">HexaRise</div>
-          <div class="brand-sub" id="set-label">Chargement…</div>
-        </div>
-      </div>
-      <nav class="nav" id="nav">
-        <a data-route="meta" class="active"><span class="ico">▦</span>Compos méta</a>
-        <a data-route="champions"><span class="ico">♟</span>Champions</a>
-        <a data-route="traits"><span class="ico">✦</span>Synergies</a>
-        <a data-route="items"><span class="ico">⚔</span>Objets</a>
-        <a data-route="augments"><span class="ico">⬢</span>Augments</a>
-        <a data-route="player"><span class="ico">⌕</span>Joueur</a>
-        <a data-route="settings"><span class="ico">⚙</span>Paramètres</a>
-      </nav>
-      <div class="sidebar-foot">
-        <div class="sample" id="sample-label">—</div>
-        <div class="legal">HexaRise n'est pas approuvé par Riot Games et ne reflète pas les opinions de Riot Games.</div>
-      </div>
-    </aside>
+        <span class="brand-name">HexaRise</span>
+      </a>
 
-    <main class="main">
-      <header class="topbar">
-        <div class="live" id="live">
-          <span class="dot"></span>
-          <span id="live-text">Initialisation…</span>
+      <nav class="nav" id="nav" aria-label="Navigation principale">
+        <a data-route="meta" href="#meta">Compos</a>
+        <a data-route="game" href="#game">Guide en jeu</a>
+        <a data-route="explore" href="#explore">Explorer</a>
+        <a data-route="player" href="#player">Mon profil</a>
+      </nav>
+
+      <div class="top-right">
+        <button class="live" id="live" data-action="refresh" title="Actualiser maintenant">
+          <span class="dot"></span><span id="live-text">Initialisation…</span>
+        </button>
+        <span class="update-banner hidden" id="update-banner" role="button" tabindex="0"></span>
+        <div class="seg" role="group" aria-label="Niveau de détail" id="mode">
+          <button data-mode="simple">Simple</button>
+          <button data-mode="expert">Expert</button>
         </div>
-        <div class="progress" id="progress"><div class="bar" id="progress-bar"></div></div>
-        <div class="top-actions">
-          <span class="update-banner hidden" id="update-banner"></span>
-          <button class="btn ghost" id="btn-refresh" title="Lancer une mise à jour maintenant">↻ Actualiser</button>
-        </div>
-      </header>
-      <section class="view" id="view"></section>
-    </main>
+        <select class="select" id="bracket" aria-label="Ton rang"></select>
+        <a class="icon-btn" data-route="settings" href="#settings" aria-label="Paramètres" title="Paramètres">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg>
+        </a>
+      </div>
+    </header>
+    <div class="progress"><div class="bar" id="progress-bar"></div></div>
+
+    <section class="view" id="view"></section>
+
+    <footer class="foot">
+      <span id="sample-label">—</span>
+      <span class="legal">HexaRise n'est pas approuvé par Riot Games et ne reflète pas les opinions de Riot Games.</span>
+    </footer>
   </div>
   <div class="tooltip hidden" id="tooltip"></div>
   <script type="module" src="app.js"></script>
