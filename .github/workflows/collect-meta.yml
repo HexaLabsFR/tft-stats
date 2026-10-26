@@ -1,0 +1,66 @@
+name: Collecte Hexa Labs
+
+# Calcule la méta TFT sur les serveurs GitHub avec la clé Riot de production (secret RIOT_API_KEY)
+# et la publie sur la branche « donnees ». L'app la télécharge : plus besoin de clé chez les joueurs.
+# Sans le secret, l'action s'arrête tout de suite sans rien publier.
+# Ne mettre ici qu'une clé de PRODUCTION : les clés de développement et personnelles
+# sont interdites par Riot pour un produit public.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '41 */3 * * *'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: collect-meta
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        platform: [euw1]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci --omit=dev --ignore-scripts
+
+      # Parties déjà téléchargées : on ne les redemande pas à Riot.
+      - uses: actions/cache@v4
+        with:
+          path: .collect/${{ matrix.platform }}
+          key: collect-${{ matrix.platform }}-${{ github.run_id }}
+          restore-keys: collect-${{ matrix.platform }}-
+
+      - name: Collecter et calculer la méta
+        env:
+          RIOT_API_KEY: ${{ secrets.RIOT_API_KEY }}
+        run: node tools/collect-meta.js ${{ matrix.platform }} publish
+
+      - name: Publier sur la branche donnees
+        shell: bash
+        run: |
+          if [ ! -f publish/meta-${{ matrix.platform }}.json ]; then echo "Rien à publier."; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          mkdir -p /tmp/donnees
+          # On garde les fichiers des autres serveurs déjà publiés.
+          if git fetch -q origin donnees 2>/dev/null; then git --work-tree=/tmp/donnees checkout FETCH_HEAD -- . ; fi
+          cp publish/* /tmp/donnees/
+          cd /tmp/donnees
+          git init -q -b donnees
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Méta Hexa Labs ${{ matrix.platform }} (run ${{ github.run_id }})"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" donnees
+          echo "Publié sur la branche donnees."

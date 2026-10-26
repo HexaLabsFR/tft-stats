@@ -170,7 +170,7 @@ function buildMatch(id, puuids, r, withAug) {
   };
 }
 
-function createMockFetch({ seed = 42, players = 40, matchesPerPlayer = 10, withAugments = true } = {}) {
+function createMockFetch({ seed = 42, players = 40, matchesPerPlayer = 10, withAugments = true, remoteMeta = null } = {}) {
   const r = rng(seed);
   const puuids = Array.from({ length: players }, (_, i) => `puuid-${i}`);
   const matchIdsByPlayer = new Map(puuids.map((p) => [p, []]));
@@ -204,6 +204,10 @@ function createMockFetch({ seed = 42, players = 40, matchesPerPlayer = 10, withA
       if (u.pathname.endsWith('fr_fr.json')) return json(cd);
       if (u.pathname.endsWith('en_us.json')) return json(cdEn);
       return json({}, 404);
+    }
+    if (u.host === 'raw.githubusercontent.com' && /\/donnees\/meta-[a-z0-9]+\.json$/.test(u.pathname)) {
+      const meta = typeof remoteMeta === 'function' ? remoteMeta() : remoteMeta;
+      return meta ? json(meta) : json(null, 404);
     }
     const p = u.pathname;
     let m;

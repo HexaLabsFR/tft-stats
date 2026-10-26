@@ -37,8 +37,19 @@ const DEFAULT_SETTINGS = {
   matchesPerPlayer: 8,
   refreshMinutes: 30,
   patchMode: 'latest', // latest | all
-  autoStart: true
+  autoStart: true,
+  // auto : données Hexa Labs si elles sont publiées et récentes, sinon collecte avec ta clé Riot
+  // hexalabs : uniquement les données Hexa Labs · perso : uniquement ta clé Riot
+  dataSource: 'auto'
 };
+const DATA_SOURCES = ['auto', 'hexalabs', 'perso'];
+
+/**
+ * Méta publiée par Hexa Labs : calculée sur un serveur avec la clé de production
+ * (jamais dans l'app), mise à jour plusieurs fois par jour. Voir tools/collect-meta.js.
+ */
+const REMOTE_META = (platform) => `https://raw.githubusercontent.com/HexaLabsFR/tft-stats/donnees/meta-${platform}.json`;
+const REMOTE_MAX_AGE_MS = 24 * 3600 * 1000;
 
 const MAX_STORED_MATCHES = 15000;
 const FIRST_RUN_WINDOW_MS = 7 * 24 * 3600 * 1000;
@@ -127,7 +138,9 @@ class Engine extends EventEmitter {
     if (this.static.data) this.emit('static', this.getStatic());
     if (!this.meta && this.static.data && this.matches.size) this._recompute();
     if (this.meta) this.emit('meta', this.meta);
-    if (this.settings.autoStart && (await this.keyStore.get())) this.refreshNow();
+    // Sans clé, les données Hexa Labs suffisent : on lance quand même (mode auto ou Hexa Labs).
+    const canRun = (await this.keyStore.get()) || this.settings.dataSource !== 'perso';
+    if (this.settings.autoStart && canRun) this.refreshNow();
     else this._schedule();
   }
 
@@ -147,6 +160,7 @@ class Engine extends EventEmitter {
         ? { version: this.static.data.version, setNumber: this.static.data.setNumber, setName: this.static.data.setName }
         : null,
       storedMatches: this.matches.size,
+      dataSource: this.meta?.source === 'hexalabs' ? 'hexalabs' : 'perso',
       logs: this.logs.slice(-50)
     };
   }
@@ -175,10 +189,12 @@ class Engine extends EventEmitter {
     if (!next.brackets.length) next.brackets = ['apex'];
     next.refreshMinutes = clamp(Number(next.refreshMinutes) || 30, 5, 720);
     if (!PLATFORMS[next.platform]) next.platform = DEFAULT_SETTINGS.platform;
+    if (!DATA_SOURCES.includes(next.dataSource)) next.dataSource = 'auto';
     next.tiers = (next.tiers || []).filter((t) => ['challenger', 'grandmaster', 'master'].includes(t));
     if (!next.tiers.length) next.tiers = ['challenger'];
 
     const platformChanged = next.platform !== this.settings.platform;
+    const sourceChanged = next.dataSource !== this.settings.dataSource;
     const added = next.brackets.some((b) => !this.settings.brackets.includes(b));
     this.settings = next;
     this._write('settings.json', next);
@@ -190,11 +206,14 @@ class Engine extends EventEmitter {
       this._saveMatches();
       this.log(`Serveur changé pour ${PLATFORMS[next.platform].label} : nouvelle collecte.`);
       this.refreshNow();
+    } else if (sourceChanged) {
+      if (next.dataSource === 'perso' && this.meta?.source === 'hexalabs') this.meta = null;
+      this.refreshNow();
     } else if (added) {
-      this._recompute();
+      if (this.meta?.source !== 'hexalabs') this._recompute();
       this.refreshNow();
     } else {
-      this._recompute();
+      if (this.meta?.source !== 'hexalabs') this._recompute();
       this._schedule();
     }
     return this.getState();
@@ -251,7 +270,7 @@ class Engine extends EventEmitter {
   refreshNow() {
     if (this.running) return this.running;
     this.abort = false;
-    this.running = this._collect()
+    this.running = this._run()
       .catch((err) => {
         this.log(`Erreur : ${err.message}`);
         this._setStatus({ state: 'error', message: err.message, code: err.code || '' });
@@ -261,6 +280,61 @@ class Engine extends EventEmitter {
         this._schedule();
       });
     return this.running;
+  }
+
+  /** Choisit la source : données Hexa Labs publiées, ou collecte avec la clé Riot du joueur. */
+  async _run() {
+    const src = this.settings.dataSource || 'auto';
+    if (src !== 'perso') {
+      if (await this._collectRemote()) return;
+      if (src === 'hexalabs') {
+        const err = new Error('Données Hexa Labs pas encore disponibles pour ce serveur. Choisis « Ma clé Riot » dans Réglages › Source des données.');
+        err.code = 'NO_REMOTE';
+        throw err;
+      }
+    }
+    if (this.meta?.source === 'hexalabs') this.meta = null;
+    return this._collect();
+  }
+
+  /** Récupère la méta publiée par Hexa Labs. Renvoie true si elle est valable et récente. */
+  async _collectRemote() {
+    const platform = this.settings.platform;
+    this._setStatus({ state: 'running', phase: 'Données Hexa Labs', done: 0, total: 0, message: '', code: '' });
+    const changed = await this.static.refresh().catch((e) => {
+      this.log(`Données statiques : ${e.message}`);
+      return false;
+    });
+    const refChanged = await this.reference.refresh();
+    if (await this.content.refresh()) this.emit('content', this.content.get());
+    if (changed || refChanged) this.emit('static', this.getStatic());
+    let remote;
+    try {
+      const res = await this.static.fetch(REMOTE_META(platform), { cache: 'no-store' });
+      if (!res.ok) return false;
+      remote = await res.json();
+    } catch {
+      return false;
+    }
+    if (!remote || remote.format !== META_FORMAT || !remote.byBracket?.all || remote.platform !== platform) return false;
+    if (Date.now() - (remote.computedAt || 0) > REMOTE_MAX_AGE_MS) {
+      this.log('Données Hexa Labs trop anciennes : collecte avec ta clé si elle est enregistrée.');
+      return false;
+    }
+    const isNew = !this.meta || this.meta.source !== 'hexalabs' || this.meta.computedAt !== remote.computedAt;
+    this.meta = { ...remote, source: 'hexalabs' };
+    if (isNew) {
+      this._write('meta.json', this.meta);
+      this.emit('meta', this.meta);
+      this.log(`Données Hexa Labs reçues : ${remote.byBracket.all.boards} parties, patch ${remote.patch || '—'}.`);
+    }
+    this._setStatus({
+      state: 'idle',
+      phase: 'À jour',
+      message: `Données Hexa Labs · ${remote.byBracket.all.boards} parties`,
+      lastUpdate: remote.computedAt
+    });
+    return true;
   }
 
   _schedule() {
@@ -471,8 +545,8 @@ class Engine extends EventEmitter {
       inGame: true,
       startedAt: game.gameStartTime,
       length: game.gameLength,
-      queue: game.gameQueueConfigId,
-      players: (game.participants || []).map((p) => ({ riotId: p.riotId, puuid: p.puuid, icon: p.profileIconId }))
+      queue: game.gameQueueConfigId
+      // Pas de liste des joueurs du lobby : les règles Riot pour TFT interdisent le suivi des adversaires en partie.
     };
   }
 }

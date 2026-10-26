@@ -359,11 +359,14 @@ function sampleText() {
   const m = M();
   if (!m?.boards) return 'Aucune partie analysée pour ce rang';
   const plat = S.app?.platforms?.find((p) => p.id === S.meta.platform)?.label || '';
-  return `${int(m.boards)} parties · ${bracketLabel(S.f.bracket)} · ${plat}${S.meta.patch ? ` · patch ${S.meta.patch}` : ''}`;
+  return `${int(m.boards)} parties · ${bracketLabel(S.f.bracket)} · ${plat}${S.meta.patch ? ` · patch ${S.meta.patch}` : ''}${hexaData() ? ' · données Hexa Labs' : ''}`;
 }
 
+const hexaData = () => S.meta?.source === 'hexalabs';
+const SOURCES = { auto: 'Automatique', hexalabs: 'Données Hexa Labs', perso: 'Ma clé Riot' };
+const SOURCE_HELP = { auto: 'Hexa Labs si disponible, sinon ta clé', hexalabs: 'Aucune clé nécessaire', perso: 'Collecte sur ton PC' };
 function noData() {
-  if (!S.app?.hasKey) {
+  if (!S.app?.hasKey && !hexaData()) {
     return `<div class="card empty"><p class="h2">Bienvenue sur HexaRise</p><p class="lede">Ajoute ta clé API Riot pour lancer l’analyse des parties de ton rang.</p>
       <button class="btn filled" data-action="key-dialog">${ICON.key}Ajouter ma clé</button></div>`;
   }
@@ -1632,6 +1635,7 @@ function viewSettings() {
     <h2 class="set-section">Compte et données</h2>
     ${setRow({ tile: 'violet', icon: 'key', title: 'Clé API Riot', sub: S.app?.hasKey ? 'Enregistrée · touche pour la remplacer' : 'Aucune clé · obligatoire pour les statistiques', attrs: 'data-action="key-dialog"' })}
     ${setRow({ tile: 'blue', icon: 'globe', title: 'Serveur', sub: plat, trail: ICON.down, attrs: 'data-menu-open="platform"' })}
+    ${setRow({ tile: 'green', icon: 'data', title: 'Source des données', sub: `${SOURCES[st.dataSource || 'auto']} · en ce moment : ${S.app?.dataSource === 'hexalabs' ? 'données Hexa Labs' : 'ta clé Riot'}`, trail: ICON.down, attrs: 'data-menu-open="data-source"' })}
     ${setRow({ tile: 'green', icon: 'chart', title: 'Collecte des données', sub: `${nb} rang${nb > 1 ? 's' : ''} · ${st.playersPerBracket} joueurs par rang · toutes les ${st.refreshMinutes} min`, attrs: 'data-subpage="collecte"' })}
 
     <h2 class="set-section">Mode partie et affichage</h2>
@@ -1651,7 +1655,8 @@ function viewSettings() {
       <img class="about-logo" src="logo.svg" alt="">
       <div class="about-txt"><b>HexaRise</b><span>Compagnon TFT pour progresser de Bronze à Diamant · version ${esc(info.version || '—')}</span>
         <div class="hl-sign sm"><img src="brand/hexalabs-symbole-simple.svg" alt=""><span>par <b>Hexa Labs</b></span></div>
-        <small>Hexa Labs · outils de performance gaming. HexaRise n’est pas approuvé par Riot Games et ne reflète pas les opinions de Riot Games.</small></div>
+        <small>Hexa Labs · outils de performance gaming. HexaRise n’est pas approuvé par Riot Games et ne reflète pas les opinions de Riot Games.</small>
+        <small lang="en">HexaRise isn’t endorsed by Riot Games and doesn’t reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.</small></div>
     </div>
   </div>`;
 }
@@ -1764,10 +1769,10 @@ function renderStatus() {
   const live = $('#live');
   live.className = `live ${st.state || ''}`;
   let text;
-  if (!S.app?.hasKey) text = 'Clé API manquante';
+  if (!S.app?.hasKey && !hexaData() && st.state !== 'running') text = 'Clé API manquante';
   else if (st.state === 'running') text = `Analyse · ${st.phase}${st.total ? ` ${st.done}/${st.total}` : ''}`;
   else if (st.state === 'error') text = 'Collecte interrompue';
-  else text = `Live · à jour ${ago(st.lastUpdate)}`;
+  else text = `${hexaData() ? 'Hexa Labs' : 'Live'} · à jour ${ago(st.lastUpdate)}`;
   $('#live-text').textContent = text;
   live.title = st.state === 'error' ? st.message : 'Actualiser maintenant';
   $('#progress-bar').style.width = st.state === 'running' && st.total ? `${(st.done / st.total) * 100}%` : '0';
@@ -1843,6 +1848,10 @@ document.addEventListener('click', async (e) => {
         S.f.compSort = v;
         render();
       });
+    }
+    if (kind === 'data-source') {
+      const cur = S.app?.settings?.dataSource || 'auto';
+      return openMenu(opener, Object.entries(SOURCES).map(([v, l]) => ({ value: v, label: l, checked: v === cur, aside: SOURCE_HELP[v] })), (v) => saveSettings({ dataSource: v }, 'Source des données changée'));
     }
     if (kind === 'platform' || kind === 'player-platform') {
       const current = kind === 'platform' ? S.app?.settings?.platform : opener.dataset.platform;
@@ -2196,6 +2205,6 @@ function hideBoot() {
   renderStatus();
   render('fade');
   hideBoot();
-  if (!S.app?.hasKey) setTimeout(openKeyDialog, 400);
+  if (!S.app?.hasKey && !hexaData() && S.app?.settings?.dataSource === 'perso') setTimeout(openKeyDialog, 400);
   else setTimeout(() => promptKeyIfRefused(S.app?.status), 400);
 })();

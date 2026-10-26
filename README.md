@@ -77,3 +77,12 @@ test/        faux serveurs Riot/CommunityDragon et tests
 ```
 
 HexaRise n'est pas approuvé par Riot Games et ne reflète pas les opinions de Riot Games ni de quiconque ayant officiellement participé à la production ou à la gestion des propriétés de Riot Games. Riot Games et toutes les propriétés associées sont des marques commerciales ou déposées de Riot Games, Inc.
+
+## Données Hexa Labs (sans clé)
+
+Riot interdit d'intégrer une clé API dans une app distribuée. La méta est donc calculée côté serveur :
+l'action **Collecte Hexa Labs** (`.github/workflows/collect-meta.yml`, script `tools/collect-meta.js`) tourne toutes les 3 h
+avec la clé de **production** enregistrée dans le secret `RIOT_API_KEY`, et publie `meta-<serveur>.json` sur la branche `donnees`.
+L'app la télécharge (Réglages › Source des données : Automatique, Données Hexa Labs ou Ma clé Riot).
+Sans le secret, l'action ne publie rien et l'app continue avec la clé du joueur.
+Ne jamais mettre une clé de développement ou personnelle dans ce secret : Riot les interdit pour un produit public.

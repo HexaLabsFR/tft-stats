@@ -111,7 +111,29 @@ const { parseLimitHeader } = require('../core/riot');
   await assert.rejects(engine.lookupPlayer({ riotId: 'Inconnu#EUW' }), /introuvable/);
   await assert.rejects(engine.lookupPlayer({ riotId: 'SansTag' }), /Pseudo#TAG/);
   const live = await engine.liveGame({ puuid: 'puuid-0' });
-  assert.ok(live.inGame && live.players.length === 8);
+  assert.ok(live.inGame && !('players' in live), 'pas de liste du lobby pendant la partie');
+
+  // Données Hexa Labs : une app sans clé reçoit la méta publiée par le serveur
+  {
+    const published = { ...engine.getMeta(), computedAt: Date.now() };
+    const remoteFetch = createMockFetch({ remoteMeta: published });
+    const e3 = new Engine({ dataDir: fs.mkdtempSync(path.join(os.tmpdir(), 'tft-')), keyStore: memoryKeyStore(''), fetchImpl: remoteFetch });
+    e3.settings.autoStart = false;
+    await e3.start();
+    await e3.refreshNow();
+    const st3 = await e3.getState();
+    assert.strictEqual(st3.status.state, 'idle', st3.status.message);
+    assert.strictEqual(st3.dataSource, 'hexalabs');
+    assert.strictEqual(e3.getMeta().byBracket.all.boards, published.byBracket.all.boards);
+    assert.ok(!remoteFetch.calls.some((c) => c.includes('api.riotgames.com')), 'aucun appel Riot sans clé');
+    // Données trop anciennes : repli sur la clé (absente ici) -> erreur de clé
+    const oldFetch = createMockFetch({ remoteMeta: { ...published, computedAt: Date.now() - 48 * 3600 * 1000 } });
+    const e4 = new Engine({ dataDir: fs.mkdtempSync(path.join(os.tmpdir(), 'tft-')), keyStore: memoryKeyStore(''), fetchImpl: oldFetch });
+    e4.settings.autoStart = false;
+    await e4.start();
+    await e4.refreshNow();
+    assert.strictEqual((await e4.getState()).status.code, 'NO_KEY');
+  }
 
   // Clé absente
   const e2 = new Engine({ dataDir: fs.mkdtempSync(path.join(os.tmpdir(), 'tft-')), keyStore: memoryKeyStore(''), fetchImpl });
