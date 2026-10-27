@@ -1,6 +1,24 @@
 {
- "checkedAt": "2026-10-26T09:37:30.643Z",
+ "checkedAt": "2026-10-27T05:57:16.986Z",
  "fichesUpdated": "2026-10-26",
- "changes": [],
+ "changes": [
+  {
+   "kind": "updated",
+   "id": "bm-openers",
+   "source": "bunnymuffins",
+   "title": "Bien débuter une partie (set 18)",
+   "url": "https://bunnymuffins.lol/openers/",
+   "date": "2026-10-27",
+   "seen": "2026-10-27"
+  },
+  {
+   "kind": "tierlist",
+   "source": "bunnymuffins",
+   "title": "Tier list BunnyMuffins",
+   "url": "https://bunnymuffins.lol/meta/",
+   "date": "2026-10-27",
+   "seen": "2026-10-27"
+  }
+ ],
  "errors": []
 }
