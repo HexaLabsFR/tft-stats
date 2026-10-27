@@ -173,6 +173,30 @@ const { parseLimitHeader } = require('../core/riot');
     }
   }
 
+  // Analyse après la partie : plateau final réel -> compo proche, conseils, placement
+  {
+    const { analyzeGame, roundLabel } = await import('../renderer/analysis.js');
+    assert.strictEqual(roundLabel(4), '1-4');
+    assert.strictEqual(roundLabel(5), '2-1');
+    assert.strictEqual(roundLabel(19), '4-1');
+    assert.strictEqual(roundLabel(26), '5-1');
+    const games = player.games;
+    const sdA = engine.getStatic();
+    let analysed = 0;
+    for (const g of games) {
+      const a = analyzeGame(g, meta, sdA);
+      assert.ok(a.tips.length >= 1, 'au moins un conseil');
+      assert.ok(a.board && a.board.cells.length === g.units.length, 'chaque unité placée');
+      assert.strictEqual(new Set(a.board.cells.map((c) => `${c.row}:${c.col}`)).size, g.units.length, 'une unité par case');
+      if (a.closest) {
+        analysed++;
+        assert.ok(a.closest.match >= 35 && a.closest.match <= 100);
+        assert.ok(a.better.every((b) => b.comp.id !== a.closest.comp.id));
+      }
+    }
+    assert.ok(analysed > 0, 'compo proche trouvée pour au moins une partie');
+  }
+
   // Clé absente
   const e2 = new Engine({ dataDir: fs.mkdtempSync(path.join(os.tmpdir(), 'tft-')), keyStore: memoryKeyStore(''), fetchImpl });
   const t = await e2.testKey();

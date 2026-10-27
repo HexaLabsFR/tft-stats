@@ -1,7 +1,7 @@
 'use strict';
 const { contextBridge, ipcRenderer } = require('electron');
 
-const CHANNELS = new Set(['state', 'static', 'meta', 'content', 'setSettings', 'setApiKey', 'testKey', 'refresh', 'player', 'live', 'appInfo', 'checkUpdate', 'installUpdate', 'overlayGet', 'overlaySet', 'overlayToggle', 'openMain', 'appReady']);
+const CHANNELS = new Set(['state', 'static', 'meta', 'content', 'setSettings', 'setApiKey', 'testKey', 'refresh', 'player', 'live', 'appInfo', 'checkUpdate', 'installUpdate', 'overlayGet', 'overlaySet', 'overlayToggle', 'openMain', 'appReady', 'screen2Toggle']);
 const EVENTS = new Set(['status', 'meta', 'static', 'log', 'content', 'update', 'overlay', 'game', 'navigate']);
 const listeners = {};
 

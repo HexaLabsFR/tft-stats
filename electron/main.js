@@ -161,6 +161,7 @@ function createTray() {
     Menu.buildFromTemplate([
       { label: 'Ouvrir HexaRise', click: () => win.show() },
       { label: `Mode partie (${OVERLAY_SHORTCUT})`, click: () => overlay.toggle() },
+      { label: 'Écran 2 (deuxième écran)', click: () => overlay.toggleWide() },
       { label: 'Actualiser les statistiques', click: () => engine.refreshNow() },
       { type: 'separator' },
       { label: 'Quitter', click: () => { quitting = true; app.quit(); } }
@@ -225,6 +226,7 @@ function registerIpc(checkUpdate) {
     overlayGet: () => ({ ...overlay.get(), shortcut: OVERLAY_SHORTCUT }),
     overlaySet: (patch) => overlay.set(patch),
     overlayToggle: (force) => overlay.toggle(force),
+    screen2Toggle: (force) => overlay.toggleWide(force),
     openMain: (route) => {
       win.show();
       win.focus();

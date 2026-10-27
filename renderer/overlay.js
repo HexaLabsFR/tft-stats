@@ -298,6 +298,7 @@ document.querySelector('.ov-actions').addEventListener('click', (e) => {
   if (act === 'opacity-') save({ opacity: Math.max(0.4, (S.ov.opacity || 1) - 0.1) });
   if (act === 'opacity+') save({ opacity: Math.min(1, (S.ov.opacity || 1) + 0.1) });
   if (act === 'main') api.openMain('meta');
+  if (act === 'screen2') api.screen2Toggle(true);
   if (act === 'close') (isDesktop ? api.overlayToggle(false) : window.close());
 });
 

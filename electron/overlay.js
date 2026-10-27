@@ -13,7 +13,7 @@ const fs = require('fs');
 const { BrowserWindow, screen, shell } = require('electron');
 const { gameMode } = require('../core/live-client');
 
-const DEFAULTS = { compId: null, bracket: 'all', autoOpen: true, opacity: 0.95, bounds: null, checks: {}, tab: 'guide' };
+const DEFAULTS = { compId: null, bracket: 'all', autoOpen: true, opacity: 0.95, bounds: null, checks: {}, tab: 'guide', screen2Auto: false, wideBounds: null };
 const POLL_MS = 5000;
 
 class Overlay {
@@ -23,6 +23,7 @@ class Overlay {
     this.rendererDir = rendererDir;
     this.broadcast = broadcast;
     this.win = null;
+    this.wide = null; // Écran 2 : guide en grand sur un deuxième écran
     this.inGame = false;
     this.autoOpened = false;
     try {
@@ -37,11 +38,11 @@ class Overlay {
   }
 
   get() {
-    return { ...this.state, inGame: this.inGame, visible: Boolean(this.win?.isVisible()) };
+    return { ...this.state, inGame: this.inGame, visible: Boolean(this.win?.isVisible()), screen2: Boolean(this.wide?.isVisible()), displays: screen.getAllDisplays().length };
   }
 
   set(patch = {}) {
-    for (const k of Object.keys(DEFAULTS)) if (k in patch && k !== 'bounds') this.state[k] = patch[k];
+    for (const k of Object.keys(DEFAULTS)) if (k in patch && k !== 'bounds' && k !== 'wideBounds') this.state[k] = patch[k];
     // Nouvelle compo choisie : on repart d'une liste vierge.
     if ('compId' in patch) this.state.checks = {};
     this.state.opacity = Math.min(1, Math.max(0.4, Number(this.state.opacity) || 0.95));
@@ -118,6 +119,75 @@ class Overlay {
 
   send(event, data) {
     if (this.win && !this.win.isDestroyed()) this.win.webContents.send('tft-event', event, data);
+    if (this.wide && !this.wide.isDestroyed()) this.wide.webContents.send('tft-event', event, data);
+  }
+
+  // ---------- Écran 2 (deuxième écran) ----------
+  /** Écran qui n'affiche pas le jeu : le premier écran secondaire, sinon l'écran principal. */
+  _otherDisplay() {
+    const primary = screen.getPrimaryDisplay();
+    return screen.getAllDisplays().find((d) => d.id !== primary.id) || primary;
+  }
+
+  _createWide() {
+    const saved = this.state.wideBounds;
+    const onScreen = saved && screen.getAllDisplays().some((d) => {
+      const a = d.workArea;
+      return saved.x >= a.x - 50 && saved.y >= a.y - 50 && saved.x < a.x + a.width && saved.y < a.y + a.height;
+    });
+    const area = this._otherDisplay().workArea;
+    this.wide = new BrowserWindow({
+      ...(onScreen ? saved : { x: area.x, y: area.y, width: area.width, height: area.height }),
+      minWidth: 720,
+      minHeight: 480,
+      show: false,
+      autoHideMenuBar: true,
+      backgroundColor: '#0B0F14',
+      title: 'HexaRise · Écran 2',
+      icon: path.join(this.rendererDir, '..', 'build', 'icon.png'),
+      webPreferences: { preload: this.preload, contextIsolation: true, nodeIntegration: false, sandbox: true }
+    });
+    if (!onScreen) this.wide.maximize();
+    this.wide.loadFile(path.join(this.rendererDir, 'screen2.html'));
+    this.wide.webContents.setWindowOpenHandler(({ url }) => {
+      if (/^https:\/\//.test(url)) shell.openExternal(url);
+      return { action: 'deny' };
+    });
+    this.wide.webContents.on('will-navigate', (e) => e.preventDefault());
+    const remember = () => {
+      if (!this.wide || this.wide.isDestroyed() || this.wide.isMaximized()) return;
+      this.state.wideBounds = this.wide.getBounds();
+      this._save();
+    };
+    this.wide.on('moved', remember);
+    this.wide.on('resized', remember);
+    this.wide.on('close', (e) => {
+      if (!this.quitting) {
+        e.preventDefault();
+        this.hideWide();
+      }
+    });
+  }
+
+  showWide({ focus = true } = {}) {
+    if (!this.wide || this.wide.isDestroyed()) this._createWide();
+    const reveal = () => (focus ? this.wide.show() : this.wide.showInactive());
+    if (this.wide.webContents.isLoading()) this.wide.once('ready-to-show', reveal);
+    else reveal();
+    this.broadcast('overlay', this.get());
+  }
+
+  hideWide() {
+    this.wide?.hide();
+    this.wideAutoOpened = false;
+    this.broadcast('overlay', this.get());
+  }
+
+  toggleWide(force) {
+    const want = typeof force === 'boolean' ? force : !this.wide?.isVisible();
+    if (want) this.showWide();
+    else this.hideWide();
+    return this.get();
   }
 
   // ---------- Détection de partie (gameMode uniquement) ----------
@@ -135,8 +205,14 @@ class Overlay {
           this.show({ focus: false });
           this.autoOpened = true;
         }
-      } else if (this.autoOpened) {
-        this.hide();
+        // Écran 2 automatique, seulement s'il y a vraiment un deuxième écran.
+        if (this.state.screen2Auto && screen.getAllDisplays().length > 1 && !this.wide?.isVisible()) {
+          this.showWide({ focus: false });
+          this.wideAutoOpened = true;
+        }
+      } else {
+        if (this.autoOpened) this.hide();
+        if (this.wideAutoOpened) this.hideWide();
       }
       this.broadcast('game', { inGame });
       this.broadcast('overlay', this.get());
@@ -149,6 +225,7 @@ class Overlay {
     clearInterval(this.timer);
     this.quitting = true;
     if (this.win && !this.win.isDestroyed()) this.win.destroy();
+    if (this.wide && !this.wide.isDestroyed()) this.wide.destroy();
   }
 }
 

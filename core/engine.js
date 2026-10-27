@@ -519,7 +519,7 @@ class Engine extends EventEmitter {
       })
     );
     this._saveMatches();
-    const games = raw.games.map((g) => ({ id: g.id, ts: g.ts, queue: g.queue, patch: g.patch, ...canonPlayer(this.static, g), puuid: undefined, set: undefined }));
+    const games = raw.games.map((g) => ({ id: g.id, ts: g.ts, queue: g.queue, patch: g.patch, ...canonPlayer(this.static, g), puuid: undefined, set: g.set }));
     return { account: raw.account, platform: raw.platform, summoner: raw.summoner, ranked: raw.ranked, summary: summarize(games), games, via: raw.via || 'perso' };
   }
 

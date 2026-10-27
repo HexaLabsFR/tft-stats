@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; img-src 'self' data: https://raw.communitydragon.org; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'">
+  <title>HexaRise · Écran 2</title>
+  <link rel="icon" href="favicon.ico">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="screen2.css">
+</head>
+<body class="s2">
+  <header class="s2-bar">
+    <img class="s2-logo" src="logo.svg" alt="">
+    <div class="s2-title"><b>HexaRise</b><span id="s2-state">Écran 2</span></div>
+    <div class="s2-pick" id="s2-pick"></div>
+    <button class="btn text sm" id="s2-close" title="Fermer l’écran 2">Fermer</button>
+  </header>
+  <main class="s2-body" id="s2-body"></main>
+  <footer class="s2-foot"><span>Uniquement des infos choisies avant la partie (règles Riot pour TFT)</span>
+    <span class="hl-sign sm"><img src="brand/hexalabs-symbole-simple.svg" alt=""><span>par <b>Hexa Labs</b></span></span></footer>
+  <div class="tooltip hidden" id="tooltip"></div>
+  <script type="module" src="screen2.js"></script>
+</body>
+</html>

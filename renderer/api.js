@@ -41,6 +41,7 @@ export const api = desktop
       overlayGet: () => desktop.invoke('overlayGet'),
       overlaySet: (p) => desktop.invoke('overlaySet', p),
       overlayToggle: (force) => desktop.invoke('overlayToggle', force),
+      screen2Toggle: (force) => desktop.invoke('screen2Toggle', force),
       openMain: (route) => desktop.invoke('openMain', route),
       on: (event, cb) => desktop.on(event, cb)
     }
@@ -69,6 +70,10 @@ export const api = desktop
         } catch { /* stockage indisponible */ }
         window.dispatchEvent(new CustomEvent('tft-overlay', { detail: next }));
         return next;
+      },
+      screen2Toggle: async () => {
+        window.open('screen2.html', 'hexarise-screen2', 'width=1600,height=900');
+        return true;
       },
       overlayToggle: async () => {
         window.open('overlay.html', 'tft-overlay', 'width=390,height=700');

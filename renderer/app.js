@@ -1,5 +1,6 @@
 import { api, isDesktop } from './api.js';
 import { buildGuide, compType, STREAKS, placement, boardHtml } from './guide.js';
+import { analyzeGame } from './analysis.js';
 
 // ===================== État =====================
 const stored = (k, d) => {
@@ -616,7 +617,7 @@ function viewGuide() {
         <h1 class="h1">${esc(compName(c))}</h1>
         <p class="lede" style="margin-top:8px">${esc(g.pitch)}</p>
       </div>
-      <button class="btn filled" data-play="${esc(c.id)}">${ICON.play}Jouer en mode partie</button>
+      <div class="row"><button class="btn tonal" data-play-s2="${esc(c.id)}" title="Le guide en grand sur ton deuxième écran">${ICON.window}Écran 2</button><button class="btn filled" data-play="${esc(c.id)}">${ICON.play}Jouer en mode partie</button></div>
     </div>
   </div>
 
@@ -677,9 +678,12 @@ function viewGame() {
           <h1 class="h1">${c ? esc(compTitle(c)) : 'Mode partie'}</h1>
           <p class="lede" style="margin-top:8px">${c ? 'Ta compo s’affiche dans une petite fenêtre au-dessus du jeu, avec le plan à cocher, les recettes et les augments.' : 'Une petite fenêtre au-dessus du jeu avec le plan de ta compo.'}</p>
         </div>
-        <div class="row">${c ? `<button class="btn filled" data-action="overlay-open">${ICON.window}Ouvrir la fenêtre</button><button class="btn" data-route="meta">Changer de compo</button>` : '<button class="btn filled" data-route="meta">Choisir une compo</button>'}</div>
+        <div class="row">${c ? `<button class="btn filled" data-action="overlay-open">${ICON.window}Ouvrir la fenêtre</button><button class="btn tonal" data-action="screen2-open">Écran 2 (2ᵉ écran)</button><button class="btn" data-route="meta">Changer de compo</button>` : '<button class="btn filled" data-route="meta">Choisir une compo</button>'}</div>
       </div>
     </div>
+    <div class="card tonal"><div class="fiche-head"><div><h2 class="title" style="margin:0">Écran 2 : ton guide en grand sur un deuxième écran</h2>
+      <p class="small" style="margin:6px 0 0">Plan à cocher, placement, niveaux selon ta série, objets et augments conseillés, tout visible d’un coup. Les cases cochées sont les mêmes que dans le mode partie. Uniquement des infos choisies avant la partie (règles Riot).</p></div>
+      <button class="btn tonal" data-action="screen2-open">Ouvrir l’écran 2</button></div></div>
     <div class="card"><h2 class="title">${g ? 'Le plan' : 'Comment ça marche'}</h2><ol class="steps">${steps.map((s) => `<li><span class="step-n">${s.n}</span><b>${esc(s.title)}</b><p>${esc(s.text)}</p></li>`).join('')}</ol></div>
     <div class="card tonal"><p class="small">Règle TFT en « Plein écran fenêtré » pour garder la fenêtre visible. Conforme aux règles Riot : seules des infos choisies avant la partie sont affichées. Réglages du mode partie dans Réglages.</p></div>
   </div>`;
@@ -1643,16 +1647,53 @@ function viewPlayer() {
   <div class="card"><h2 class="title">Dernières parties</h2>${d.games.map((g) => {
     const board = [...g.units].sort((a, b) => b[2].length - a[2].length || champ(b[0]).cost - champ(a[0]).cost);
     const traits = [...g.traits].sort((a, b) => b[2] - a[2]).slice(0, expert() ? 6 : 3);
-    return `<div class="game">
+    const open = S.player.open === g.id;
+    return `<div class="game ${open ? 'open' : ''}">
       <span class="place p${g.p}">${g.p}</span>
       <div class="meta">${g.queue === 1100 ? 'Classée' : g.queue === 1160 ? 'Double Up' : g.queue === 1090 ? 'Normale' : 'Mode spécial'}<br>${ago(g.ts)} · niv. ${g.lvl}</div>
       <div class="side">
         <div class="row">${traits.map(([id, n]) => `<span class="pill">${traitIcon(id)} ${esc(trait(id).name)} ${n}</span>`).join('')}</div>
         <div class="comp-units">${board.map(([id, star, its]) => unitEl(id, { star, items: expert() ? its : [], name: false, size: '' })).join('')}</div>
       </div>
-    </div>`;
+      <button class="btn ${open ? 'tonal' : 'text'} sm game-ana-btn" data-analyse="${esc(g.id)}">${open ? 'Fermer' : 'Analyser'}</button>
+    </div>${open ? gameAnalysis(g, d) : ''}`;
   }).join('')}</div></div>`;
   return out;
+}
+
+// ===================== Analyse après la partie =====================
+const RANK_BRACKET = { IRON: 'bronze', BRONZE: 'bronze', SILVER: 'silver', GOLD: 'gold', PLATINUM: 'platinum', EMERALD: 'emerald', DIAMOND: 'diamond', MASTER: 'apex', GRANDMASTER: 'apex', CHALLENGER: 'apex' };
+function gameAnalysis(g, d) {
+  if (g.queue !== 1100 || (g.set && S.static?.setNumber && g.set !== S.static.setNumber)) {
+    return '<div class="ana"><p class="small" style="margin:0">L’analyse est disponible pour les parties classées du set actuel.</p></div>';
+  }
+  const wanted = RANK_BRACKET[d.ranked?.tier] || S.f.bracket;
+  const bracket = S.meta?.byBracket?.[wanted]?.comps?.length ? wanted : 'all';
+  const meta = S.meta?.byBracket?.[bracket];
+  if (!meta?.comps?.length) return `<div class="ana">${noData()}</div>`;
+  const a = analyzeGame(g, meta, S.static, { label });
+  const tipIcons = (t) => [
+    ...(t.ids || []).map((id) => champIcon(id, 'sm')),
+    ...(t.items || []).map((id) => `<span class="ana-item ${t.missing?.includes(id) ? 'miss' : ''}">${itemIcon(id, true)}</span>`)
+  ].join('');
+  const compLine = (c, extra = '') => `<button class="tag ln-comp" data-guide="${esc(c.id)}">${tierBadge(c.tier, 'sm')}${esc(compTitle(c))} · ${esc(champ(c.carry).name)}<span class="small">${pct(c.top4)} top 4${extra}</span></button>`;
+  return `<div class="ana">
+    <div class="ana-head"><b>Analyse de la partie</b><span class="small">${a.place}${a.place === 1 ? 're' : 'e'} place · niveau ${a.level}${a.round && a.place > 1 ? ` · éliminé vers ${a.round}` : ''} · comparée aux parties ${esc(bracket === 'all' ? 'de tous les rangs' : `du rang ${bracketLabel(bracket)}`)}</span></div>
+    <div class="ana-grid">
+      <div>
+        <p class="label-sm">Ta compo ressemblait à</p>
+        ${a.closest ? `<div class="tags">${compLine(a.closest.comp, ` · ${a.closest.match} % de ressemblance`)}</div>` : '<p class="small" style="margin:0">Aucune compo forte de ton rang</p>'}
+        <p class="label-sm" style="margin-top:16px">À retenir</p>
+        <ul class="ana-tips">${a.tips.map((t) => `<li><span>${gloss(t.text)}</span>${tipIcons(t) ? `<div class="icons wrap">${tipIcons(t)}</div>` : ''}</li>`).join('')}</ul>
+        ${a.better.length ? `<p class="label-sm" style="margin-top:16px">Compos qui collaient mieux à tes unités et tes objets</p><div class="tags">${a.better.map((b) => compLine(b.comp)).join('')}</div>` : ''}
+      </div>
+      <div>
+        <p class="label-sm">Placement conseillé de ton plateau final</p>
+        ${a.board ? boardHtml(a.board, { champ, img, itemIcon, esc }) : ''}
+        <p class="small" style="margin:6px 0 0">Riot ne fournit pas la position réelle de tes unités : voici où les placer selon leur rôle.</p>
+      </div>
+    </div>
+  </div>`;
 }
 
 async function searchPlayer(q, platform) {
@@ -1698,6 +1739,7 @@ function viewSettings() {
 
     <h2 class="set-section">Mode partie et affichage</h2>
     ${isDesktop ? setRow({ tile: 'orange', icon: 'window', title: 'Ouverture automatique', sub: 'Afficher le mode partie au lancement d’une partie TFT', trail: sw(ov.autoOpen), attrs: 'data-toggle-set="autoOpen"', role: `role="switch" aria-checked="${ov.autoOpen ? 'true' : 'false'}"` }) : ''}
+    ${isDesktop ? setRow({ tile: 'blue', icon: 'window', title: 'Écran 2 automatique', sub: (ov.displays || 1) > 1 ? 'Ouvrir le guide en grand sur ton deuxième écran au lancement d’une partie' : 'Ouvrir le guide en grand sur un deuxième écran (aucun deuxième écran détecté)', trail: sw(ov.screen2Auto), attrs: 'data-toggle-set="screen2Auto"', role: `role="switch" aria-checked="${ov.screen2Auto ? 'true' : 'false'}"` }) : ''}
     ${setRow({ tile: 'pink', icon: 'keyboard', title: 'Raccourci du mode partie', sub: 'Afficher ou masquer la fenêtre, même en jeu', trail: `<span class="kbd">${esc(ov.shortcut || 'Alt+G')}</span>`, attrs: 'data-action="overlay-open"' })}
     ${isDesktop ? setRow({ tile: 'gray', icon: 'window', title: 'Fermer la fenêtre', sub: (S.app?.settings?.closeAction === 'quit') ? 'Quitte HexaRise' : 'Garde HexaRise près de l’horloge (mode partie automatique)', trail: ICON.down, attrs: 'data-menu-open="close-action"' }) : ''}
     ${setRow({ tile: 'indigo', icon: 'expert', title: 'Mode Expert', sub: 'Plus de statistiques dans les fiches et les tableaux', trail: sw(expert()), attrs: 'data-toggle-set="expert"', role: `role="switch" aria-checked="${expert()}"` })}
@@ -1861,6 +1903,11 @@ document.addEventListener('click', async (e) => {
     closeLayer();
     return pick(it.value);
   }
+  const anaBtn = t.closest('[data-analyse]');
+  if (anaBtn) {
+    S.player.open = S.player.open === anaBtn.dataset.analyse ? null : anaBtn.dataset.analyse;
+    return render();
+  }
   const onb = t.closest('[data-onb]');
   if (onb) {
     const a = onb.dataset.onb;
@@ -1966,6 +2013,11 @@ document.addEventListener('click', async (e) => {
     if (k === 'motion') {
       S.reduceMotion = !S.reduceMotion;
       remember('reduceMotion', S.reduceMotion ? '1' : '0');
+      return render();
+    }
+    if (k === 'screen2Auto') {
+      S.overlay = await api.overlaySet({ screen2Auto: !S.overlay?.screen2Auto });
+      toast(S.overlay.screen2Auto ? 'Écran 2 automatique activé' : 'Écran 2 automatique désactivé');
       return render();
     }
     if (k === 'autoOpen') {
@@ -2123,6 +2175,13 @@ document.addEventListener('click', async (e) => {
     S.champId = champEl.dataset.champ;
     return go('champion');
   }
+  const playS2 = t.closest('[data-play-s2]');
+  if (playS2) {
+    S.overlay = await api.overlaySet({ compId: playS2.dataset.playS2, bracket: S.f.bracket });
+    await api.screen2Toggle(true);
+    toast(isDesktop ? 'Écran 2 ouvert : glisse-le sur ton deuxième écran s’il n’y est pas déjà' : 'Écran 2 ouvert dans une nouvelle fenêtre');
+    return render();
+  }
   const play = t.closest('[data-play]');
   if (play) {
     S.overlay = await api.overlaySet({ compId: play.dataset.play, bracket: S.f.bracket });
@@ -2184,6 +2243,7 @@ document.addEventListener('click', async (e) => {
     toast('Recherche de mise à jour…');
   }
   if (action === 'overlay-open') api.overlayToggle(true);
+  if (action === 'screen2-open') api.screen2Toggle(true);
   if (action === 'install-update') api.installUpdate();
 });
 

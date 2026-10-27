@@ -15,8 +15,9 @@ Télécharger `HexaRise-Setup-x.y.z.exe` dans les [Releases](https://github.com/
 | Guide complet | Plan de niveaux par manche selon ta série (victoires, mixte, défaites), étapes 1 à 5, objets et recettes, augments, placement conseillé sur un plateau hexagonal (inversable) |
 | Explorer | Champions (stats, sort, synergies, filtres prix et famille, fiche détaillée, vue liste ou grille), synergies, objets, augments, chances en boutique |
 | Apprendre | Fiches en français des guides BunnyMuffins et TFT Academy (résumés HexaRise, lien vers l'original), avis des experts par compo, ouvertures, conditions (objet → compos), par composant, glossaire en info-bulles |
-| Profil | Recherche `Pseudo#TAG`, rang, 20 dernières parties, partie en cours |
+| Profil | Recherche `Pseudo#TAG`, rang, 20 dernières parties, partie en cours, **analyse après la partie** (compo la plus proche, ce qui a manqué, compos qui collaient mieux, placement conseillé du plateau final) |
 | Mode partie | Petite fenêtre au-dessus du jeu. Onglet **Compos** façon Mobalytics : compos de ton rang (unités, étoiles visées, style, difficulté), « Quand la jouer » (début, composants, emblèmes et augments qui y mènent, conseil d'expert), recettes du carry, filtre ; « Suivre » affiche son plan. Puis Plan à cocher, Niveaux, Objets, Augments. S'ouvre seule au lancement d'une partie. Raccourci **Alt+G**. |
+| Écran 2 | Le guide de la compo suivie en grand sur un deuxième écran : plan à cocher (synchronisé avec le mode partie), placement, niveaux selon la série, objets, chances en boutique, augments conseillés. Ouverture automatique possible au lancement d'une partie. Uniquement des infos choisies avant la partie. |
 | Réglages | Clé API, serveur, rangs analysés, fréquence, journal, mises à jour |
 
 ## Mode partie et règles Riot
