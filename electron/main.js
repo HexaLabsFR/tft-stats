@@ -29,14 +29,15 @@ let updateState = { state: 'idle', message: '' };
 function keyStore(dir) {
   const file = path.join(dir, 'riot-key.bin');
   return {
+    // La clé collée dans l'app passe toujours en premier. La variable Windows RIOT_API_KEY
+    // ne sert qu'à défaut (avant la 1.20.2, elle imposait silencieusement une ancienne clé).
     async get() {
-      if (process.env.RIOT_API_KEY) return process.env.RIOT_API_KEY;
       try {
         const buf = fs.readFileSync(file);
-        return safeStorage.isEncryptionAvailable() ? safeStorage.decryptString(buf) : buf.toString('utf8');
-      } catch {
-        return '';
-      }
+        const key = safeStorage.isEncryptionAvailable() ? safeStorage.decryptString(buf) : buf.toString('utf8');
+        if (key) return key;
+      } catch { /* pas de clé enregistrée */ }
+      return process.env.RIOT_API_KEY || '';
     },
     async set(key) {
       const data = safeStorage.isEncryptionAvailable() ? safeStorage.encryptString(key) : Buffer.from(key, 'utf8');

@@ -197,6 +197,19 @@ const { parseLimitHeader } = require('../core/riot');
     assert.ok(analysed > 0, 'compo proche trouvée pour au moins une partie');
   }
 
+  // La clé collée passe avant une variable d'environnement RIOT_API_KEY périmée
+  {
+    const { fileKeyStore } = require('../core/engine');
+    const f = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'tft-')), 'k');
+    const before = process.env.RIOT_API_KEY;
+    process.env.RIOT_API_KEY = 'RGAPI-00000000-0000-0000-0000-00000000dead';
+    const ks = fileKeyStore(f);
+    assert.strictEqual(await ks.get(), process.env.RIOT_API_KEY, 'variable utilisée à défaut');
+    await ks.set('RGAPI-11111111-1111-1111-1111-111111119ae4');
+    assert.strictEqual(await ks.get(), 'RGAPI-11111111-1111-1111-1111-111111119ae4', 'clé collée prioritaire');
+    if (before === undefined) delete process.env.RIOT_API_KEY; else process.env.RIOT_API_KEY = before;
+  }
+
   // Clé absente
   const e2 = new Engine({ dataDir: fs.mkdtempSync(path.join(os.tmpdir(), 'tft-')), keyStore: memoryKeyStore(''), fetchImpl });
   const t = await e2.testKey();

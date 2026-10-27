@@ -234,6 +234,11 @@ class Engine extends EventEmitter {
       };
     }
     await this.keyStore.set(clean);
+    // Sécurité : la clé utilisée doit être celle qui vient d'être collée.
+    const used = (await this.keyStore.get()) || '';
+    if (clean && used !== clean) {
+      return { ok: false, message: `La clé enregistrée n’est pas celle utilisée (…${used.slice(-4)} au lieu de …${clean.slice(-4)}). Une variable Windows RIOT_API_KEY impose sans doute une ancienne clé : supprime-la (Paramètres Windows › Variables d’environnement) puis redémarre HexaRise.` };
+    }
     const ok = await this.testKey();
     if (ok.ok && !this.running) this.refreshNow();
     return ok;
@@ -603,12 +608,11 @@ function memoryKeyStore(initial = process.env.RIOT_API_KEY || '') {
 function fileKeyStore(file) {
   return {
     get: async () => {
-      if (process.env.RIOT_API_KEY) return process.env.RIOT_API_KEY;
       try {
-        return fs.readFileSync(file, 'utf8').trim();
-      } catch {
-        return '';
-      }
+        const key = fs.readFileSync(file, 'utf8').trim();
+        if (key) return key;
+      } catch { /* pas de clé enregistrée */ }
+      return process.env.RIOT_API_KEY || '';
     },
     set: async (k) => fs.writeFileSync(file, k, { mode: 0o600 })
   };
