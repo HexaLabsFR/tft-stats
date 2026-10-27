@@ -352,7 +352,7 @@ function openKeyDialog() {
     title: 'Clé API Riot',
     body: `<label for="key-input">Clé (RGAPI-…)</label>
       <input id="key-input" type="password" placeholder="${S.app?.hasKey ? '•••••••• (enregistrée)' : 'Colle ta clé ici'}" autocomplete="off">
-      <p>Une clé de développement expire après 24 h. Sur developer.riotgames.com, clique sur « Regenerate API Key » puis copie-la avec l’icône de copie.</p>
+      <p>Sur developer.riotgames.com (page d’accueil, pas la page du produit), clique sur « Regenerate API Key » puis copie la « Development API Key » avec l’icône de copie. Elle expire après 24 h.</p>
       <p class="msg" id="key-msg"></p>`,
     actions: '<button class="btn text" data-close="1">Annuler</button><button class="btn filled" data-action="save-key">Enregistrer</button>'
   });

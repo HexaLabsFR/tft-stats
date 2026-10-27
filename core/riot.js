@@ -147,7 +147,7 @@ class RiotClient {
           detail = (await res.json())?.status?.message || '';
         } catch { /* corps vide */ }
         const err = new RiotError(
-          `Clé API Riot refusée (code ${res.status}${detail ? ` : ${detail}` : ''}). Une clé de développement expire après 24 h : génère-en une nouvelle sur developer.riotgames.com.`,
+          `Clé API Riot refusée (code ${res.status}${detail ? ` : ${detail}` : ''}). Une clé de développement expire après 24 h et la précédente ne marche plus après « Regenerate » : copie la nouvelle sur developer.riotgames.com.`,
           res.status,
           'BAD_KEY'
         );

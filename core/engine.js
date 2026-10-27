@@ -252,7 +252,9 @@ class Engine extends EventEmitter {
         return {
           ok: false,
           code: err.status,
-          message: `Riot refuse cette clé${end} : code ${err.status}${err.detail ? ` « ${err.detail} »` : ''}. ${err.status === 401 ? 'La clé est mal copiée ou incomplète.' : 'La clé est expirée ou désactivée : régénère-la sur developer.riotgames.com, puis vérifie que « Expires » affiche demain.'}`
+          message: `Riot refuse cette clé${end} : code ${err.status}${err.detail ? ` « ${err.detail} »` : ''}. ${err.status === 401
+            ? 'Riot ne reconnaît pas cette clé. Causes possibles : elle a expiré (24 h), tu as cliqué sur « Regenerate » depuis (l’ancienne ne marche plus), ou elle vient de la page d’un produit en attente de validation. Copie la « Development API Key » de la page d’accueil du portail, juste après l’avoir régénérée.'
+            : 'Riot refuse l’accès avec cette clé (clé désactivée ou bloquée) : régénère-la sur developer.riotgames.com, puis vérifie que « Expires » affiche demain.'}`
         };
       }
       return { ok: false, message: err.message };
