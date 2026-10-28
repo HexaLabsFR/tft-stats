@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "updated": "2026-10-26",
+  "updated": "2026-10-28",
   "set": 18,
-  "patch": "18.5b",
+  "patch": "18.5c",
   "note": "Fiches rédigées par HexaRise : résumés en français avec nos propres mots, pas des traductions. Le guide original reste la référence.",
   "sources": {
     "bunnymuffins": {
@@ -10,14 +10,14 @@
       "site": "bunnymuffins.lol",
       "url": "https://bunnymuffins.lol/guides/",
       "tierlist": "https://bunnymuffins.lol/meta/",
-      "tierlistModified": "2026-10-23"
+      "tierlistModified": "2026-10-27"
     },
     "tftacademy": {
       "name": "TFT Academy",
       "site": "tftacademy.com",
       "url": "https://tftacademy.com/tierlist/comps",
       "tierlist": "https://tftacademy.com/tierlist/comps",
-      "tierlistModified": "2026-10-26"
+      "tierlistModified": "2026-10-28"
     }
   },
   "guides": [
@@ -104,14 +104,14 @@
       "topic": "Début de partie",
       "url": "https://bunnymuffins.lol/openers/",
       "published": "2026-09-17",
-      "modified": "2026-10-12",
+      "modified": "2026-10-27",
       "summary": [
-        "À 2-1, une direction claire vaut beaucoup : si un augment ou un artefact rend une compo jouable, engage-toi.",
-        "Les augments d'objets sont les plus sûrs : ils donnent une direction et aident à gagner des manches. Les augments d'économie vont avec une série de défaites.",
-        "Série de victoires si tu as un bon objet sur une unité 2★, des améliorations sur ton plateau et un augment d'objet ou de combat. Série de défaites si tu n'as ni direction ni améliorations.",
-        "Ce patch, perdre toutes ses manches coûte cher : alterner vaut souvent mieux. Si tu dois perdre, vise au moins une grosse série pour choisir tôt au carrousel.",
-        "Étape 2 : priorise BF Glaive, Baguette trop grosse et Ceinture du géant, et fabrique sans hésiter. Peu d'objets sont vraiment mauvais.",
-        "Bonnes unités d'ouverture : en 1 PO, celles qui gagnent tôt ou portent des objets offensifs ; en 2 PO, de bons porteurs d'objets ; en 3 PO, celles qui deviennent fortes dans les longs combats ou ouvrent un reroll."
+        "À 2-1, privilégie les augments d'objets : ce patch, le tempo compte plus que l'économie, et pouvoir fabriquer une Lance de Shojin donne une ligne fiable.",
+        "Les augments qui donnent une direction (emblèmes, artefacts) sont surtout forts à 3-2, s'ils permettent d'enchaîner les victoires.",
+        "Série de victoires si tu as un objet fort sur une unité 2★, des améliorations et un augment d'objet ou de combat ; anticipe l'objet suivant à fabriquer. Malphite Flora fatalis, Colosses, Draven et Dragon s'y prêtent bien.",
+        "Évite de perdre toutes tes manches : mieux vaut mêler quelques victoires. Si tu perds, vise au moins une série de 6 pour bien choisir au carrousel ; Malphite Primitif ou Aphelios tiennent bien jusqu'à l'étape 4.",
+        "Étape 2 : BF Glaive, Baguette trop grosse et Ceinture du géant d'abord. La Lance de Shojin est l'objet le plus polyvalent ; Plaque de la gargouille et Armure de Warmog sont les meilleurs objets de tank.",
+        "Bonnes ouvertures : Akali et Camille en 1 PO, LeBlanc, Teemo ou Caitlyn en 2 PO, Kha'Zix, Cassiopeia ou Krug en 3 PO."
       ],
       "related": "learn:openers"
     },
@@ -491,15 +491,16 @@
       "units": [
         "Kha'Zix",
         "Hecarim",
-        "Diana"
+        "Diana",
+        "Ezreal"
       ],
       "bm": {
-        "tier": "A",
+        "tier": "S",
         "style": "Reroll 3 PO",
         "url": "https://bunnymuffins.lol/meta/#kha-zix",
         "tips": [
-          "À jouer seulement si tu trouves Kha'Zix tôt.",
-          "Place Hecarim à côté de lui pour le protéger."
+          "Ordre des traits à viser : Ravageur, puis Exécuteur, Tisse-sort et Tir rapide.",
+          "Place Hecarim à côté de Kha'Zix pour le protéger."
         ]
       },
       "ta": {
@@ -548,30 +549,6 @@
           "Avec l'emblème Incantateur, elle devient de niveau S.",
           "Morgana a besoin du Bâton du vide et du Morellonomicon."
         ]
-      },
-      "ta": {
-        "title": "Invoker Ahri Morgana",
-        "tier": "A",
-        "trend": "baisse",
-        "style": "Niveau 8 rapide",
-        "difficulty": "Moyen",
-        "url": "https://tftacademy.com/tierlist/comps/set-18-ahri-morgana",
-        "early": [
-          "Rakan",
-          "Yorick",
-          "Karma",
-          "Yunara"
-        ],
-        "items": [
-          "Spear of Shojin",
-          "Jeweled Gauntlet",
-          "Giant's Belt",
-          "Tear of the Goddess"
-        ],
-        "tips": [
-          "Étape 2 : vise 3 Fleur spirituelle et une série de victoires ; Karma peut porter les objets d'Ahri en attendant.",
-          "Étape 4 : roll pour Ahri, Morgana et la ligne avant, puis niveau 9 pour Lux une fois stable."
-        ]
       }
     },
     {
@@ -598,7 +575,7 @@
       },
       "ta": {
         "title": "Solar Blossom",
-        "tier": "A",
+        "tier": "B",
         "trend": "",
         "style": "Reroll 2 PO",
         "difficulty": "Moyen",
@@ -647,7 +624,7 @@
       "ta": {
         "title": "Elderwood Executioners",
         "tier": "A",
-        "trend": "",
+        "trend": "hausse",
         "style": "Niveau 8 rapide",
         "difficulty": "Moyen",
         "url": "https://tftacademy.com/tierlist/comps/set-18-elderwood-executioners",
@@ -693,7 +670,7 @@
       },
       "ta": {
         "title": "Defender Cassio",
-        "tier": "A",
+        "tier": "B",
         "trend": "",
         "style": "Reroll 3 PO",
         "difficulty": "Facile",
@@ -730,7 +707,7 @@
         "Veigar"
       ],
       "bm": {
-        "tier": "A",
+        "tier": "B",
         "style": "Reroll 3 PO",
         "url": "https://bunnymuffins.lol/meta/#azir",
         "tips": [
@@ -777,7 +754,7 @@
         "Krug"
       ],
       "bm": {
-        "tier": "A",
+        "tier": "B",
         "style": "Reroll 3 PO",
         "url": "https://bunnymuffins.lol/meta/#riftbeast-reroll",
         "tips": [
@@ -824,7 +801,7 @@
         "Alistar"
       ],
       "bm": {
-        "tier": "A",
+        "tier": "B",
         "style": "Reroll 1 PO",
         "url": "https://bunnymuffins.lol/meta/#veigar-reroll",
         "tips": [
@@ -858,6 +835,47 @@
       }
     },
     {
+      "id": "veigar-mages-sombres",
+      "name": "Veigar reroll · Ronce-obscure",
+      "carries": [
+        "Veigar"
+      ],
+      "units": [
+        "Veigar",
+        "Kobuko",
+        "Rek'Sai",
+        "Teemo",
+        "Fiddlesticks",
+        "Rammus",
+        "Sett",
+        "Gnar"
+      ],
+      "ta": {
+        "title": "Sprykin Veigar",
+        "tier": "C",
+        "trend": "nouveau",
+        "style": "Reroll 1 PO",
+        "difficulty": "Facile",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-dark-mages",
+        "early": [
+          "Kobuko",
+          "Rek'Sai",
+          "Veigar",
+          "Teemo"
+        ],
+        "items": [
+          "Blue Buff",
+          "Jeweled Gauntlet",
+          "Hextech Gunblade",
+          "Gargoyle Stoneplate"
+        ],
+        "tips": [
+          "Ne la tente que si tu trouves des améliorations tôt : Veigar doit cumuler ses bonus dès l'étape 2, avec ses objets en priorité.",
+          "Étape 3 : avec 7 copies ou plus, roll jusqu'au 3★ ; avec 3 ou 4, roll lentement au-dessus de 50 PO. Une fois Veigar 3★, monte de niveau pour compléter Ronce-obscure et les Bagarreurs."
+        ]
+      }
+    },
+    {
       "id": "caitlyn-reroll",
       "name": "Caitlyn reroll",
       "carries": [
@@ -881,7 +899,7 @@
       },
       "ta": {
         "title": "Juggernaut Caitlyn Reroll",
-        "tier": "C",
+        "tier": "B",
         "trend": "hausse",
         "style": "Reroll 2 PO",
         "difficulty": "Facile",
@@ -1094,8 +1112,8 @@
       },
       "ta": {
         "title": "Malphite AP Flex",
-        "tier": "B",
-        "trend": "hausse",
+        "tier": "C",
+        "trend": "baisse",
         "style": "Niveau 8 rapide",
         "difficulty": "Moyen",
         "url": "https://tftacademy.com/tierlist/comps/set-18-soraka-flex",
@@ -1142,7 +1160,7 @@
       },
       "ta": {
         "title": "Sivir Flex",
-        "tier": "A",
+        "tier": "B",
         "trend": "hausse",
         "style": "Niveau 8 rapide",
         "difficulty": "Moyen",
@@ -1235,7 +1253,7 @@
         "title": "Ahri Zyra",
         "tier": "A",
         "situational": true,
-        "trend": "",
+        "trend": "hausse",
         "style": "Niveau 8 rapide",
         "difficulty": "Moyen",
         "url": "https://tftacademy.com/tierlist/comps/set-18-spellweavers",
@@ -1320,30 +1338,6 @@
         "style": "",
         "url": "https://bunnymuffins.lol/meta/#invoker",
         "tips": []
-      },
-      "ta": {
-        "title": "Invoker Nidalee",
-        "tier": "C",
-        "trend": "",
-        "style": "Niveau 8 rapide",
-        "difficulty": "Moyen",
-        "url": "https://tftacademy.com/tierlist/comps/set-18-adaptor-nidalee",
-        "early": [
-          "Rakan",
-          "Xayah",
-          "Scuttlecrab",
-          "Kayle"
-        ],
-        "items": [
-          "Guinsoo's Rageblade",
-          "Jeweled Gauntlet",
-          "Morellonomicon",
-          "Giant's Belt"
-        ],
-        "tips": [
-          "Morellonomicon d'abord sur Nidalee, puis sur Morgana avec des objets de tank.",
-          "Il faut beaucoup de Baguettes trop grosses ; étape 4 : niveau 8 et roll pour un Incantateur à 4 PO."
-        ]
       }
     },
     {
@@ -1397,7 +1391,7 @@
       ],
       "ta": {
         "title": "Mamawood",
-        "tier": "B",
+        "tier": "C",
         "trend": "nouveau",
         "style": "Reroll 3 PO",
         "difficulty": "Moyen",
@@ -1435,7 +1429,7 @@
       ],
       "ta": {
         "title": "Fae Tristana",
-        "tier": "B",
+        "tier": "C",
         "trend": "hausse",
         "style": "Reroll 3 PO",
         "difficulty": "Moyen",
@@ -1472,7 +1466,7 @@
       ],
       "ta": {
         "title": "Teemowood",
-        "tier": "C",
+        "tier": "B",
         "trend": "hausse",
         "style": "Reroll 2 PO",
         "difficulty": "Facile",
@@ -1567,44 +1561,6 @@
         "tips": [
           "Se joue en encaissant l'Assemblée : vise 250 essences ou plus.",
           "Étape 4 : encaisse ou roll au niveau 8 pour Morgana 2★, Sentinelle et un Incantateur à 4 PO."
-        ]
-      }
-    },
-    {
-      "id": "rengar-initiateur",
-      "name": "Initiateur · Rengar reroll",
-      "carries": [
-        "Rengar",
-        "Diana"
-      ],
-      "units": [
-        "Rengar",
-        "Diana",
-        "Hecarim",
-        "Mama Beak"
-      ],
-      "ta": {
-        "title": "Vanguard Rengar Reroll",
-        "tier": "C",
-        "trend": "",
-        "style": "Reroll 3 PO",
-        "difficulty": "Moyen",
-        "url": "https://tftacademy.com/tierlist/comps/set-18-rengar-rr",
-        "early": [
-          "Rakan",
-          "Yorick",
-          "Elise",
-          "Rengar"
-        ],
-        "items": [
-          "Guinsoo's Rageblade",
-          "Edge of Night",
-          "Titan's Resolve",
-          "Recurve Bow"
-        ],
-        "tips": [
-          "Seulement si Rengar arrive tôt avec ses objets.",
-          "Au niveau 7, roll lentement pour les 3★ ; si Maman Raptor 3★ ne vient pas, passe sur le duo Aphelios."
         ]
       }
     },

@@ -1,41 +1,6 @@
 {
- "checkedAt": "2026-10-28T06:03:23.346Z",
- "fichesUpdated": "2026-10-26",
- "changes": [
-  {
-   "kind": "updated",
-   "id": "bm-openers",
-   "source": "bunnymuffins",
-   "title": "Bien débuter une partie (set 18)",
-   "url": "https://bunnymuffins.lol/openers/",
-   "date": "2026-10-27",
-   "seen": "2026-10-27"
-  },
-  {
-   "kind": "tierlist",
-   "source": "bunnymuffins",
-   "title": "Tier list BunnyMuffins",
-   "url": "https://bunnymuffins.lol/meta/",
-   "date": "2026-10-27",
-   "seen": "2026-10-27"
-  },
-  {
-   "kind": "tierlist",
-   "source": "tftacademy",
-   "title": "Tier list TFT Academy (patch 18.5c)",
-   "url": "https://tftacademy.com/tierlist/comps",
-   "date": "2026-10-28",
-   "patch": "18.5c",
-   "seen": "2026-10-28"
-  },
-  {
-   "kind": "new",
-   "source": "tftacademy",
-   "title": "Compo « dark mages »",
-   "url": "https://tftacademy.com/tierlist/comps/set-18-dark-mages",
-   "date": "2026-10-28",
-   "seen": "2026-10-28"
-  }
- ],
- "errors": []
+  "checkedAt": "2026-10-28T06:03:23.346Z",
+  "fichesUpdated": "2026-10-26",
+  "changes": [],
+  "errors": []
 }
