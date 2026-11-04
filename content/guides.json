@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated": "2026-10-28",
+  "updated": "2026-11-04",
   "set": 18,
   "patch": "18.5c",
   "note": "Fiches rédigées par HexaRise : résumés en français avec nos propres mots, pas des traductions. Le guide original reste la référence.",
@@ -17,7 +17,7 @@
       "site": "tftacademy.com",
       "url": "https://tftacademy.com/tierlist/comps",
       "tierlist": "https://tftacademy.com/tierlist/comps",
-      "tierlistModified": "2026-10-28"
+      "tierlistModified": "2026-11-03"
     }
   },
   "guides": [
@@ -362,8 +362,8 @@
       },
       "ta": {
         "title": "Tempo Riftbeast",
-        "tier": "S",
-        "trend": "nouveau",
+        "tier": "A",
+        "trend": "baisse",
         "style": "Niveau 9 rapide",
         "difficulty": "Moyen",
         "url": "https://tftacademy.com/tierlist/comps/set-18-tempo-riftbeast",
@@ -505,7 +505,7 @@
       },
       "ta": {
         "title": "Lunarwood Kha'Zix",
-        "tier": "S",
+        "tier": "C",
         "trend": "baisse",
         "style": "Reroll 3 PO",
         "difficulty": "Moyen",
@@ -575,8 +575,8 @@
       },
       "ta": {
         "title": "Solar Blossom",
-        "tier": "B",
-        "trend": "",
+        "tier": "A",
+        "trend": "baisse",
         "style": "Reroll 2 PO",
         "difficulty": "Moyen",
         "url": "https://tftacademy.com/tierlist/comps/set-18-solara-yunara",
@@ -853,7 +853,7 @@
       "ta": {
         "title": "Sprykin Veigar",
         "tier": "C",
-        "trend": "nouveau",
+        "trend": "",
         "style": "Reroll 1 PO",
         "difficulty": "Facile",
         "url": "https://tftacademy.com/tierlist/comps/set-18-dark-mages",
@@ -1015,8 +1015,8 @@
       },
       "ta": {
         "title": "Eclipse Kayle",
-        "tier": "B",
-        "trend": "",
+        "tier": "C",
+        "trend": "baisse",
         "style": "Reroll 2 PO",
         "difficulty": "Facile",
         "url": "https://tftacademy.com/tierlist/comps/set-18-eclipse-kayle",
@@ -1113,7 +1113,7 @@
       "ta": {
         "title": "Malphite AP Flex",
         "tier": "C",
-        "trend": "baisse",
+        "trend": "",
         "style": "Niveau 8 rapide",
         "difficulty": "Moyen",
         "url": "https://tftacademy.com/tierlist/comps/set-18-soraka-flex",
@@ -1147,7 +1147,10 @@
         "Sivir",
         "Malphite",
         "Sentinel",
-        "Ashe"
+        "Ashe",
+        "Kog'Maw",
+        "Rakan",
+        "Shen"
       ],
       "bm": {
         "tier": "B",
@@ -1159,27 +1162,28 @@
         ]
       },
       "ta": {
-        "title": "Sivir Flex",
-        "tier": "B",
-        "trend": "hausse",
+        "title": "Primal Sivir",
+        "tier": "A",
+        "trend": "baisse",
         "style": "Niveau 8 rapide",
         "difficulty": "Moyen",
-        "url": "https://tftacademy.com/tierlist/comps/set-18-primal-jungle-copy",
+        "url": "https://tftacademy.com/tierlist/comps/set-18-primal-hunters",
         "early": [
-          "Akali",
-          "Camille",
-          "Shen",
-          "Leona"
+          "Yorick",
+          "Cinderling",
+          "Gromp",
+          "Scuttlecrab"
         ],
         "items": [
+          "Blue Buff",
           "Infinity Edge",
-          "Spear of Shojin",
-          "Recurve Bow",
-          "Giant's Belt"
+          "Bloodthirster",
+          "Edge of Night"
         ],
         "tips": [
-          "Tristana, Ashe et Ivern sont interchangeables ; joue toujours Ashe si tu la trouves tôt.",
-          "Les BF Glaives sont très demandées : prends-les aux augments et au carrousel. Niveau 8 à l'étape 4, puis 9 une fois stable."
+          "Ouvre avec des unités AD solides et fabrique tes objets vite ; au carrousel, l'Épée longue est un choix sûr car la compo en consomme beaucoup.",
+          "Kog'Maw et l'Infernal apportent l'utilitaire : garde tes autres objets pour les dégâts purs ou les tanks. Ashe peut remplacer Kog'Maw si tu as Dernier souffle.",
+          "Niveau 8 à l'étape 4 pour chercher Sivir et améliorer la ligne avant, puis niveau 9 une fois stable."
         ]
       }
     },
@@ -1207,7 +1211,7 @@
       },
       "ta": {
         "title": "Ashe Juggernauts",
-        "tier": "C",
+        "tier": "B",
         "trend": "hausse",
         "style": "Niveau 8 rapide",
         "difficulty": "Difficile",
@@ -1253,7 +1257,7 @@
         "title": "Ahri Zyra",
         "tier": "A",
         "situational": true,
-        "trend": "hausse",
+        "trend": "baisse",
         "style": "Niveau 8 rapide",
         "difficulty": "Moyen",
         "url": "https://tftacademy.com/tierlist/comps/set-18-spellweavers",
@@ -1353,8 +1357,8 @@
       ],
       "ta": {
         "title": "Alune AP Fast 9",
-        "tier": "A",
-        "trend": "hausse",
+        "tier": "S",
+        "trend": "baisse",
         "style": "Niveau 9 rapide",
         "difficulty": "Difficile",
         "url": "https://tftacademy.com/tierlist/comps/set-18-ap-95",
@@ -1392,7 +1396,7 @@
       "ta": {
         "title": "Mamawood",
         "tier": "C",
-        "trend": "nouveau",
+        "trend": "hausse",
         "style": "Reroll 3 PO",
         "difficulty": "Moyen",
         "url": "https://tftacademy.com/tierlist/comps/set-18-mamawood",
