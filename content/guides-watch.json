@@ -1,6 +1,6 @@
 {
- "checkedAt": "2026-11-04T06:20:41.121Z",
- "fichesUpdated": "2026-10-28",
+ "checkedAt": "2026-11-06T06:22:34.015Z",
+ "fichesUpdated": "2026-11-04",
  "changes": [
   {
    "kind": "tierlist",
@@ -9,6 +9,15 @@
    "url": "https://bunnymuffins.lol/meta/",
    "date": "2026-10-30",
    "seen": "2026-10-29"
+  },
+  {
+   "kind": "tierlist",
+   "source": "tftacademy",
+   "title": "Tier list TFT Academy (patch 18.6)",
+   "url": "https://tftacademy.com/tierlist/comps",
+   "date": "2026-11-06",
+   "patch": "18.6",
+   "seen": "2026-11-06"
   }
  ],
  "errors": []
