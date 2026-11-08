@@ -1,21 +1,13 @@
 {
- "checkedAt": "2026-11-07T06:08:06.603Z",
+ "checkedAt": "2026-11-08T06:10:10.187Z",
  "fichesUpdated": "2026-11-04",
  "changes": [
-  {
-   "kind": "tierlist",
-   "source": "bunnymuffins",
-   "title": "Tier list BunnyMuffins",
-   "url": "https://bunnymuffins.lol/meta/",
-   "date": "2026-11-06",
-   "seen": "2026-10-29"
-  },
   {
    "kind": "tierlist",
    "source": "tftacademy",
    "title": "Tier list TFT Academy (patch 18.6)",
    "url": "https://tftacademy.com/tierlist/comps",
-   "date": "2026-11-07",
+   "date": "2026-11-08",
    "patch": "18.6",
    "seen": "2026-11-06"
   },
@@ -24,9 +16,11 @@
    "source": "tftacademy",
    "title": "Compo « mama faek »",
    "url": "https://tftacademy.com/tierlist/comps/set-18-mama-faek",
-   "date": "2026-11-07",
+   "date": "2026-11-08",
    "seen": "2026-11-07"
   }
  ],
- "errors": []
+ "errors": [
+  "bunnymuffins : Unexpected token '<', \"<!DOCTYPE \"... is not valid JSON"
+ ]
 }
