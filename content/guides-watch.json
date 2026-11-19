@@ -1,5 +1,5 @@
 {
- "checkedAt": "2026-11-18T06:25:06.029Z",
+ "checkedAt": "2026-11-19T06:23:22.841Z",
  "fichesUpdated": "2026-11-04",
  "changes": [
   {
@@ -23,16 +23,24 @@
    "source": "tftacademy",
    "title": "Tier list TFT Academy (patch 18.7)",
    "url": "https://tftacademy.com/tierlist/comps",
-   "date": "2026-11-18",
+   "date": "2026-11-19",
    "patch": "18.7",
    "seen": "2026-11-06"
   },
   {
    "kind": "new",
    "source": "tftacademy",
+   "title": "Compo « adaptor nidalee »",
+   "url": "https://tftacademy.com/tierlist/comps/set-18-adaptor-nidalee",
+   "date": "2026-11-19",
+   "seen": "2026-11-19"
+  },
+  {
+   "kind": "new",
+   "source": "tftacademy",
    "title": "Compo « rengar rr »",
    "url": "https://tftacademy.com/tierlist/comps/set-18-rengar-rr",
-   "date": "2026-11-18",
+   "date": "2026-11-19",
    "seen": "2026-11-13"
   },
   {
@@ -40,7 +48,7 @@
    "source": "tftacademy",
    "title": "Compo « mama faek »",
    "url": "https://tftacademy.com/tierlist/comps/set-18-mama-faek",
-   "date": "2026-11-18",
+   "date": "2026-11-19",
    "seen": "2026-11-07"
   }
  ],
